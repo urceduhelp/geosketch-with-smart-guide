@@ -15,9 +15,12 @@ header label{display:flex;gap:6px;align-items:center;font-size:13px}
 select,button{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #9bb;background:#fff;color:var(--ink)}
 button{cursor:pointer;background:var(--grid);color:#fff;border:0;font-weight:700}
 button.alt{background:#fff;color:var(--ink);border:1px solid #9bb;font-weight:400}
-main{padding:14px;display:flex;justify-content:center}
-#wrap{position:relative;max-width:100%}
-canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:manipulation}
+body{height:100vh;display:flex;flex-direction:column}
+header{flex:none}
+main{flex:1;min-height:320px;padding:10px}
+#vp{position:relative;height:100%}
+#box{height:100%;overflow:auto;display:flex;background:#dbe5ec;border:1px solid #c3d5e0;border-radius:6px}
+canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:manipulation}
 #menu{position:fixed;z-index:9;display:none;min-width:200px;max-width:80vw;max-height:55vh;overflow:auto;background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 20px #0004}
 #menu b{display:block;padding:6px 10px;background:var(--grid);color:#fff}
 #menu div{padding:8px 10px;cursor:pointer;display:flex;gap:8px;border-bottom:1px solid #e3edf3}
@@ -46,7 +49,7 @@ canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff
  <button class="alt" id="clr">සියල්ල මකන්න</button>
  <span id="st"></span>
 </header>
-<main><div id="wrap"><canvas id="cv"></canvas></div></main>
+<main><div id="vp"><div id="box"><canvas id="cv"></canvas></div></div></main>
 <div id="menu"></div>
 <a id="adm">Admin</a>
 <div id="dlg"><div>
@@ -118,12 +121,13 @@ DATA['al_india']=[];
 
 const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu');
 let cur,img,L,hi=null,marked=new Set();
+const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 
 async function load(k){
  cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';
  try{await fontReady();img=await loadImg(cur.url);}catch(e){$('st').textContent='රූපය load වුණේ නැත';return;}
- L=layout(img);marked=new Set();hi=null;draw();
+ L=layout(img);marked=new Set();hi=null;Z.reset();draw();
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
 function draw(ex){/* ex=true → Export: කොටු, අකුරු/ඉලක්කම්, highlight නැත */
