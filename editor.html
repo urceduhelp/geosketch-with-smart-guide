@@ -34,6 +34,8 @@ aside{display:flex;flex-direction:column;gap:10px}
  <h1>Geo<i>Sketch</i> · Data Feed</h1>
  <select id="map"></select>
  <span id="cell">කොටුව: –</span>
+ <a href="index.html" style="margin-left:auto;color:#9fd8f7">← GeoSketch</a>
+ <a href="#" id="lo" style="color:#fff">Logout</a>
 </header>
 <div class="app">
  <canvas id="cv"></canvas>
@@ -60,6 +62,7 @@ aside{display:flex;flex-direction:column;gap:10px}
 </div>
 <script src="geosketch-core.js"></script>
 <script>
+if(!isAdmin())location.replace('index.html');
 const $=id=>document.getElementById(id),cv=$('cv');
 let cur,img,L,items=[],tmp=[],pend=null;
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
@@ -123,6 +126,7 @@ $('map').onchange=e=>load(e.target.value);
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);}catch(e){$('out').select();document.execCommand('copy');}$('copy').textContent='Copy වුණා ✓';setTimeout(()=>$('copy').textContent='Copy',1500);};
 $('loadc').onclick=()=>{try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
 $('reset').onclick=()=>{if(confirm('මෙම සිතියමේ සියල්ල මකන්නද?')){items=[];changed();}};
+$('lo').onclick=()=>{sessionStorage.removeItem('gs_admin');location.href='index.html';};
 load(MAPS[0].k);
 </script>
 </body>
