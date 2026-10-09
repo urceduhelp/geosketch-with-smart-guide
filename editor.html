@@ -43,12 +43,16 @@ aside{display:flex;flex-direction:column;gap:10px}
   <div class="box tools"><h3>මෙවලම</h3>
    <label><input type="radio" name="t" value="p" checked> ● ස්ථානයක් (තිත + නම)</label>
    <label><input type="radio" name="t" value="pa"> ➚ ඊතලයෙන් (1: තිත, 2: නම තබන තැන)</label>
+   <label><input type="radio" name="t" value="na"> ➜ ඊතලය පමණක් (තිත නැතිව – ගඟක නම ආදියට)</label>
+   <label><input type="radio" name="t" value="d"> ‖ අමුණ / ඇළ (සමාන්තර රේඛා ද්විත්වය)</label>
    <label><input type="radio" name="t" value="a"> ▭ ප්‍රදේශයක් (Area – වර්ණ)</label>
    <label><input type="radio" name="t" value="r"> ≈ ගඟක් (මාර්ගය දිගේ නම)</label>
   </div>
   <div class="box"><h3>නම</h3>
    <input id="name" placeholder="උදා: මහවැලි ගඟ">
    <div class="row" style="margin-top:6px"><span>වර්ණය</span><input id="col" type="color" value="#ff9800" style="padding:0;width:42px">
+   <select id="pat" title="ප්‍රදේශයේ Pattern"><option value="s">සම්පූර්ණ වර්ණය</option><option value="h">තිරස් රේඛා</option><option value="v">සිරස් රේඛා</option><option value="d1">ඇලි රේඛා /</option><option value="d2">ඇලි රේඛා \</option><option value="g">කොටු</option><option value="x">ඇල කොටු</option><option value="o">තිත්</option></select>
+   <label><input id="hl" type="checkbox"> අමුණේ නම සිතියමේ නොලියන්න</label>
    <span>අකුරු</span><input id="fsz" type="range" min="16" max="48" value="26" style="width:90px"></div>
    <div class="row" style="margin-top:6px"><button id="fin">අවසන් (Enter)</button><button class="alt" id="undo">Undo</button><button class="alt" id="cancel">අවලංගු</button></div>
    <div id="hint"></div>
@@ -67,8 +71,8 @@ const $=id=>document.getElementById(id),cv=$('cv');
 let cur,img,L,items=[],tmp=[],pend=null;
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const tool=()=>document.querySelector('[name=t]:checked').value;
-const TL={p:'ස්ථානය',a:'ප්‍රදේශය',r:'ගඟ'},IC={p:'●',a:'▭',r:'≈'};
-const hints={p:'සිතියමේ ස්ථානය click කරන්න.',pa:'පළමුව ස්ථානය, ඉන්පසු නම තබන තැන click කරන්න.',a:'ප්‍රදේශයේ මායිම ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න.',r:'ගඟ දිගේ ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න (ගඟ ගලන දිශාවට අවශ්‍ය නැත).'};
+const TL={p:'ස්ථානය',a:'ප්‍රදේශය',r:'ගඟ',d:'අමුණ/ඇළ'},IC={p:'●',a:'▭',r:'≈',d:'‖'};
+const hints={p:'සිතියමේ ස්ථානය click කරන්න.',pa:'පළමුව ස්ථානය, ඉන්පසු නම තබන තැන click කරන්න.',na:'පළමුව ඊතලය පෙන්විය යුතු තැන, ඉන්පසු නම තබන තැන click කරන්න (තිතක් නොඇඳේ).',d:'අමුණ/ඇළ දිගේ ලක්ෂ්‍ය 2ක් හෝ වැඩි ගණනක් click කර "අවසන්" ඔබන්න.',a:'ප්‍රදේශයේ මායිම ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න.',r:'ගඟ දිගේ ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න (ගඟ ගලන දිශාවට අවශ්‍ය නැත).'};
 const r4=n=>Math.round(n*1e4)/1e4;
 
 async function load(k){
@@ -89,7 +93,7 @@ function redraw(){
  $('hint').textContent=hints[tool()];
  const ul=$('list');ul.innerHTML='';
  items.forEach((it,i)=>{const li=document.createElement('li');
-  li.innerHTML=`${IC[it.t]} ${it.n}<small>${itemCells(L,it).slice(0,6).join(' ')}</small>`;
+  li.innerHTML=`${it.nd?'➜':IC[it.t]} ${it.n}<small>${itemCells(L,it).slice(0,6).join(' ')}</small>`;
   const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);changed();};li.appendChild(b);ul.appendChild(li);});
  $('out').value=code();
 }
@@ -104,17 +108,17 @@ cv.onclick=e=>{
  const[x,y]=pointer(cv,L,e);if(x<0||y<0||x>1||y>1)return;
  const t=tool(),p=[r4(x),r4(y)];
  if(t=='p'){const n=nm();if(!n)return;items.push({n,t:'p',x:p[0],y:p[1]});$('name').value='';changed();}
- else if(t=='pa'){
+ else if(t=='pa'||t=='na'){
   if(!pend){if(!nm())return;pend=p;redraw();}
-  else{items.push({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]});pend=null;$('name').value='';changed();}
+  else{items.push(Object.assign({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{}));pend=null;$('name').value='';changed();}
  }else{tmp.push(p);redraw();}
 };
 cv.onmousemove=e=>{const[x,y]=pointer(cv,L,e);$('cell').textContent='කොටුව: '+(x<0||y<0||x>1||y>1?'–':cellId(L,x,y));};
 function finish(){
- const t=tool();if(t!='a'&&t!='r')return;
+ const t=tool();if(t!='a'&&t!='r'&&t!='d')return;
  if(tmp.length<(t=='a'?3:2)){alert(t=='a'?'ලක්ෂ්‍ය 3ක්වත් අවශ්‍යයි':'ලක්ෂ්‍ය 2ක්වත් අවශ්‍යයි');return;}
  const n=nm();if(!n)return;
- items.push(t=='a'?{n,t:'a',c:$('col').value,pts:tmp}:{n,t:'r',pts:tmp});tmp=[];$('name').value='';changed();
+ items.push(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts:tmp}:t=='d'?Object.assign({n,t:'d',pts:tmp},$('hl').checked?{hl:1}:{}):{n,t:'r',pts:tmp});tmp=[];$('name').value='';changed();
 }
 $('fin').onclick=finish;
 $('undo').onclick=()=>{if(pend)pend=null;else if(tmp.length)tmp.pop();else items.pop();changed();};
