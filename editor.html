@@ -50,6 +50,7 @@ aside{display:flex;flex-direction:column;gap:10px}
    <label><input type="radio" name="t" value="d"> ‖ අමුණ / ඇළ (සමාන්තර රේඛා ද්විත්වය)</label>
    <label><input type="radio" name="t" value="a"> ▭ ප්‍රදේශයක් (Area – වර්ණ)</label>
    <label><input type="radio" name="t" value="r"> ≈ ගඟක් (මාර්ගය දිගේ නම)</label>
+   <label><input type="radio" name="t" value="mv"> ✋ නම් / තිත් Move කරන්න (drag)</label>
   </div>
   <div class="box"><h3>නම</h3>
    <input id="name" placeholder="උදා: මහවැලි ගඟ">
@@ -71,12 +72,20 @@ aside{display:flex;flex-direction:column;gap:10px}
 <script>
 if(!isAdmin())location.replace('index.html');
 const $=id=>document.getElementById(id),cv=$('cv');
-let cur,img,L,items=[],tmp=[],pend=null;
+let cur,img,L,items=[],tmp=[],pend=null,drag=null;
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const tool=()=>document.querySelector('[name=t]:checked').value;
 const TL={p:'ස්ථානය',a:'ප්‍රදේශය',r:'ගඟ',d:'අමුණ/ඇළ'},IC={p:'●',a:'▭',r:'≈',d:'‖'};
-const hints={p:'සිතියමේ ස්ථානය click කරන්න.',pa:'පළමුව ස්ථානය, ඉන්පසු නම තබන තැන click කරන්න.',na:'පළමුව ඊතලය පෙන්විය යුතු තැන, ඉන්පසු නම තබන තැන click කරන්න (තිතක් නොඇඳේ).',d:'අමුණ/ඇළ දිගේ ලක්ෂ්‍ය 2ක් හෝ වැඩි ගණනක් click කර "අවසන්" ඔබන්න.',a:'ප්‍රදේශයේ මායිම ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න.',r:'ගඟ දිගේ ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න (ගඟ ගලන දිශාවට අවශ්‍ය නැත).'};
+const hints={
+ p:'සිතියමේ ස්ථානය click කරන්න.',
+ pa:'පළමුව ස්ථානය, ඉන්පසු නම තබන තැන click කරන්න.',
+ na:'පළමුව ඊතලය පෙන්විය යුතු තැන, ඉන්පසු නම තබන තැන click කරන්න (තිතක් නොඇඳේ).',
+ d:'අමුණ/ඇළ දිගේ ලක්ෂ්‍ය 2ක් හෝ වැඩි ගණනක් click කර "අවසන්" ඔබන්න.',
+ a:'ප්‍රදේශයේ මායිම ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න.',
+ r:'ගඟ දිගේ ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න (ගඟ ගලන දිශාවට අවශ්‍ය නැත).',
+ mv:'නමක් (හෝ තිතක්) මත mouse එක තබා drag කරන්න. ඊතලය ස්වයංක්‍රීයව දිගු/කෙටි වී 90° හැරේ.'
+};
 const r4=n=>Math.round(n*1e4)/1e4;
 
 async function load(k){
@@ -91,7 +100,7 @@ function redraw(){
  const g=render(cv,img,L,items,{fs:+$('fsz').value});
  const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
  g.strokeStyle=g.fillStyle='#ff6f00';g.lineWidth=3;
-  if(pend){g.beginPath();g.arc(X(pend[0]),Y(pend[1]),3,0,7);g.fill();}
+ if(pend){g.beginPath();g.arc(X(pend[0]),Y(pend[1]),3,0,7);g.fill();}
  if(tmp.length){g.beginPath();tmp.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.stroke();}
  $('hint').textContent=hints[tool()];
  const ul=$('list');ul.innerHTML='';
@@ -107,7 +116,9 @@ function code(){
 function changed(){save();redraw();}
 function nm(){const n=$('name').value.trim();if(!n){alert('පළමුව නම ඇතුළත් කරන්න');$('name').focus();}return n;}
 
+/* ---------- Click කර ලකුණු කිරීම ---------- */
 cv.onclick=e=>{
+ if(tool()=='mv')return;
  const[x,y]=pointer(cv,L,e);if(x<0||y<0||x>1||y>1)return;
  const t=tool(),p=[r4(x),r4(y)];
  if(t=='p'){const n=nm();if(!n)return;items.push({n,t:'p',x:p[0],y:p[1]});$('name').value='';changed();}
@@ -116,7 +127,40 @@ cv.onclick=e=>{
   else{items.push(Object.assign({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{}));pend=null;$('name').value='';changed();}
  }else{tmp.push(p);redraw();}
 };
-cv.onmousemove=e=>{const[x,y]=pointer(cv,L,e);$('cell').textContent='කොටුව: '+(x<0||y<0||x>1||y>1?'–':cellId(L,x,y));};
+
+/* ---------- නම් / තිත් Move කිරීම (drag) ---------- */
+function hit(e){
+ const[nx,ny]=pointer(cv,L,e),fs=+$('fsz').value,g=cv.getContext('2d'),
+  X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny);
+ g.font=`${fs}px ${FONT}`;
+ for(let i=items.length-1;i>=0;i--){const it=items[i];if(it.t!='p')continue;
+  const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*.14,w=g.measureText(it.n).width;
+  if(Math.hypot(mx-x,my-y)<=Math.max(10,r+6))return{i,w:'d'};
+  let cx,cy;
+  if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}else{cx=x+r+6+w/2;cy=y-fs*.45;}
+  if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{i,w:'l',cx,cy};
+ }
+ return null;
+}
+cv.onpointerdown=e=>{
+ if(tool()!='mv')return;const h=hit(e);if(!h)return;
+ const it=items[h.i],[nx,ny]=pointer(cv,L,e),k=h.w=='l'?['lx','ly']:['x','y'];
+ /* ඊතලයක් නැති සාමාන්‍ය නමක් නම්, දැනට නම තිබෙන තැනින් පටන් ගනී */
+ const bx=h.w=='l'&&it.lx==null?(h.cx-L.ix)/L.iw:it[k[0]],
+       by=h.w=='l'&&it.lx==null?(h.cy-L.iy)/L.ih:it[k[1]];
+ drag={it,k,ox:bx-nx,oy:by-ny};
+ cv.setPointerCapture(e.pointerId);e.preventDefault();
+};
+cv.onpointermove=e=>{
+ const[x,y]=pointer(cv,L,e);
+ $('cell').textContent='කොටුව: '+(x<0||y<0||x>1||y>1?'–':cellId(L,x,y));
+ if(drag){const c=v=>r4(Math.min(1,Math.max(0,v)));
+  drag.it[drag.k[0]]=c(x+drag.ox);drag.it[drag.k[1]]=c(y+drag.oy);redraw();}
+ else if(tool()=='mv')cv.style.cursor=hit(e)?'move':'default';
+};
+cv.onpointerup=cv.onpointercancel=()=>{if(drag){drag=null;changed();}};
+
+/* ---------- අනෙකුත් බොත්තම් ---------- */
 function finish(){
  const t=tool();if(t!='a'&&t!='r'&&t!='d')return;
  if(tmp.length<(t=='a'?3:2)){alert(t=='a'?'ලක්ෂ්‍ය 3ක්වත් අවශ්‍යයි':'ලක්ෂ්‍ය 2ක්වත් අවශ්‍යයි');return;}
@@ -127,7 +171,9 @@ $('fin').onclick=finish;
 $('undo').onclick=()=>{if(pend)pend=null;else if(tmp.length)tmp.pop();else items.pop();changed();};
 $('cancel').onclick=()=>{tmp=[];pend=null;redraw();};
 document.addEventListener('keydown',e=>{if(e.key=='Enter'&&document.activeElement.id!='out')finish();if(e.key=='Escape'){tmp=[];pend=null;redraw();}});
-document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=null;redraw();});
+document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=null;
+ cv.style.cursor=tool()=='mv'?'default':'crosshair';
+ cv.style.touchAction=tool()=='mv'?'none':'manipulation';redraw();});
 $('fsz').oninput=redraw;
 $('map').onchange=e=>load(e.target.value);
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);}catch(e){$('out').select();document.execCommand('copy');}$('copy').textContent='Copy වුණා ✓';setTimeout(()=>$('copy').textContent='Copy',1500);};
