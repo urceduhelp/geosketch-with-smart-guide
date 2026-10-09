@@ -12,7 +12,8 @@ body{margin:0;font:15px 'Noto Sans Sinhala','Iskoola Pota',sans-serif;background
 header{background:var(--ink);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
 h1{margin:0;font-size:22px;letter-spacing:.5px}h1 i{font-style:normal;color:var(--grid)}
 header label{display:flex;gap:6px;align-items:center;font-size:13px}
-select,button{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #9bb;background:#fff;color:var(--ink)}
+select,button,input{font:inherit}
+select,button{padding:6px 10px;border-radius:6px;border:1px solid #9bb;background:#fff;color:var(--ink)}
 button{cursor:pointer;background:var(--grid);color:#fff;border:0;font-weight:700}
 button.alt{background:#fff;color:var(--ink);border:1px solid #9bb;font-weight:400}
 body{height:100vh;display:flex;flex-direction:column}
@@ -21,7 +22,7 @@ main{flex:1;min-height:320px;padding:10px}
 #vp{position:relative;height:100%}
 #box{height:100%;overflow:auto;display:flex;background:#dbe5ec;border:1px solid #c3d5e0;border-radius:6px}
 canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:manipulation}
-#menu{position:fixed;z-index:9;display:none;min-width:200px;max-width:80vw;max-height:55vh;overflow:auto;background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 20px #0004}
+#menu{position:fixed;z-index:9;display:none;min-width:200px;max-width:80vw;max-height:55vh;overflow:auto;background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 20px #0004;color:var(--ink)}
 #menu b{display:block;padding:6px 10px;background:var(--grid);color:#fff}
 #menu div{padding:8px 10px;cursor:pointer;display:flex;gap:8px;border-bottom:1px solid #e3edf3}
 #menu div:hover{background:#e8f5fd}#menu div.on{font-weight:700}#menu span{margin-left:auto;color:var(--red)}
@@ -33,12 +34,28 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
 #dlg input{padding:8px;border:1px solid #9bb;border-radius:6px;font:inherit}
 #dlg textarea{height:70px;font:11px monospace;word-break:break-all}
 #dlg p{margin:0;font-size:13px}
+/* ස්ථාන නාමාවලිය */
+#plb span{background:#fff;color:var(--ink);border-radius:10px;padding:0 8px;margin-left:4px;font-size:13px}
+#pl{position:fixed;z-index:10;display:none;width:min(94vw,360px);max-height:72vh;flex-direction:column;background:#fff;color:var(--ink);border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 24px #0005}
+#pl .ph{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--grid);color:#fff}
+#pl .ph span b{background:#fff;color:var(--ink);border-radius:10px;padding:0 8px;margin-left:4px}
+#ps{margin:8px;padding:7px 9px;border:1px solid #9bb;border-radius:6px;color:var(--ink)}
+#pi{overflow:auto;flex:1;min-height:80px;border-top:1px solid #e3edf3}
+#pi label{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid #eef3f6;cursor:pointer;font-size:14px}
+#pi label:hover{background:#e8f5fd}
+#pi label small{margin-left:auto;color:#678;font-size:11px;white-space:nowrap}
+#pi input{width:18px;height:18px;flex:none}
+#pi em{display:block;padding:12px;color:#789}
+#pl .pf{display:flex;gap:6px;flex-wrap:wrap;padding:8px;border-top:1px solid #e3edf3}
+#pl .pf button{padding:6px 10px;font-size:13px}
 </style>
 </head>
 <body>
 <header>
  <h1>Geo<i>Sketch</i></h1>
  <label>සිතියම <select id="map"></select></label>
+ <button id="plb">📍 ස්ථාන නාමාවලිය <span id="bc">0</span></button>
+ <label><input id="mvt" type="checkbox"> ✋ නම් Move කරන්න</label>
  <label>මාතෘකාව <input id="ttl" placeholder="සිතියමේ මාතෘකාව" size="26"></label>
  <label>අකුරු ප්‍රමාණය <input id="fsz" type="range" min="16" max="48" value="26"></label>
  <label>ගං නම පරතරය <input id="sp" type="range" min="0" max="0.6" step="0.02" value="0.15" style="width:90px"></label>
@@ -47,10 +64,24 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
  <label><input id="grd" type="checkbox" checked> කොටු (පෙනුමට පමණි)</label>
  <button id="pdf">PDF</button><button id="jpg">JPG</button>
  <button class="alt" id="clr">සියල්ල මකන්න</button>
+ <button class="alt" id="rst" title="Move කළ නම් මුල් තැනට">නම් යළි සකසන්න</button>
  <span id="st"></span>
 </header>
 <main><div id="vp"><div id="box"><canvas id="cv"></canvas></div></div></main>
 <div id="menu"></div>
+
+<div id="pl">
+ <div class="ph"><b>ස්ථාන නාමාවලිය</b><span>තෝරාගත්: <b id="pc">0</b></span></div>
+ <input id="ps" placeholder="සොයන්න...">
+ <div id="pi"></div>
+ <div class="pf">
+  <button id="pok">OK</button>
+  <button class="alt" id="pall">පෙනෙන සියල්ල තෝරන්න</button>
+  <button class="alt" id="pclr">සියල්ල ඉවත් කරන්න</button>
+  <button class="alt" id="pcl">වසන්න</button>
+ </div>
+</div>
+
 <a id="adm">Admin</a>
 <div id="dlg"><div>
  <b id="dt">Admin Login</b>
@@ -191,41 +222,121 @@ DATA['al_india']=[];
 // <<< MAP:al_india
 /* ██  END OF DATA PASTE AREA  ██ */
 
-const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu');
-let cur,img,L,hi=null,marked=new Set();
+const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu'),pl=$('pl');
+const ORIG=JSON.stringify(DATA);/* Move කිරීමට පෙර මුල් තැන් (Reset සඳහා) */
+const IC={p:'●',a:'▭',r:'≈',d:'‖'};
+let cur,img,L,hi=null,marked=new Set(),sel=new Set(),drag=null;
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
+const badge=n=>$('bc').textContent=n;
 
 async function load(k){
- cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';
+ cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';pl.style.display='none';
  try{await fontReady();img=await loadImg(cur.url);}catch(e){$('st').textContent='රූපය load වුණේ නැත';return;}
- L=layout(img);marked=new Set();hi=null;Z.reset();draw();
+ L=layout(img);marked=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
 function draw(ex){/* ex=true → Export: කොටු, අකුරු/ඉලක්කම්, highlight නැත */
  const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,sp:+$('sp').value,gp:+$('gp').value,dr:+$('dr').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
  if(hi&&!ex){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
 }
+
+/* ---------- කොටුවක් click කර ස්ථාන තේරීම ---------- */
 cv.onclick=e=>{
+ if($('mvt').checked)return;
  const[nx,ny]=pointer(cv,L,e);
  if(nx<0||ny<0||nx>=1||ny>=1){menu.style.display='none';hi=null;draw();return;}
  const c=Math.floor(nx*L.cols),r=Math.floor(ny*L.rows),id=colName(c)+(r+1);
- hi=[c,r];draw();
+ hi=[c,r];draw();pl.style.display='none';
  const list=(DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>itemCells(L,it).includes(id));
  menu.innerHTML=`<b>කොටුව ${id}</b>`+(list.length?'':'<em>මෙම කොටුවේ ස්ථාන නැත</em>');
- const ic={p:'●',a:'▭',r:'≈',d:'‖'};
  list.forEach(([it,i])=>{const d=document.createElement('div');d.className=marked.has(i)?'on':'';
-  d.innerHTML=`${it.nd?'➚':ic[it.t]} ${it.n}<span>${marked.has(i)?'✓':''}</span>`;
-  d.onclick=ev=>{ev.stopPropagation();marked.has(i)?marked.delete(i):marked.add(i);menu.style.display='none';hi=null;draw();};
+  d.innerHTML=`${it.nd?'➚':IC[it.t]} ${it.n}<span>${marked.has(i)?'✓':''}</span>`;
+  d.onclick=ev=>{ev.stopPropagation();marked.has(i)?marked.delete(i):marked.add(i);badge(marked.size);menu.style.display='none';hi=null;draw();};
   menu.appendChild(d);});
  menu.style.display='block';
  menu.style.left=Math.max(4,Math.min(e.clientX,innerWidth-menu.offsetWidth-4))+'px';
  menu.style.top=Math.max(4,Math.min(e.clientY,innerHeight-menu.offsetHeight-4))+'px';
 };
-document.addEventListener('keydown',e=>{if(e.key=='Escape'){menu.style.display='none';hi=null;draw();}});
+document.addEventListener('keydown',e=>{if(e.key=='Escape'){menu.style.display='none';pl.style.display='none';hi=null;draw();}});
+
+/* ---------- ස්ථාන නාමාවලිය (Dropdown + Tick) ---------- */
+function buildList(){
+ const q=$('ps').value.trim().toLowerCase(),box=$('pi');box.innerHTML='';
+ const rows=(DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>!q||it.n.toLowerCase().includes(q))
+  .sort((a,b)=>a[0].n.localeCompare(b[0].n,'si'));/* අකාරාදී පිළිවෙල */
+ if(!rows.length){box.innerHTML='<em>ස්ථාන නැත</em>';return;}
+ rows.forEach(([it,i])=>{
+  const lb=document.createElement('label'),cb=document.createElement('input');
+  cb.type='checkbox';cb.checked=sel.has(i);
+  cb.onchange=()=>{cb.checked?sel.add(i):sel.delete(i);count();};
+  const cells=itemCells(L,it).slice(0,3).join(' ');
+  lb.appendChild(cb);lb.insertAdjacentHTML('beforeend',`<span>${it.nd?'➚':IC[it.t]} ${it.n}</span><small>${cells}</small>`);
+  box.appendChild(lb);});
+}
+function count(){$('pc').textContent=sel.size;badge(sel.size);}
+$('plb').onclick=e=>{
+ e.stopPropagation();
+ if(pl.style.display=='flex'){pl.style.display='none';badge(marked.size);return;}
+ menu.style.display='none';hi=null;draw();
+ sel=new Set(marked);$('ps').value='';buildList();count();
+ pl.style.display='flex';
+ const r=$('plb').getBoundingClientRect();
+ pl.style.left=Math.max(4,Math.min(r.left,innerWidth-pl.offsetWidth-4))+'px';
+ pl.style.top=(r.bottom+6)+'px';
+ pl.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';
+};
+$('ps').oninput=buildList;
+$('pall').onclick=()=>{[...$('pi').querySelectorAll('input')].forEach(c=>c.checked=true);
+ const q=$('ps').value.trim().toLowerCase();
+ (DATA[cur.k]||[]).forEach((it,i)=>{if(!q||it.n.toLowerCase().includes(q))sel.add(i);});count();};
+$('pclr').onclick=()=>{sel.clear();buildList();count();};
+$('pok').onclick=()=>{marked=new Set(sel);pl.style.display='none';badge(marked.size);draw();};
+$('pcl').onclick=()=>{pl.style.display='none';badge(marked.size);};
+pl.onclick=e=>e.stopPropagation();
+document.addEventListener('click',e=>{if(pl.style.display=='flex'&&!pl.contains(e.target)){pl.style.display='none';badge(marked.size);}});
+
+/* ---------- නම් / තිත් Move කිරීම (drag) ---------- */
+function hit(e){
+ const[nx,ny]=pointer(cv,L,e),fs=+$('fsz').value,dr=+$('dr').value,g=cv.getContext('2d'),
+  X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny),items=DATA[cur.k]||[];
+ g.font=`${fs}px ${FONT}`;
+ for(let i=items.length-1;i>=0;i--){const it=items[i];if(it.t!='p'||!marked.has(i))continue;
+  const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*dr,w=g.measureText(it.n).width;
+  if(Math.hypot(mx-x,my-y)<=Math.max(10,r+6))return{it,w:'d'};
+  let cx,cy;
+  if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}else{cx=x+r+6+w/2;cy=y-fs*.45;}
+  if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{it,w:'l',cx,cy};
+ }
+ return null;
+}
+const r4=n=>Math.round(n*1e4)/1e4;
+cv.onpointerdown=e=>{
+ if(!$('mvt').checked)return;const h=hit(e);if(!h)return;
+ const it=h.it,[nx,ny]=pointer(cv,L,e),k=h.w=='l'?['lx','ly']:['x','y'];
+ /* ඊතලයක් නැති නමක් නම්, දැනට නම තිබෙන තැනින් පටන් ගනී (ඊතලයක් එක් වේ) */
+ const bx=h.w=='l'&&it.lx==null?(h.cx-L.ix)/L.iw:it[k[0]],
+       by=h.w=='l'&&it.lx==null?(h.cy-L.iy)/L.ih:it[k[1]];
+ drag={it,k,ox:bx-nx,oy:by-ny};
+ cv.setPointerCapture(e.pointerId);e.preventDefault();
+};
+cv.onpointermove=e=>{
+ if(!$('mvt').checked)return;
+ if(drag){const[x,y]=pointer(cv,L,e),c=v=>r4(Math.min(1,Math.max(0,v)));
+  drag.it[drag.k[0]]=c(x+drag.ox);drag.it[drag.k[1]]=c(y+drag.oy);draw();}
+ else cv.style.cursor=hit(e)?'move':'default';
+};
+cv.onpointerup=cv.onpointercancel=()=>{drag=null;};
+$('mvt').onchange=()=>{const on=$('mvt').checked;
+ cv.style.cursor=on?'default':'pointer';cv.style.touchAction=on?'none':'manipulation';
+ menu.style.display='none';hi=null;draw();
+ if(on&&!marked.size)$('st').textContent='පළමුව ස්ථාන තෝරා සිතියමට ඇතුළත් කරන්න';};
+$('rst').onclick=()=>{const o=JSON.parse(ORIG);for(const k in o)DATA[k]=o[k];draw();};
+
+/* ---------- අනෙකුත් පාලන ---------- */
 $('map').onchange=e=>load(e.target.value);
 $('dr').oninput=$('gp').oninput=$('sp').oninput=$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
-$('clr').onclick=()=>{marked.clear();draw();};
+$('clr').onclick=()=>{marked.clear();sel.clear();badge(0);draw();};
 function exp(f){draw(true);try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}draw();}
 $('jpg').onclick=()=>exp(exportJPG);
 $('pdf').onclick=()=>exp(exportPDF);
