@@ -109,7 +109,7 @@ function exportPDF(cv,name,land){
    මුරපදය කෙලින්ම මෙහි නොලියයි; එහි "hash" එක පමණක් මෙහි තබයි.
    Hash එක ලබාගන්නා ආකාරය: index.html → Admin → (මුරපදය තවම සකසා නැත) කොටසින්.
    ලැබෙන දිගු අකුරු පෙළ පහත '' අතරට paste කරන්න. */
-const ADMIN_HASH='';
+const ADMIN_HASH='c8ba01aaed02efcd39c630d08275284a64a99361bc9d1aad153ea8df844d04ff';
 /* ========================================================= */
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('geosketch:'+t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 const isAdmin=()=>!!ADMIN_HASH&&sessionStorage.getItem('gs_admin')===ADMIN_HASH;
