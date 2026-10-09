@@ -135,8 +135,8 @@ $('adm').onclick=()=>{
  if(isAdmin()){location.href='editor.html';return;}
  $('dlg').style.display='flex';$('pw').value='';$('hs').style.display='none';$('pw').focus();
  if(ADMIN_HASH){$('dt').textContent='Admin Login';$('dp').textContent='';$('ok').textContent='ඇතුල් වන්න';}
- else{$('dt').textContent='මුරපදය සකසන්න';$('ok').textContent='Hash එක සාදන්න';
-  $('dp').textContent='මුරපදය තවම සකසා නැත. අලුත් මුරපදයක් ලියා බොත්තම ඔබන්න; ලැබෙන hash එක geosketch-core.js හි ADMIN_HASH=\'\' අතරට paste කර GitHub එකට නැවත upload කරන්න.';}
+ else{$('dt').textContent='sorry! you are not an admin';$('ok').textContent='-';
+  $('dp').textContent='-';}
 };
 $('no').onclick=()=>$('dlg').style.display='none';
 $('pw').onkeydown=e=>{if(e.key=='Enter')$('ok').click();};
