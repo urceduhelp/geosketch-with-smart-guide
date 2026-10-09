@@ -36,8 +36,9 @@ canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff
 <header>
  <h1>Geo<i>Sketch</i></h1>
  <label>සිතියම <select id="map"></select></label>
+ <label>මාතෘකාව <input id="ttl" placeholder="සිතියමේ මාතෘකාව" size="26"></label>
  <label>අකුරු ප්‍රමාණය <input id="fsz" type="range" min="16" max="48" value="26"></label>
- <label><input id="grd" type="checkbox" checked> කොටු</label>
+ <label><input id="grd" type="checkbox" checked> කොටු (පෙනුමට පමණි)</label>
  <button id="pdf">PDF</button><button id="jpg">JPG</button>
  <button class="alt" id="clr">සියල්ල මකන්න</button>
  <span id="st"></span>
@@ -101,9 +102,9 @@ async function load(k){
  L=layout(img);marked=new Set();hi=null;draw();
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
-function draw(){
- const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,grid:$('grd').checked,show:i=>marked.has(i)});
- if(hi){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
+function draw(ex){/* ex=true → Export: කොටු, අකුරු/ඉලක්කම්, highlight නැත */
+ const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
+ if(hi&&!ex){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
 }
 cv.onclick=e=>{
  const[nx,ny]=pointer(cv,L,e);
@@ -123,9 +124,9 @@ cv.onclick=e=>{
 };
 document.addEventListener('keydown',e=>{if(e.key=='Escape'){menu.style.display='none';hi=null;draw();}});
 $('map').onchange=e=>load(e.target.value);
-$('fsz').oninput=$('grd').onchange=draw;
+$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
 $('clr').onclick=()=>{marked.clear();draw();};
-function exp(f){hi=null;draw();try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}}
+function exp(f){draw(true);try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}draw();}
 $('jpg').onclick=()=>exp(exportJPG);
 $('pdf').onclick=()=>exp(exportPDF);
 load(MAPS[0].k);
@@ -135,8 +136,8 @@ $('adm').onclick=()=>{
  if(isAdmin()){location.href='editor.html';return;}
  $('dlg').style.display='flex';$('pw').value='';$('hs').style.display='none';$('pw').focus();
  if(ADMIN_HASH){$('dt').textContent='Admin Login';$('dp').textContent='';$('ok').textContent='ඇතුල් වන්න';}
- else{$('dt').textContent='sorry! you are not an admin';$('ok').textContent='-';
-  $('dp').textContent='-';}
+ else{$('dt').textContent='මුරපදය සකසන්න';$('ok').textContent='Hash එක සාදන්න';
+  $('dp').textContent='මුරපදය තවම සකසා නැත. අලුත් මුරපදයක් ලියා බොත්තම ඔබන්න; ලැබෙන hash එක geosketch-core.js හි ADMIN_HASH=\'\' අතරට paste කර GitHub එකට නැවත upload කරන්න.';}
 };
 $('no').onclick=()=>$('dlg').style.display='none';
 $('pw').onkeydown=e=>{if(e.key=='Enter')$('ok').click();};
