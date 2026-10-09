@@ -47,13 +47,17 @@ function drawItem(g,L,it,fs){
  g.font=`${fs}px ${FONT}`;g.textBaseline='middle';g.lineJoin='round';
  const halo=(t,x,y,al)=>{g.textAlign=al;g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(t,x,y);g.fillStyle='#111';g.fillText(t,x,y);};
  if(it.t=='p'){
-  const x=X(it.x),y=Y(it.y),r=fs*.28;
+  const x=X(it.x),y=Y(it.y),r=fs*.14;
   if(it.lx!=null){
-   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,dx=x-lx,dy=y-ly,d=Math.hypot(dx,dy)||1;
-   const t=Math.min((w/2+6)/(Math.abs(dx)||1e-6),(fs/2+6)/(Math.abs(dy)||1e-6));
-   if(t<1){const sx=lx+dx*t,sy=ly+dy*t,ex=x-dx/d*r,ey=y-dy/d*r,a=Math.atan2(ey-sy,ex-sx),h=fs*.55;
-    g.strokeStyle='#111';g.fillStyle='#111';g.lineWidth=2.5;g.beginPath();g.moveTo(sx,sy);g.lineTo(ex,ey);g.stroke();
-    g.beginPath();g.moveTo(ex,ey);g.lineTo(ex-h*Math.cos(a-.4),ey-h*Math.sin(a-.4));g.lineTo(ex-h*Math.cos(a+.4),ey-h*Math.sin(a+.4));g.closePath();g.fill();}
+   /* ඊතලය: තිරස්/සිරස් පමණි – නමෙන් තිරස්ව තිතේ x දක්වා, ඉන්පසු 90° හැරී සිරස්ව තිතට */
+   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,hw=w/2+6,hh=fs/2+6,dx=x-lx,dy=y-ly;
+   const sx=dx>=0?1:-1,sy=dy>=0?1:-1;let P;
+   if(Math.abs(dx)<=hw)P=[[x,ly+sy*hh],[x,y-sy*r]];
+   else if(Math.abs(dy)<=hh)P=[[lx+sx*hw,y],[x-sx*r,y]];
+   else P=[[lx+sx*hw,ly],[x,ly],[x,y-sy*r]];
+   g.strokeStyle=g.fillStyle='#111';g.lineWidth=2;g.beginPath();P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
+   const e=P[P.length-1],q=P[P.length-2],d=Math.hypot(e[0]-q[0],e[1]-q[1])||1,ux=(e[0]-q[0])/d,uy=(e[1]-q[1])/d,h=fs*.36,k=h*.42;
+   g.beginPath();g.moveTo(e[0],e[1]);g.lineTo(e[0]-ux*h-uy*k,e[1]-uy*h+ux*k);g.lineTo(e[0]-ux*h+uy*k,e[1]-uy*h-ux*k);g.closePath();g.fill();
    halo(it.n,lx,ly,'center');
   }else halo(it.n,x+r+6,y-fs*.45,'left');
   g.fillStyle='#d6212b';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();
@@ -83,6 +87,11 @@ function render(cv,img,L,items,o={}){
   for(let r=0;r<=L.rows;r++){const y=L.iy+r*L.ch;g.beginPath();g.moveTo(L.ix,y);g.lineTo(L.ix+L.iw,y);g.stroke();if(r<L.rows)g.fillText(r+1,L.ix-30,y+L.ch/2);}
  }
  items.forEach((it,i)=>{if(!o.show||o.show(i))drawItem(g,L,it,o.fs||26);});
+ g.fillStyle='#111';g.textAlign='center';g.textBaseline='middle';
+ if(o.title){let f=54;g.font=`bold ${f}px ${FONT}`;const mw=L.W-2*MG*.6;
+  const w=g.measureText(o.title).width;if(w>mw){f=Math.floor(f*mw/w);g.font=`bold ${f}px ${FONT}`;}
+  g.fillText(o.title,L.W/2,L.iy/2);}
+ if(o.footer){g.font=`24px ${FONT}`;g.fillText(o.footer,L.W/2,(L.iy+L.ih+L.H)/2);}
  return g;
 }
 
@@ -113,3 +122,6 @@ const ADMIN_HASH='c8ba01aaed02efcd39c630d08275284a64a99361bc9d1aad153ea8df844d04
 /* ========================================================= */
 async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('geosketch:'+t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 const isAdmin=()=>!!ADMIN_HASH&&sessionStorage.getItem('gs_admin')===ADMIN_HASH;
+
+/* Footer: Created by GeoSketch | Eduhelp.lk. දිනය (අද දිනය dd.mm.yyyy ලෙස ස්වයංක්‍රීයව) */
+function footerText(){const d=new Date(),p=n=>String(n).padStart(2,'0');return`Created by GeoSketch | Eduhelp.lk. ${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`;}
