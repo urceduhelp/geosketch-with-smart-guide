@@ -15,7 +15,10 @@ select,button,input,textarea{font:inherit;padding:6px 9px;border-radius:6px;bord
 button{background:var(--grid);color:#fff;border:0;font-weight:700;cursor:pointer}button.alt{background:#fff;color:var(--ink);border:1px solid #9bb;font-weight:400}
 .app{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:12px;padding:12px}
 @media(max-width:900px){.app{grid-template-columns:1fr}}
-canvas{width:100%;height:auto;background:#fff;box-shadow:0 2px 14px #0003;cursor:crosshair;touch-action:manipulation}
+#vp{position:relative;min-width:0}
+#box{height:calc(100vh - 80px);min-height:420px;overflow:auto;display:flex;background:#dbe5ec;border:1px solid #c3d5e0;border-radius:6px}
+@media(max-width:900px){#box{height:70vh}}
+canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:crosshair;touch-action:manipulation}
 aside{display:flex;flex-direction:column;gap:10px}
 .box{background:#fff;border:1px solid #cfe0ea;border-radius:8px;padding:10px}
 .box h3{margin:0 0 6px;font-size:14px}
@@ -38,7 +41,7 @@ aside{display:flex;flex-direction:column;gap:10px}
  <a href="#" id="lo" style="color:#fff">Logout</a>
 </header>
 <div class="app">
- <canvas id="cv"></canvas>
+ <div id="vp"><div id="box"><canvas id="cv"></canvas></div></div>
  <aside>
   <div class="box tools"><h3>මෙවලම</h3>
    <label><input type="radio" name="t" value="p" checked> ● ස්ථානයක් (තිත + නම)</label>
@@ -69,6 +72,7 @@ aside{display:flex;flex-direction:column;gap:10px}
 if(!isAdmin())location.replace('index.html');
 const $=id=>document.getElementById(id),cv=$('cv');
 let cur,img,L,items=[],tmp=[],pend=null;
+const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const tool=()=>document.querySelector('[name=t]:checked').value;
 const TL={p:'ස්ථානය',a:'ප්‍රදේශය',r:'ගඟ',d:'අමුණ/ඇළ'},IC={p:'●',a:'▭',r:'≈',d:'‖'};
@@ -78,7 +82,7 @@ const r4=n=>Math.round(n*1e4)/1e4;
 async function load(k){
  cur=MAPS.find(m=>m.k==k);await fontReady();
  try{img=await loadImg(cur.url);}catch(e){alert('රූපය load වුණේ නැත');return;}
- L=layout(img);tmp=[];pend=null;
+ L=layout(img);tmp=[];pend=null;Z.reset();
  try{items=JSON.parse(localStorage.getItem('gs_'+k)||'[]');}catch(e){items=[];}
  redraw();
 }
