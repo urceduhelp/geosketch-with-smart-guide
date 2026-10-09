@@ -38,6 +38,7 @@ canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff
  <label>සිතියම <select id="map"></select></label>
  <label>මාතෘකාව <input id="ttl" placeholder="සිතියමේ මාතෘකාව" size="26"></label>
  <label>අකුරු ප්‍රමාණය <input id="fsz" type="range" min="16" max="48" value="26"></label>
+ <label>ගං නම පරතරය <input id="sp" type="range" min="0" max="0.6" step="0.02" value="0.15" style="width:90px"></label>
  <label><input id="grd" type="checkbox" checked> කොටු (පෙනුමට පමණි)</label>
  <button id="pdf">PDF</button><button id="jpg">JPG</button>
  <button class="alt" id="clr">සියල්ල මකන්න</button>
@@ -82,9 +83,7 @@ DATA['ol_lanka']=[
   // කනගරායන් ආරු [ගඟ]
   {"n":"කනගරායන් ආරු","t":"r","pts":[[0.4486,0.199],[0.4486,0.2201],[0.4504,0.2406],[0.4609,0.2649],[0.4741,0.2879],[0.482,0.3059],[0.482,0.3233]]},
   // මල්වතු ඔය [ගඟ]
-  {"n":"මල්වතු ඔය","t":"r","pts":[[0.3282,0.3171],[0.3809,0.3475],[0.4214,0.4016]]},
-  // පරීක්ෂණය [ප්‍රදේශය]
-  {"n":"පරීක්ෂණය","t":"a","c":"#ff9800","pts":[[0.3976,0.2935],[0.4407,0.2605],[0.4917,0.2668],[0.5312,0.2953],[0.5655,0.3084],[0.5892,0.3196],[0.5795,0.35],[0.5628,0.3786],[0.5365,0.3892],[0.4662,0.3923],[0.4134,0.3917],[0.3888,0.355],[0.3959,0.3183],[0.3994,0.2947]]}
+  {"n":"මල්වතු ඔය","t":"r","pts":[[0.3282,0.3171],[0.3809,0.3475],[0.4214,0.4016]]}
 ];
 // <<< MAP:ol_lanka
 
@@ -124,7 +123,7 @@ async function load(k){
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
 function draw(ex){/* ex=true → Export: කොටු, අකුරු/ඉලක්කම්, highlight නැත */
- const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
+ const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,sp:+$('sp').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
  if(hi&&!ex){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
 }
 cv.onclick=e=>{
@@ -134,9 +133,9 @@ cv.onclick=e=>{
  hi=[c,r];draw();
  const list=(DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>itemCells(L,it).includes(id));
  menu.innerHTML=`<b>කොටුව ${id}</b>`+(list.length?'':'<em>මෙම කොටුවේ ස්ථාන නැත</em>');
- const ic={p:'●',a:'▭',r:'≈'};
+ const ic={p:'●',a:'▭',r:'≈',d:'‖'};
  list.forEach(([it,i])=>{const d=document.createElement('div');d.className=marked.has(i)?'on':'';
-  d.innerHTML=`${ic[it.t]} ${it.n}<span>${marked.has(i)?'✓':''}</span>`;
+  d.innerHTML=`${it.nd?'➚':ic[it.t]} ${it.n}<span>${marked.has(i)?'✓':''}</span>`;
   d.onclick=ev=>{ev.stopPropagation();marked.has(i)?marked.delete(i):marked.add(i);menu.style.display='none';hi=null;draw();};
   menu.appendChild(d);});
  menu.style.display='block';
@@ -145,7 +144,7 @@ cv.onclick=e=>{
 };
 document.addEventListener('keydown',e=>{if(e.key=='Escape'){menu.style.display='none';hi=null;draw();}});
 $('map').onchange=e=>load(e.target.value);
-$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
+$('sp').oninput=$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
 $('clr').onclick=()=>{marked.clear();draw();};
 function exp(f){draw(true);try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}draw();}
 $('jpg').onclick=()=>exp(exportJPG);
