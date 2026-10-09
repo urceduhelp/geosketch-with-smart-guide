@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoSketch – Data Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0d2b45;--grid:#1aa7ec;--paper:#f4f8fb;--red:#d6212b}
+*{box-sizing:border-box}
+body{margin:0;font:14px 'Noto Sans Sinhala','Iskoola Pota',sans-serif;background:var(--paper);color:var(--ink)}
+header{background:var(--ink);color:#fff;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+h1{margin:0;font-size:20px}h1 i{font-style:normal;color:var(--grid)}
+select,button,input,textarea{font:inherit;padding:6px 9px;border-radius:6px;border:1px solid #9bb;color:var(--ink)}
+button{background:var(--grid);color:#fff;border:0;font-weight:700;cursor:pointer}button.alt{background:#fff;color:var(--ink);border:1px solid #9bb;font-weight:400}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:12px;padding:12px}
+@media(max-width:900px){.app{grid-template-columns:1fr}}
+canvas{width:100%;height:auto;background:#fff;box-shadow:0 2px 14px #0003;cursor:crosshair;touch-action:manipulation}
+aside{display:flex;flex-direction:column;gap:10px}
+.box{background:#fff;border:1px solid #cfe0ea;border-radius:8px;padding:10px}
+.box h3{margin:0 0 6px;font-size:14px}
+.tools label{display:block;padding:3px 0;cursor:pointer}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#name{width:100%}
+#list{max-height:170px;overflow:auto;margin:0;padding:0;list-style:none}
+#list li{display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #eef3f6;align-items:center}
+#list small{color:#678;margin-left:auto}#list button{padding:1px 7px;background:var(--red)}
+#out{width:100%;height:190px;font:12px/1.4 Consolas,monospace;white-space:pre}
+#hint{color:#456;min-height:34px}
+</style>
+</head>
+<body>
+<header>
+ <h1>Geo<i>Sketch</i> · Data Feed</h1>
+ <select id="map"></select>
+ <span id="cell">කොටුව: –</span>
+</header>
+<div class="app">
+ <canvas id="cv"></canvas>
+ <aside>
+  <div class="box tools"><h3>මෙවලම</h3>
+   <label><input type="radio" name="t" value="p" checked> ● ස්ථානයක් (තිත + නම)</label>
+   <label><input type="radio" name="t" value="pa"> ➚ ඊතලයෙන් (1: තිත, 2: නම තබන තැන)</label>
+   <label><input type="radio" name="t" value="a"> ▭ ප්‍රදේශයක් (Area – වර්ණ)</label>
+   <label><input type="radio" name="t" value="r"> ≈ ගඟක් (මාර්ගය දිගේ නම)</label>
+  </div>
+  <div class="box"><h3>නම</h3>
+   <input id="name" placeholder="උදා: මහවැලි ගඟ">
+   <div class="row" style="margin-top:6px"><span>වර්ණය</span><input id="col" type="color" value="#ff9800" style="padding:0;width:42px">
+   <span>අකුරු</span><input id="fsz" type="range" min="16" max="48" value="26" style="width:90px"></div>
+   <div class="row" style="margin-top:6px"><button id="fin">අවසන් (Enter)</button><button class="alt" id="undo">Undo</button><button class="alt" id="cancel">අවලංගු</button></div>
+   <div id="hint"></div>
+  </div>
+  <div class="box"><h3>ලකුණු කළ ස්ථාන</h3><ul id="list"></ul></div>
+  <div class="box"><h3>GeoSketch වෙත paste කිරීමට Code</h3>
+   <textarea id="out" spellcheck="false"></textarea>
+   <div class="row" style="margin-top:6px"><button id="copy">Copy</button><button class="alt" id="loadc">මෙම Code එක load කරන්න</button><button class="alt" id="reset">සියල්ල මකන්න</button></div>
+  </div>
+ </aside>
+</div>
+<script src="geosketch-core.js"></script>
+<script>
+const $=id=>document.getElementById(id),cv=$('cv');
+let cur,img,L,items=[],tmp=[],pend=null;
+MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
+const tool=()=>document.querySelector('[name=t]:checked').value;
+const TL={p:'ස්ථානය',a:'ප්‍රදේශය',r:'ගඟ'},IC={p:'●',a:'▭',r:'≈'};
+const hints={p:'සිතියමේ ස්ථානය click කරන්න.',pa:'පළමුව ස්ථානය, ඉන්පසු නම තබන තැන click කරන්න.',a:'ප්‍රදේශයේ මායිම ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න.',r:'ගඟ දිගේ ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න (ගඟ ගලන දිශාවට අවශ්‍ය නැත).'};
+const r4=n=>Math.round(n*1e4)/1e4;
+
+async function load(k){
+ cur=MAPS.find(m=>m.k==k);await fontReady();
+ try{img=await loadImg(cur.url);}catch(e){alert('රූපය load වුණේ නැත');return;}
+ L=layout(img);tmp=[];pend=null;
+ try{items=JSON.parse(localStorage.getItem('gs_'+k)||'[]');}catch(e){items=[];}
+ redraw();
+}
+function save(){try{localStorage.setItem('gs_'+cur.k,JSON.stringify(items));}catch(e){}}
+function redraw(){
+ const g=render(cv,img,L,items,{fs:+$('fsz').value});
+ const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
+ g.strokeStyle=g.fillStyle='#ff6f00';g.lineWidth=3;
+ if(pend){g.beginPath();g.arc(X(pend[0]),Y(pend[1]),9,0,7);g.fill();}
+ if(tmp.length){g.beginPath();tmp.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.stroke();
+  tmp.forEach(p=>{g.beginPath();g.arc(X(p[0]),Y(p[1]),6,0,7);g.fill();});}
+ $('hint').textContent=hints[tool()];
+ const ul=$('list');ul.innerHTML='';
+ items.forEach((it,i)=>{const li=document.createElement('li');
+  li.innerHTML=`${IC[it.t]} ${it.n}<small>${itemCells(L,it).slice(0,6).join(' ')}</small>`;
+  const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);changed();};li.appendChild(b);ul.appendChild(li);});
+ $('out').value=code();
+}
+function code(){
+ return `// >>> MAP:${cur.k}\nDATA['${cur.k}']=[\n`+
+  items.map(it=>`  // ${it.n} [${TL[it.t]}]\n  ${JSON.stringify(it)}`).join(',\n')+`\n];\n// <<< MAP:${cur.k}`;
+}
+function changed(){save();redraw();}
+function nm(){const n=$('name').value.trim();if(!n){alert('පළමුව නම ඇතුළත් කරන්න');$('name').focus();}return n;}
+
+cv.onclick=e=>{
+ const[x,y]=pointer(cv,L,e);if(x<0||y<0||x>1||y>1)return;
+ const t=tool(),p=[r4(x),r4(y)];
+ if(t=='p'){const n=nm();if(!n)return;items.push({n,t:'p',x:p[0],y:p[1]});$('name').value='';changed();}
+ else if(t=='pa'){
+  if(!pend){if(!nm())return;pend=p;redraw();}
+  else{items.push({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]});pend=null;$('name').value='';changed();}
+ }else{tmp.push(p);redraw();}
+};
+cv.onmousemove=e=>{const[x,y]=pointer(cv,L,e);$('cell').textContent='කොටුව: '+(x<0||y<0||x>1||y>1?'–':cellId(L,x,y));};
+function finish(){
+ const t=tool();if(t!='a'&&t!='r')return;
+ if(tmp.length<(t=='a'?3:2)){alert(t=='a'?'ලක්ෂ්‍ය 3ක්වත් අවශ්‍යයි':'ලක්ෂ්‍ය 2ක්වත් අවශ්‍යයි');return;}
+ const n=nm();if(!n)return;
+ items.push(t=='a'?{n,t:'a',c:$('col').value,pts:tmp}:{n,t:'r',pts:tmp});tmp=[];$('name').value='';changed();
+}
+$('fin').onclick=finish;
+$('undo').onclick=()=>{if(pend)pend=null;else if(tmp.length)tmp.pop();else items.pop();changed();};
+$('cancel').onclick=()=>{tmp=[];pend=null;redraw();};
+document.addEventListener('keydown',e=>{if(e.key=='Enter'&&document.activeElement.id!='out')finish();if(e.key=='Escape'){tmp=[];pend=null;redraw();}});
+document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=null;redraw();});
+$('fsz').oninput=redraw;
+$('map').onchange=e=>load(e.target.value);
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);}catch(e){$('out').select();document.execCommand('copy');}$('copy').textContent='Copy වුණා ✓';setTimeout(()=>$('copy').textContent='Copy',1500);};
+$('loadc').onclick=()=>{try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
+$('reset').onclick=()=>{if(confirm('මෙම සිතියමේ සියල්ල මකන්නද?')){items=[];changed();}};
+load(MAPS[0].k);
+</script>
+</body>
+</html>

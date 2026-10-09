@@ -1,0 +1,106 @@
+/* GeoSketch core – geosketch.html සහ editor.html දෙකම මෙය භාවිතා කරයි (එකම folder එකේ තබන්න) */
+const B='https://raw.githubusercontent.com/urceduhelp/geo-sketch-map-make/main/';
+const MAPS=[
+{k:'ol_lanka',name:'සාමාන්‍ය පෙළ ලංකා සිතියම',url:B+'2022(2021)OL%20Lanka-01.jpg'},
+{k:'ol_eurasia',name:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',url:B+'2022(2021)OL%20Lanka-02.jpg'},
+{k:'ol_world',name:'සම්පූර්ණ ලෝක සිතියම',url:B+'2022(2021)OL%20world-02.jpg'},
+{k:'al_europe1',name:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',url:B+'AL_Europe_1.jpg'},
+{k:'al_europe2',name:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',url:B+'AL_Europe_2.jpg'},
+{k:'al_lanka',name:'උසස් පෙළ ලංකා සිතියම',url:B+'AL_Lanka_India-01.jpg'},
+{k:'al_india',name:'උසස් පෙළ ඉන්දියා සිතියම',url:B+'AL_Lanka_India-02.jpg'}
+];
+/* A4 @200dpi: 1654x2339 px. Margin = 1 inch = 200px. Grid cell ≈ 0.5 inch */
+const MG=200,CELL=100,FONT="'Noto Sans Sinhala','Iskoola Pota',sans-serif";
+const colName=i=>String.fromCharCode(65+i);
+const fontReady=()=>document.fonts?document.fonts.load("24px 'Noto Sans Sinhala'").catch(()=>{}):Promise.resolve();
+
+function loadImg(u){return new Promise((ok,no)=>{const i=new Image();i.crossOrigin='anonymous';
+ i.onload=()=>ok(i);i.onerror=()=>{const j=new Image();j.onload=()=>ok(j);j.onerror=no;j.src=u;};i.src=u;});}
+
+function layout(img){
+ const land=img.width>img.height,W=land?2339:1654,H=land?1654:2339;
+ const s=Math.min((W-2*MG)/img.width,(H-2*MG)/img.height),iw=img.width*s,ih=img.height*s;
+ const cols=Math.max(1,Math.round(iw/CELL)),rows=Math.max(1,Math.round(ih/CELL));
+ return{land,W,H,iw,ih,ix:(W-iw)/2,iy:(H-ih)/2,cols,rows,cw:iw/cols,ch:ih/rows};
+}
+const cellId=(L,x,y)=>colName(Math.min(L.cols-1,Math.max(0,Math.floor(x*L.cols))))+(Math.min(L.rows-1,Math.max(0,Math.floor(y*L.rows)))+1);
+
+function centroid(P){let a=0,cx=0,cy=0;for(let i=0;i<P.length;i++){const[p,q]=[P[i],P[(i+1)%P.length]],f=p[0]*q[1]-q[0]*p[1];a+=f;cx+=(p[0]+q[0])*f;cy+=(p[1]+q[1])*f;}
+ if(Math.abs(a)<1e-9)return P[0];return[cx/(3*a),cy/(3*a)];}
+function inPoly(P,x,y){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++)
+ if((P[i][1]>y)!=(P[j][1]>y)&&x<(P[j][0]-P[i][0])*(y-P[i][1])/(P[j][1]-P[i][1])+P[i][0])c=!c;return c;}
+
+/* අයිතමයක් අයත් කොටු ලැයිස්තුව (dropdown සඳහා) */
+function itemCells(L,it){
+ const s=new Set(),add=(x,y)=>{if(x>=0&&y>=0&&x<=1&&y<=1)s.add(cellId(L,x,y));};
+ if(it.t=='p'){add(it.x,it.y);return[...s];}
+ const P=it.pts;
+ P.forEach((p,i)=>{add(p[0],p[1]);if(i){const q=P[i-1];for(let k=1;k<40;k++)add(q[0]+(p[0]-q[0])*k/40,q[1]+(p[1]-q[1])*k/40);}});
+ if(it.t=='a'){for(let c=0;c<L.cols;c++)for(let r=0;r<L.rows;r++)if(inPoly(P,(c+.5)/L.cols,(r+.5)/L.rows))s.add(colName(c)+(r+1));}
+ return[...s];
+}
+
+function graphemes(t){return window.Intl&&Intl.Segmenter?[...new Intl.Segmenter('si',{granularity:'grapheme'}).segment(t)].map(x=>x.segment):Array.from(t);}
+
+function drawItem(g,L,it,fs){
+ const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
+ g.font=`${fs}px ${FONT}`;g.textBaseline='middle';g.lineJoin='round';
+ const halo=(t,x,y,al)=>{g.textAlign=al;g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(t,x,y);g.fillStyle='#111';g.fillText(t,x,y);};
+ if(it.t=='p'){
+  const x=X(it.x),y=Y(it.y),r=fs*.28;
+  if(it.lx!=null){
+   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,dx=x-lx,dy=y-ly,d=Math.hypot(dx,dy)||1;
+   const t=Math.min((w/2+6)/(Math.abs(dx)||1e-6),(fs/2+6)/(Math.abs(dy)||1e-6));
+   if(t<1){const sx=lx+dx*t,sy=ly+dy*t,ex=x-dx/d*r,ey=y-dy/d*r,a=Math.atan2(ey-sy,ex-sx),h=fs*.55;
+    g.strokeStyle='#111';g.fillStyle='#111';g.lineWidth=2.5;g.beginPath();g.moveTo(sx,sy);g.lineTo(ex,ey);g.stroke();
+    g.beginPath();g.moveTo(ex,ey);g.lineTo(ex-h*Math.cos(a-.4),ey-h*Math.sin(a-.4));g.lineTo(ex-h*Math.cos(a+.4),ey-h*Math.sin(a+.4));g.closePath();g.fill();}
+   halo(it.n,lx,ly,'center');
+  }else halo(it.n,x+r+6,y-fs*.45,'left');
+  g.fillStyle='#d6212b';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();
+ }else if(it.t=='a'){
+  g.beginPath();it.pts.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.closePath();
+  g.globalAlpha=.45;g.fillStyle=it.c||'#ff9800';g.fill();g.globalAlpha=1;g.strokeStyle=it.c||'#ff9800';g.lineWidth=3;g.stroke();
+  const c=centroid(it.pts);halo(it.n,X(c[0]),Y(c[1]),'center');
+ }else if(it.t=='r'){
+  let P=it.pts.map(p=>[X(p[0]),Y(p[1])]);if(P[0][0]>P[P.length-1][0])P.reverse();
+  const Ld=[0];for(let i=1;i<P.length;i++)Ld[i]=Ld[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
+  const tot=Ld[Ld.length-1],at=s=>{s=Math.max(0,Math.min(tot,s));let i=1;while(i<P.length-1&&Ld[i]<s)i++;
+   const f=(s-Ld[i-1])/((Ld[i]-Ld[i-1])||1);return[P[i-1][0]+(P[i][0]-P[i-1][0])*f,P[i-1][1]+(P[i][1]-P[i-1][1])*f];};
+  const ch=graphemes(it.n),ws=ch.map(c=>g.measureText(c).width),tw=ws.reduce((a,b)=>a+b,0);
+  let s=(tot-tw)/2;g.textAlign='center';
+  ch.forEach((c,i)=>{const m=s+ws[i]/2,p=at(m),a=at(m-4),b=at(m+4),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+   g.save();g.translate(p[0],p[1]);g.rotate(ang);g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(c,0,-fs*.55);g.fillStyle='#0a3d91';g.fillText(c,0,-fs*.55);g.restore();s+=ws[i];});
+ }
+}
+
+/* o: {fs, grid, show(i)} */
+function render(cv,img,L,items,o={}){
+ cv.width=L.W;cv.height=L.H;const g=cv.getContext('2d');
+ g.fillStyle='#fff';g.fillRect(0,0,L.W,L.H);g.drawImage(img,L.ix,L.iy,L.iw,L.ih);
+ if(o.grid!==false){
+  g.strokeStyle='#1aa7ec';g.lineWidth=2;g.fillStyle='#111';g.font=`bold 30px ${FONT}`;g.textAlign='center';g.textBaseline='middle';
+  for(let c=0;c<=L.cols;c++){const x=L.ix+c*L.cw;g.beginPath();g.moveTo(x,L.iy);g.lineTo(x,L.iy+L.ih);g.stroke();if(c<L.cols)g.fillText(colName(c),x+L.cw/2,L.iy-28);}
+  for(let r=0;r<=L.rows;r++){const y=L.iy+r*L.ch;g.beginPath();g.moveTo(L.ix,y);g.lineTo(L.ix+L.iw,y);g.stroke();if(r<L.rows)g.fillText(r+1,L.ix-30,y+L.ch/2);}
+ }
+ items.forEach((it,i)=>{if(!o.show||o.show(i))drawItem(g,L,it,o.fs||26);});
+ return g;
+}
+
+/* canvas → ගොනු */
+function pointer(cv,L,e){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*L.W/r.width,y=(e.clientY-r.top)*L.H/r.height;return[(x-L.ix)/L.iw,(y-L.iy)/L.ih];}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+function exportJPG(cv,name){cv.toBlob(b=>dl(b,name+'.jpg'),'image/jpeg',.95);}
+function exportPDF(cv,name,land){
+ const jpg=Uint8Array.from(atob(cv.toDataURL('image/jpeg',.95).split(',')[1]),c=>c.charCodeAt(0));
+ const pw=land?841.89:595.28,ph=land?595.28:841.89,enc=new TextEncoder(),parts=[],offs=[];let len=0;
+ const add=d=>{if(typeof d=='string')d=enc.encode(d);parts.push(d);len+=d.length;};
+ const obj=(i,s)=>{offs[i]=len;add(i+' 0 obj\n'+s+'\nendobj\n');};
+ add('%PDF-1.4\n');
+ obj(1,'<</Type/Catalog/Pages 2 0 R>>');obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+ obj(3,`<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${pw} ${ph}]/Resources<</XObject<</I 4 0 R>>>>/Contents 5 0 R>>`);
+ offs[4]=len;add(`4 0 obj\n<</Type/XObject/Subtype/Image/Width ${cv.width}/Height ${cv.height}/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ${jpg.length}>>\nstream\n`);add(jpg);add('\nendstream\nendobj\n');
+ const c=`q ${pw} 0 0 ${ph} 0 0 cm /I Do Q`;obj(5,`<</Length ${c.length}>>\nstream\n${c}\nendstream`);
+ const x=len;add('xref\n0 6\n0000000000 65535 f \n');for(let i=1;i<=5;i++)add(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+ add(`trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n${x}\n%%EOF`);
+ dl(new Blob(parts,{type:'application/pdf'}),name+'.pdf');
+}
