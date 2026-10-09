@@ -1,4 +1,4 @@
-/* GeoSketch core – geosketch.html සහ editor.html දෙකම මෙය භාවිතා කරයි (එකම folder එකේ තබන්න) */
+/* GeoSketch core – index.html සහ editor.html දෙකම මෙය භාවිතා කරයි (එකම folder එකේ තබන්න) */
 const B='https://raw.githubusercontent.com/urceduhelp/geo-sketch-map-make/main/';
 const MAPS=[
 {k:'ol_lanka',name:'සාමාන්‍ය පෙළ ලංකා සිතියම',url:B+'2022(2021)OL%20Lanka-01.jpg'},
@@ -30,17 +30,35 @@ function centroid(P){let a=0,cx=0,cy=0;for(let i=0;i<P.length;i++){const[p,q]=[P
 function inPoly(P,x,y){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++)
  if((P[i][1]>y)!=(P[j][1]>y)&&x<(P[j][0]-P[i][0])*(y-P[i][1])/(P[j][1]-P[i][1])+P[i][0])c=!c;return c;}
 
+/* රේඛාවක (polyline) x,y ට ආසන්නතම ලක්ෂ්‍යය: [px,py,දුර] */
+function nearest(P,x,y){let b=[P[0][0],P[0][1],1e9];
+ for(let i=1;i<P.length;i++){const a=P[i-1],c=P[i],dx=c[0]-a[0],dy=c[1]-a[1],l=dx*dx+dy*dy||1,
+  t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/l)),px=a[0]+t*dx,py=a[1]+t*dy,d=Math.hypot(x-px,y-py);
+  if(d<b[2])b=[px,py,d];}
+ return b;}
+
 /* අයිතමයක් අයත් කොටු ලැයිස්තුව (dropdown සඳහා) */
 function itemCells(L,it){
  const s=new Set(),add=(x,y)=>{if(x>=0&&y>=0&&x<=1&&y<=1)s.add(cellId(L,x,y));};
  if(it.t=='p'){add(it.x,it.y);return[...s];}
- const P=it.pts;
+ const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0,P=it.pts.map(p=>[p[0]+ox,p[1]+oy]);
  P.forEach((p,i)=>{add(p[0],p[1]);if(i){const q=P[i-1];for(let k=1;k<40;k++)add(q[0]+(p[0]-q[0])*k/40,q[1]+(p[1]-q[1])*k/40);}});
  if(it.t=='a'){for(let c=0;c<L.cols;c++)for(let r=0;r<L.rows;r++)if(inPoly(P,(c+.5)/L.cols,(r+.5)/L.rows))s.add(colName(c)+(r+1));}
  return[...s];
 }
 
 function graphemes(t){return window.Intl&&Intl.Segmenter?[...new Intl.Segmenter('si',{granularity:'grapheme'}).segment(t)].map(x=>x.segment):Array.from(t);}
+
+/* ඊතලය: නමෙන් තිරස්ව x දක්වා, ඉන්පසු 90° හැරී සිරස්ව ඉලක්කයට (r = ඉලක්කයේ අරය) */
+function drawArrow(g,fs,lx,ly,x,y,r,w){
+ const hw=w/2+6,hh=fs/2+6,dx=x-lx,dy=y-ly,sx=dx>=0?1:-1,sy=dy>=0?1:-1;let P;
+ if(Math.abs(dx)<=hw)P=[[x,ly+sy*hh],[x,y-sy*r]];
+ else if(Math.abs(dy)<=hh)P=[[lx+sx*hw,y],[x-sx*r,y]];
+ else P=[[lx+sx*hw,ly],[x,ly],[x,y-sy*r]];
+ g.strokeStyle=g.fillStyle='#111';g.lineWidth=2;g.beginPath();P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
+ const e=P[P.length-1],q=P[P.length-2],d=Math.hypot(e[0]-q[0],e[1]-q[1])||1,ux=(e[0]-q[0])/d,uy=(e[1]-q[1])/d,h=fs*.36,k=h*.42;
+ g.beginPath();g.moveTo(e[0],e[1]);g.lineTo(e[0]-ux*h-uy*k,e[1]-uy*h+ux*k);g.lineTo(e[0]-ux*h+uy*k,e[1]-uy*h-ux*k);g.closePath();g.fill();
+}
 
 function drawItem(g,L,it,fs,sp=.15,gp=.17,dr=.14){
  const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
@@ -49,15 +67,8 @@ function drawItem(g,L,it,fs,sp=.15,gp=.17,dr=.14){
  if(it.t=='p'){
   const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*dr;/* dr = තිතේ අරය (අකුරු ප්‍රමාණයෙන් කොටසක්) */
   if(it.lx!=null){
-   /* ඊතලය: තිරස්/සිරස් පමණි – නමෙන් තිරස්ව තිතේ x දක්වා, ඉන්පසු 90° හැරී සිරස්ව තිතට */
-   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,hw=w/2+6,hh=fs/2+6,dx=x-lx,dy=y-ly;
-   const sx=dx>=0?1:-1,sy=dy>=0?1:-1;let P;
-   if(Math.abs(dx)<=hw)P=[[x,ly+sy*hh],[x,y-sy*r]];
-   else if(Math.abs(dy)<=hh)P=[[lx+sx*hw,y],[x-sx*r,y]];
-   else P=[[lx+sx*hw,ly],[x,ly],[x,y-sy*r]];
-   g.strokeStyle=g.fillStyle='#111';g.lineWidth=2;g.beginPath();P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
-   const e=P[P.length-1],q=P[P.length-2],d=Math.hypot(e[0]-q[0],e[1]-q[1])||1,ux=(e[0]-q[0])/d,uy=(e[1]-q[1])/d,h=fs*.36,k=h*.42;
-   g.beginPath();g.moveTo(e[0],e[1]);g.lineTo(e[0]-ux*h-uy*k,e[1]-uy*h+ux*k);g.lineTo(e[0]-ux*h+uy*k,e[1]-uy*h-ux*k);g.closePath();g.fill();
+   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width;
+   drawArrow(g,fs,lx,ly,x,y,r,w);
    halo(it.n,lx,ly,'center');
   }else halo(it.n,x+r+6,y-fs*.45,'left');
   if(!it.nd){g.fillStyle='#d6212b';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();}
@@ -76,15 +87,21 @@ function drawItem(g,L,it,fs,sp=.15,gp=.17,dr=.14){
    if(pt=='o')for(let y=y0;y<=y1;y+=S)for(let x=x0;x<=x1;x+=S){g.beginPath();g.arc(x,y,3,0,7);g.fill();}
    g.restore();}
   pp();g.strokeStyle=col;g.lineWidth=3;g.stroke();
-  const c=centroid(it.pts);halo(it.n,X(c[0]),Y(c[1]),'center');
- }else if(it.t=='d'){/* අමුණ / ඇළ: ආසන්න සමාන්තර රේඛා ද්විත්වයක් */
-  const P=it.pts.map(p=>[X(p[0]),Y(p[1])]),h=fs*gp;/* gp = රේඛා දෙක අතර අඩ පරතරය (අකුරු ප්‍රමාණයෙන් කොටසක්) */
+  /* නම: Move කර ඇත්නම් (lx,ly) එතැන, නැත්නම් මැද */
+  const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);halo(it.n,X(c[0]),Y(c[1]),'center');
+ }else if(it.t=='d'){/* අමුණ / ඇළ: ආසන්න සමාන්තර රේඛා ද්විත්වයක් (ඉර පමණි). නම වෙනම තබයි (lx,ly) */
+  const P=it.pts.map(p=>[X(p[0]),Y(p[1])]),h=fs*gp;/* gp = රේඛා දෙක අතර අඩ පරතරය */
   const N=P.map((p,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;return[-dy/d*h,dx/d*h];});
   g.strokeStyle='#111';g.lineWidth=2.5;
   [1,-1].forEach(s=>{g.beginPath();P.forEach((p,i)=>{const x=p[0]+N[i][0]*s,y=p[1]+N[i][1]*s;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
-  if(!it.hl){const m=P[P.length>>1];halo(it.n,(P[0][0]+P[P.length-1][0])/2,m[1]-fs*1.2,'center');}
+  if(it.lx!=null){
+   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,q=nearest(P,lx,ly);
+   if(q[2]>fs*1.3)drawArrow(g,fs,lx,ly,q[0],q[1],h,w);/* නම රේඛාවෙන් ඈතනම් ඊතලයක් */
+   halo(it.n,lx,ly,'center');
+  }
  }else if(it.t=='r'){
-  let P=it.pts.map(p=>[X(p[0]),Y(p[1])]);if(P[0][0]>P[P.length-1][0])P.reverse();
+  /* ox,oy = Move කිරීමෙන් ලැබෙන විස්ථාපනය */
+  let P=it.pts.map(p=>[X(p[0]+(it.ox||0)),Y(p[1]+(it.oy||0))]);if(P[0][0]>P[P.length-1][0])P.reverse();
   const Ld=[0];for(let i=1;i<P.length;i++)Ld[i]=Ld[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
   const tot=Ld[Ld.length-1];
   /* මාර්ගයට වඩා නම දිග නම් අග රේඛාව දිගේ දිගු කර ගනී (අකුරු එක තැනකට ගොඩ නොවේ) */
@@ -115,6 +132,39 @@ function render(cv,img,L,items,o={}){
   g.fillText(o.title,L.W/2,L.iy/2);}
  if(o.footer){g.font=`24px ${FONT}`;g.fillText(o.footer,L.W/2,(L.iy+L.ih+L.H)/2);}
  return g;
+}
+
+/* ===== නම් / තිත් Move කිරීම (index සහ editor දෙකටම පොදු) =====
+   (nx,ny) = සිතියම මත 0..1 ලක්ෂ්‍යය. show(i) = පෙනෙන අයිතම පමණක් (index).
+   ලැබෙන්නේ: {i, keys:[කුමන දත්ත දෙක වෙනස් වේද], bx,by: ඒවායේ දැනට අගය} හෝ null */
+function hitItem(g,L,items,show,nx,ny,fs,dr){
+ const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny);
+ g.font=`${fs}px ${FONT}`;
+ for(let i=items.length-1;i>=0;i--){
+  if(show&&!show(i))continue;const it=items[i],w=g.measureText(it.n).width;
+  if(it.t=='p'){
+   const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*dr;
+   if(Math.hypot(mx-x,my-y)<=Math.max(10,r+6))return{i,keys:['x','y'],bx:it.x,by:it.y};
+   let cx,cy;
+   if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}else{cx=x+r+6+w/2;cy=y-fs*.45;}
+   if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{i,keys:['lx','ly'],bx:(cx-L.ix)/L.iw,by:(cy-L.iy)/L.ih};
+  }else if(it.t=='r'){
+   const P=it.pts.map(p=>[X(p[0]+(it.ox||0)),Y(p[1]+(it.oy||0))]);
+   if(P.length>1&&nearest(P,mx,my-fs*.6)[2]<=Math.max(16,fs*.8))return{i,keys:['ox','oy'],bx:it.ox||0,by:it.oy||0};
+  }else{/* a, d */
+   let cx,cy;
+   if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}
+   else if(it.t=='a'){const c=centroid(it.pts);cx=X(c[0]);cy=Y(c[1]);}
+   else continue;/* නමක් තබා නැති අමුණක් */
+   if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{i,keys:['lx','ly'],bx:(cx-L.ix)/L.iw,by:(cy-L.iy)/L.ih};
+  }
+ }
+ return null;
+}
+/* drag කරන අතරතුර අගයන් යෙදීම */
+function dragTo(d,nx,ny){
+ const r=n=>Math.round(n*1e4)/1e4,c=(k,v)=>k=='ox'||k=='oy'?Math.min(1,Math.max(-1,v)):Math.min(1,Math.max(0,v));
+ d.it[d.keys[0]]=r(c(d.keys[0],nx+d.ox));d.it[d.keys[1]]=r(c(d.keys[1],ny+d.oy));
 }
 
 /* canvas → ගොනු */
