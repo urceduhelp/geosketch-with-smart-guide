@@ -47,7 +47,7 @@ function drawItem(g,L,it,fs,sp=.15){
  g.font=`${fs}px ${FONT}`;g.textBaseline='middle';g.lineJoin='round';
  const halo=(t,x,y,al)=>{g.textAlign=al;g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(t,x,y);g.fillStyle='#111';g.fillText(t,x,y);};
  if(it.t=='p'){
-  const x=X(it.x),y=Y(it.y),r=fs*.14;
+  const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*.14;
   if(it.lx!=null){
    /* ඊතලය: තිරස්/සිරස් පමණි – නමෙන් තිරස්ව තිතේ x දක්වා, ඉන්පසු 90° හැරී සිරස්ව තිතට */
    const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,hw=w/2+6,hh=fs/2+6,dx=x-lx,dy=y-ly;
@@ -60,11 +60,29 @@ function drawItem(g,L,it,fs,sp=.15){
    g.beginPath();g.moveTo(e[0],e[1]);g.lineTo(e[0]-ux*h-uy*k,e[1]-uy*h+ux*k);g.lineTo(e[0]-ux*h+uy*k,e[1]-uy*h-ux*k);g.closePath();g.fill();
    halo(it.n,lx,ly,'center');
   }else halo(it.n,x+r+6,y-fs*.45,'left');
-  g.fillStyle='#d6212b';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();
+  if(!it.nd){g.fillStyle='#d6212b';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();}
  }else if(it.t=='a'){
-  g.beginPath();it.pts.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.closePath();
-  g.globalAlpha=.45;g.fillStyle=it.c||'#ff9800';g.fill();g.globalAlpha=1;g.strokeStyle=it.c||'#ff9800';g.lineWidth=3;g.stroke();
+  const col=it.c||'#ff9800',pt=it.pt||'s',pp=()=>{g.beginPath();it.pts.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.closePath();};
+  pp();
+  if(pt=='s'){g.globalAlpha=.45;g.fillStyle=col;g.fill();g.globalAlpha=1;}
+  else{/* pattern: h=තිරස් v=සිරස් d1=/ d2=\ g=කොටු x=ඇල කොටු o=තිත් */
+   g.save();g.clip();g.strokeStyle=g.fillStyle=col;g.lineWidth=3;
+   const xs=it.pts.map(p=>X(p[0])),ys=it.pts.map(p=>Y(p[1])),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),S=16,H=y1-y0,W=x1-x0;
+   const ln=(a,b,c,d)=>{g.beginPath();g.moveTo(a,b);g.lineTo(c,d);g.stroke();};
+   if(pt=='h'||pt=='g')for(let y=y0;y<=y1;y+=S)ln(x0,y,x1,y);
+   if(pt=='v'||pt=='g')for(let x=x0;x<=x1;x+=S)ln(x,y0,x,y1);
+   if(pt=='d1'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y1,x0+k+H,y0);
+   if(pt=='d2'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y0,x0+k+H,y1);
+   if(pt=='o')for(let y=y0;y<=y1;y+=S)for(let x=x0;x<=x1;x+=S){g.beginPath();g.arc(x,y,3,0,7);g.fill();}
+   g.restore();}
+  pp();g.strokeStyle=col;g.lineWidth=3;g.stroke();
   const c=centroid(it.pts);halo(it.n,X(c[0]),Y(c[1]),'center');
+ }else if(it.t=='d'){/* අමුණ / ඇළ: ආසන්න සමාන්තර රේඛා ද්විත්වයක් */
+  const P=it.pts.map(p=>[X(p[0]),Y(p[1])]),h=fs*.17;
+  const N=P.map((p,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;return[-dy/d*h,dx/d*h];});
+  g.strokeStyle='#111';g.lineWidth=2.5;
+  [1,-1].forEach(s=>{g.beginPath();P.forEach((p,i)=>{const x=p[0]+N[i][0]*s,y=p[1]+N[i][1]*s;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
+  if(!it.hl){const m=P[P.length>>1];halo(it.n,(P[0][0]+P[P.length-1][0])/2,m[1]-fs*1.2,'center');}
  }else if(it.t=='r'){
   let P=it.pts.map(p=>[X(p[0]),Y(p[1])]);if(P[0][0]>P[P.length-1][0])P.reverse();
   const Ld=[0];for(let i=1;i<P.length;i++)Ld[i]=Ld[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
