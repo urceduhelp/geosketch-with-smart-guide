@@ -24,6 +24,12 @@ canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff
 #menu div:hover{background:#e8f5fd}#menu div.on{font-weight:700}#menu span{margin-left:auto;color:var(--red)}
 #menu em{display:block;padding:10px;color:#789}
 #st{font-size:13px;opacity:.85}
+#adm{position:fixed;right:10px;bottom:8px;font-size:12px;color:#5b7a90;cursor:pointer;background:#fffd;padding:3px 8px;border-radius:5px}
+#dlg{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:20}
+#dlg>div{background:#fff;padding:18px;border-radius:10px;width:min(92vw,380px);display:flex;flex-direction:column;gap:9px}
+#dlg input{padding:8px;border:1px solid #9bb;border-radius:6px;font:inherit}
+#dlg textarea{height:70px;font:11px monospace;word-break:break-all}
+#dlg p{margin:0;font-size:13px}
 </style>
 </head>
 <body>
@@ -38,6 +44,14 @@ canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff
 </header>
 <main><div id="wrap"><canvas id="cv"></canvas></div></main>
 <div id="menu"></div>
+<a id="adm">Admin</a>
+<div id="dlg"><div>
+ <b id="dt">Admin Login</b>
+ <p id="dp"></p>
+ <input id="pw" type="password" placeholder="මුරපදය">
+ <textarea id="hs" readonly style="display:none"></textarea>
+ <div style="display:flex;gap:8px"><button id="ok">ඇතුල් වන්න</button><button class="alt" id="no">වසන්න</button></div>
+</div></div>
 
 <script src="geosketch-core.js"></script>
 <script>
@@ -115,6 +129,23 @@ function exp(f){hi=null;draw();try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){ale
 $('jpg').onclick=()=>exp(exportJPG);
 $('pdf').onclick=()=>exp(exportPDF);
 load(MAPS[0].k);
+
+/* ---------- Admin ---------- */
+$('adm').onclick=()=>{
+ if(isAdmin()){location.href='editor.html';return;}
+ $('dlg').style.display='flex';$('pw').value='';$('hs').style.display='none';$('pw').focus();
+ if(ADMIN_HASH){$('dt').textContent='Admin Login';$('dp').textContent='';$('ok').textContent='ඇතුල් වන්න';}
+ else{$('dt').textContent='මුරපදය සකසන්න';$('ok').textContent='Hash එක සාදන්න';
+  $('dp').textContent='මුරපදය තවම සකසා නැත. අලුත් මුරපදයක් ලියා බොත්තම ඔබන්න; ලැබෙන hash එක geosketch-core.js හි ADMIN_HASH=\'\' අතරට paste කර GitHub එකට නැවත upload කරන්න.';}
+};
+$('no').onclick=()=>$('dlg').style.display='none';
+$('pw').onkeydown=e=>{if(e.key=='Enter')$('ok').click();};
+$('ok').onclick=async()=>{
+ const p=$('pw').value;if(!p)return;const h=await sha(p);
+ if(!ADMIN_HASH){$('hs').value=h;$('hs').style.display='block';$('hs').select();return;}
+ if(h===ADMIN_HASH){sessionStorage.setItem('gs_admin',h);location.href='editor.html';}
+ else{$('dp').textContent='මුරපදය වැරදියි.';$('pw').value='';}
+};
 </script>
 </body>
 </html>
