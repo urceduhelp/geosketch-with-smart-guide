@@ -147,3 +147,34 @@ const isAdmin=()=>!!ADMIN_HASH&&sessionStorage.getItem('gs_admin')===ADMIN_HASH;
 
 /* Footer: Created by GeoSketch | Eduhelp.lk. දිනය (අද දිනය dd.mm.yyyy ලෙස ස්වයංක්‍රීයව) */
 function footerText(){const d=new Date(),p=n=>String(n).padStart(2,'0');return`Created by GeoSketch | Eduhelp.lk. ${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`;}
+
+/* ===== Zoom in / out (index.html සහ editor.html දෙකටම) =====
+   බොත්තම්: − + පළලට ගැලපෙන | Ctrl + Mouse wheel | scroll bars වලින් pan */
+function setupZoom(cv,box,getL,vp){
+ const st=document.createElement('style');
+ st.textContent='.zbar{position:absolute;right:20px;top:10px;z-index:5;display:flex;gap:4px;align-items:center;background:#fffe;padding:4px 6px;border-radius:8px;box-shadow:0 1px 8px #0004}.zbar button{padding:3px 10px}.zbar span{min-width:46px;text-align:center;font-size:13px;color:#0d2b45}';
+ document.head.appendChild(st);
+ const bar=document.createElement('div');bar.className='zbar';
+ bar.innerHTML='<button data-a="out" title="Zoom out">−</button><span>100%</span><button data-a="in" title="Zoom in">+</button><button data-a="w">පළලට</button><button data-a="fit">ගැලපෙන</button>';
+ vp.appendChild(bar);
+ cv.style.maxWidth=cv.style.maxHeight='none';cv.style.flex='none';cv.style.margin='auto';
+ let z=1;
+ const fit=()=>{const L=getL();return Math.max(.05,Math.min((box.clientWidth-6)/L.W,(box.clientHeight-6)/L.H));};
+ function apply(){const L=getL();if(!L)return;const f=fit()*z;cv.style.width=L.W*f+'px';cv.style.height=L.H*f+'px';bar.children[1].textContent=Math.round(z*100)+'%';}
+ function set(nz,cx,cy){
+  if(!getL())return;nz=Math.min(8,Math.max(.2,nz));
+  const b=box.getBoundingClientRect();if(cx==null){cx=box.clientWidth/2;cy=box.clientHeight/2;}
+  const r=cv.getBoundingClientRect(),fx=(b.left+cx-r.left)/r.width,fy=(b.top+cy-r.top)/r.height;
+  z=nz;apply();
+  const r2=cv.getBoundingClientRect();
+  box.scrollLeft+=r2.left+fx*r2.width-(b.left+cx);box.scrollTop+=r2.top+fy*r2.height-(b.top+cy);
+ }
+ function reset(){z=1;apply();box.scrollLeft=box.scrollTop=0;}
+ bar.onclick=e=>{const a=e.target.dataset.a;if(!a)return;
+  if(a=='in')set(z*1.25);else if(a=='out')set(z/1.25);else if(a=='fit')reset();
+  else if(a=='w'){z=1;set(((box.clientWidth-24)/getL().W)/fit());box.scrollTop=0;}};
+ box.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey))return;e.preventDefault();
+  const b=box.getBoundingClientRect();set(z*(e.deltaY<0?1.12:1/1.12),e.clientX-b.left,e.clientY-b.top);},{passive:false});
+ addEventListener('resize',apply);
+ return{apply,reset};
+}
