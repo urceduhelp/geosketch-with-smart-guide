@@ -42,7 +42,7 @@ function itemCells(L,it){
 
 function graphemes(t){return window.Intl&&Intl.Segmenter?[...new Intl.Segmenter('si',{granularity:'grapheme'}).segment(t)].map(x=>x.segment):Array.from(t);}
 
-function drawItem(g,L,it,fs){
+function drawItem(g,L,it,fs,sp=.15){
  const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
  g.font=`${fs}px ${FONT}`;g.textBaseline='middle';g.lineJoin='round';
  const halo=(t,x,y,al)=>{g.textAlign=al;g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(t,x,y);g.fillStyle='#111';g.fillText(t,x,y);};
@@ -68,12 +68,16 @@ function drawItem(g,L,it,fs){
  }else if(it.t=='r'){
   let P=it.pts.map(p=>[X(p[0]),Y(p[1])]);if(P[0][0]>P[P.length-1][0])P.reverse();
   const Ld=[0];for(let i=1;i<P.length;i++)Ld[i]=Ld[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
-  const tot=Ld[Ld.length-1],at=s=>{s=Math.max(0,Math.min(tot,s));let i=1;while(i<P.length-1&&Ld[i]<s)i++;
+  const tot=Ld[Ld.length-1];
+  /* මාර්ගයට වඩා නම දිග නම් අග රේඛාව දිගේ දිගු කර ගනී (අකුරු එක තැනකට ගොඩ නොවේ) */
+  const at=s=>{let i=1;if(s>=tot)i=P.length-1;else if(s>0)while(Ld[i]<s)i++;
    const f=(s-Ld[i-1])/((Ld[i]-Ld[i-1])||1);return[P[i-1][0]+(P[i][0]-P[i-1][0])*f,P[i-1][1]+(P[i][1]-P[i-1][1])*f];};
-  const ch=graphemes(it.n),ws=ch.map(c=>g.measureText(c).width),tw=ws.reduce((a,b)=>a+b,0);
-  let s=(tot-tw)/2;g.textAlign='center';
-  ch.forEach((c,i)=>{const m=s+ws[i]/2,p=at(m),a=at(m-4),b=at(m+4),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
-   g.save();g.translate(p[0],p[1]);g.rotate(ang);g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(c,0,-fs*.55);g.fillStyle='#0a3d91';g.fillText(c,0,-fs*.55);g.restore();s+=ws[i];});
+  const ch=[];graphemes(it.n).forEach(x=>{const l=ch[ch.length-1];if(l&&(/[\u0DCA]\u200D$|\u200D$/.test(l)||x[0]=='\u200D'))ch[ch.length-1]=l+x;else ch.push(x);});
+  const pre=[0];for(let i=1;i<=ch.length;i++)pre[i]=g.measureText(ch.slice(0,i).join('')).width;
+  const gap=fs*sp,tw=pre[ch.length]+gap*(ch.length-1);
+  g.textAlign='center';
+  ch.forEach((c,i)=>{const adv=pre[i+1]-pre[i],m=(tot-tw)/2+pre[i]+gap*i+adv/2,p=at(m),a=at(m-5),b=at(m+5),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+   g.save();g.translate(p[0],p[1]);g.rotate(ang);g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(c,0,-fs*.6);g.fillStyle='#0a3d91';g.fillText(c,0,-fs*.6);g.restore();});
  }
 }
 
@@ -86,7 +90,7 @@ function render(cv,img,L,items,o={}){
   for(let c=0;c<=L.cols;c++){const x=L.ix+c*L.cw;g.beginPath();g.moveTo(x,L.iy);g.lineTo(x,L.iy+L.ih);g.stroke();if(c<L.cols)g.fillText(colName(c),x+L.cw/2,L.iy-28);}
   for(let r=0;r<=L.rows;r++){const y=L.iy+r*L.ch;g.beginPath();g.moveTo(L.ix,y);g.lineTo(L.ix+L.iw,y);g.stroke();if(r<L.rows)g.fillText(r+1,L.ix-30,y+L.ch/2);}
  }
- items.forEach((it,i)=>{if(!o.show||o.show(i))drawItem(g,L,it,o.fs||26);});
+ items.forEach((it,i)=>{if(!o.show||o.show(i))drawItem(g,L,it,o.fs||26,o.sp??.15);});
  g.fillStyle='#111';g.textAlign='center';g.textBaseline='middle';
  if(o.title){let f=54;g.font=`bold ${f}px ${FONT}`;const mw=L.W-2*MG*.6;
   const w=g.measureText(o.title).width;if(w>mw){f=Math.floor(f*mw/w);g.font=`bold ${f}px ${FONT}`;}
