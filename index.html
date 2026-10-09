@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoSketch</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0d2b45;--grid:#1aa7ec;--paper:#f4f8fb;--red:#d6212b}
+*{box-sizing:border-box}
+body{margin:0;font:15px 'Noto Sans Sinhala','Iskoola Pota',sans-serif;background:var(--paper);color:var(--ink)}
+header{background:var(--ink);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+h1{margin:0;font-size:22px;letter-spacing:.5px}h1 i{font-style:normal;color:var(--grid)}
+header label{display:flex;gap:6px;align-items:center;font-size:13px}
+select,button{font:inherit;padding:6px 10px;border-radius:6px;border:1px solid #9bb;background:#fff;color:var(--ink)}
+button{cursor:pointer;background:var(--grid);color:#fff;border:0;font-weight:700}
+button.alt{background:#fff;color:var(--ink);border:1px solid #9bb;font-weight:400}
+main{padding:14px;display:flex;justify-content:center}
+#wrap{position:relative;max-width:100%}
+canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:manipulation}
+#menu{position:fixed;z-index:9;display:none;min-width:200px;max-width:80vw;max-height:55vh;overflow:auto;background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 20px #0004}
+#menu b{display:block;padding:6px 10px;background:var(--grid);color:#fff}
+#menu div{padding:8px 10px;cursor:pointer;display:flex;gap:8px;border-bottom:1px solid #e3edf3}
+#menu div:hover{background:#e8f5fd}#menu div.on{font-weight:700}#menu span{margin-left:auto;color:var(--red)}
+#menu em{display:block;padding:10px;color:#789}
+#st{font-size:13px;opacity:.85}
+</style>
+</head>
+<body>
+<header>
+ <h1>Geo<i>Sketch</i></h1>
+ <label>සිතියම <select id="map"></select></label>
+ <label>අකුරු ප්‍රමාණය <input id="fsz" type="range" min="16" max="48" value="26"></label>
+ <label><input id="grd" type="checkbox" checked> කොටු</label>
+ <button id="pdf">PDF</button><button id="jpg">JPG</button>
+ <button class="alt" id="clr">සියල්ල මකන්න</button>
+ <span id="st"></span>
+</header>
+<main><div id="wrap"><canvas id="cv"></canvas></div></main>
+<div id="menu"></div>
+
+<script src="geosketch-core.js"></script>
+<script>
+/* =====================================================================
+   ██  DATA PASTE AREA  ██
+   editor.html එකෙන් ලැබෙන code එක, අදාළ සිතියමේ
+   ">>> MAP:xxx"  සිට  "<<< MAP:xxx"  දක්වා කොටස සම්පූර්ණයෙන් replace කරන්න.
+   ===================================================================== */
+const DATA={};
+
+// >>> MAP:ol_lanka
+DATA['ol_lanka']=[];
+// <<< MAP:ol_lanka
+
+// >>> MAP:ol_eurasia
+DATA['ol_eurasia']=[];
+// <<< MAP:ol_eurasia
+
+// >>> MAP:ol_world
+DATA['ol_world']=[];
+// <<< MAP:ol_world
+
+// >>> MAP:al_europe1
+DATA['al_europe1']=[];
+// <<< MAP:al_europe1
+
+// >>> MAP:al_europe2
+DATA['al_europe2']=[];
+// <<< MAP:al_europe2
+
+// >>> MAP:al_lanka
+DATA['al_lanka']=[];
+// <<< MAP:al_lanka
+
+// >>> MAP:al_india
+DATA['al_india']=[];
+// <<< MAP:al_india
+/* ██  END OF DATA PASTE AREA  ██ */
+
+const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu');
+let cur,img,L,hi=null,marked=new Set();
+MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
+
+async function load(k){
+ cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';
+ try{await fontReady();img=await loadImg(cur.url);}catch(e){$('st').textContent='රූපය load වුණේ නැත';return;}
+ L=layout(img);marked=new Set();hi=null;draw();
+ $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
+}
+function draw(){
+ const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,grid:$('grd').checked,show:i=>marked.has(i)});
+ if(hi){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
+}
+cv.onclick=e=>{
+ const[nx,ny]=pointer(cv,L,e);
+ if(nx<0||ny<0||nx>=1||ny>=1){menu.style.display='none';hi=null;draw();return;}
+ const c=Math.floor(nx*L.cols),r=Math.floor(ny*L.rows),id=colName(c)+(r+1);
+ hi=[c,r];draw();
+ const list=(DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>itemCells(L,it).includes(id));
+ menu.innerHTML=`<b>කොටුව ${id}</b>`+(list.length?'':'<em>මෙම කොටුවේ ස්ථාන නැත</em>');
+ const ic={p:'●',a:'▭',r:'≈'};
+ list.forEach(([it,i])=>{const d=document.createElement('div');d.className=marked.has(i)?'on':'';
+  d.innerHTML=`${ic[it.t]} ${it.n}<span>${marked.has(i)?'✓':''}</span>`;
+  d.onclick=ev=>{ev.stopPropagation();marked.has(i)?marked.delete(i):marked.add(i);menu.style.display='none';hi=null;draw();};
+  menu.appendChild(d);});
+ menu.style.display='block';
+ menu.style.left=Math.max(4,Math.min(e.clientX,innerWidth-menu.offsetWidth-4))+'px';
+ menu.style.top=Math.max(4,Math.min(e.clientY,innerHeight-menu.offsetHeight-4))+'px';
+};
+document.addEventListener('keydown',e=>{if(e.key=='Escape'){menu.style.display='none';hi=null;draw();}});
+$('map').onchange=e=>load(e.target.value);
+$('fsz').oninput=$('grd').onchange=draw;
+$('clr').onclick=()=>{marked.clear();draw();};
+function exp(f){hi=null;draw();try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}}
+$('jpg').onclick=()=>exp(exportJPG);
+$('pdf').onclick=()=>exp(exportPDF);
+load(MAPS[0].k);
+</script>
+</body>
+</html>
