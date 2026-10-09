@@ -40,6 +40,7 @@ canvas{max-width:100%;max-height:calc(100vh - 110px);height:auto;background:#fff
  <label>අකුරු ප්‍රමාණය <input id="fsz" type="range" min="16" max="48" value="26"></label>
  <label>ගං නම පරතරය <input id="sp" type="range" min="0" max="0.6" step="0.02" value="0.15" style="width:90px"></label>
  <label>අමුණු රේඛා පරතරය <input id="gp" type="range" min="0.04" max="0.4" step="0.01" value="0.17" style="width:90px"></label>
+ <label>තිත ප්‍රමාණය <input id="dr" type="range" min="0.05" max="0.4" step="0.01" value="0.14" style="width:90px"></label>
  <label><input id="grd" type="checkbox" checked> කොටු (පෙනුමට පමණි)</label>
  <button id="pdf">PDF</button><button id="jpg">JPG</button>
  <button class="alt" id="clr">සියල්ල මකන්න</button>
@@ -85,8 +86,8 @@ DATA['ol_lanka']=[
   {"n":"කනගරායන් ආරු","t":"r","pts":[[0.4486,0.199],[0.4486,0.2201],[0.4504,0.2406],[0.4609,0.2649],[0.4741,0.2879],[0.482,0.3059],[0.482,0.3233]]},
   // මල්වතු ඔය [ගඟ]
   {"n":"මල්වතු ඔය","t":"r","pts":[[0.3282,0.3171],[0.3809,0.3475],[0.4214,0.4016]]},
-  // මිණිපේ අමුණ [අමුණ/ඇළ]
-  {"n":"මිණිපේ අමුණ","t":"d","pts":[[0.5795,0.6465],[0.5804,0.6564]]}
+  // ඇළහැර අමුණ [අමුණ/ඇළ]
+  {"n":"ඇළහැර අමුණ","t":"d","pts":[[0.5795,0.6465],[0.5804,0.6564]]}
 ];
 // <<< MAP:ol_lanka
 
@@ -126,7 +127,7 @@ async function load(k){
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
 function draw(ex){/* ex=true → Export: කොටු, අකුරු/ඉලක්කම්, highlight නැත */
- const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,sp:+$('sp').value,gp:+$('gp').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
+ const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,sp:+$('sp').value,gp:+$('gp').value,dr:+$('dr').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
  if(hi&&!ex){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
 }
 cv.onclick=e=>{
@@ -147,7 +148,7 @@ cv.onclick=e=>{
 };
 document.addEventListener('keydown',e=>{if(e.key=='Escape'){menu.style.display='none';hi=null;draw();}});
 $('map').onchange=e=>load(e.target.value);
-$('gp').oninput=$('sp').oninput=$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
+$('dr').oninput=$('gp').oninput=$('sp').oninput=$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
 $('clr').onclick=()=>{marked.clear();draw();};
 function exp(f){draw(true);try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}draw();}
 $('jpg').onclick=()=>exp(exportJPG);
