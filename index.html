@@ -71,23 +71,57 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
 #cf .fc i{font-style:normal;color:#678;margin-left:3px}
 #cf .fc.on{background:var(--grid);color:#fff;border-color:var(--grid)}#cf .fc.on i{color:#fff}
 #pi .gl{display:block;font-size:11px;color:#1b7a3a}
+/* ===== Mobile / පටු තිර ===== */
+html,body{max-width:100%;overflow-x:hidden}
+body{height:100vh;height:100dvh}
+select{max-width:100%;min-width:0}
+#optb{display:none}
+#opts{display:contents}
+main{min-height:0}
+@media(max-width:760px){
+ body{font-size:14px}
+ header{padding:6px 8px;gap:6px 8px}
+ h1{font-size:18px;margin-right:auto}
+ #st{order:1;font-size:11px;width:100%}
+ header .mapl{flex:1 1 100%;font-size:13px}
+ header .mapl select{flex:1;width:100%;padding:5px 8px}
+ header button,header .mvl{font-size:13px}
+ header button{padding:5px 9px}
+ #plb{flex:1 1 auto}
+ #optb{display:inline-block}
+ #opts{display:none;order:0;width:100%;grid-template-columns:1fr 1fr;gap:8px 12px;background:#12385a;border-radius:8px;padding:8px}
+ #opts.on{display:grid}
+ #opts label{flex-direction:column;align-items:flex-start;gap:2px;font-size:12px}
+ #opts label.cb{flex-direction:row;align-items:center;gap:6px}
+ #opts label.ol{grid-column:1/-1}
+ #opts input[type=range],#opts input#ttl{width:100%!important}
+ #opts input#ttl{box-sizing:border-box;padding:6px 8px;border-radius:6px;border:1px solid #9bb}
+ #opts button{padding:6px 8px}
+ main{padding:4px}
+ #adm{bottom:2px;right:4px;font-size:11px;padding:1px 6px;opacity:.75}
+ #ab{bottom:22px;font-size:12px;padding:6px 8px;gap:6px}
+ #ab button{padding:4px 8px;font-size:12px}
+}
 </style>
 </head>
 <body>
 <header>
  <h1>Geo<i>Sketch</i></h1>
- <label>සිතියම <select id="map"></select></label>
+ <label class="mapl">සිතියම <select id="map"></select></label>
  <button id="plb">📍 ස්ථාන නාමාවලිය <span id="bc">0</span></button>
- <label><input id="mvt" type="checkbox"> ✋ නම් Move කරන්න</label>
- <label>මාතෘකාව <input id="ttl" placeholder="සිතියමේ මාතෘකාව" size="26"></label>
- <label>අකුරු ප්‍රමාණය <input id="fsz" type="range" min="16" max="48" value="26"></label>
- <label>ගං නම පරතරය <input id="sp" type="range" min="0" max="0.6" step="0.02" value="0.15" style="width:90px"></label>
- <label>අමුණු රේඛා පරතරය <input id="gp" type="range" min="0.04" max="0.4" step="0.01" value="0.17" style="width:90px"></label>
- <label>තිත ප්‍රමාණය <input id="dr" type="range" min="0.05" max="0.4" step="0.01" value="0.14" style="width:90px"></label>
- <label><input id="grd" type="checkbox" checked> කොටු (පෙනුමට පමණි)</label>
+ <label class="mvl"><input id="mvt" type="checkbox"> ✋ නම් Move කරන්න</label>
  <button id="pdf">PDF</button><button id="jpg">JPG</button>
- <button class="alt" id="clr">සියල්ල මකන්න</button>
- <button class="alt" id="rst" title="Move කළ නම් මුල් තැනට">නම් යළි සකසන්න</button>
+ <button class="alt" id="optb">⚙ සැකසුම්</button>
+ <div id="opts">
+  <label class="ol">මාතෘකාව <input id="ttl" placeholder="සිතියමේ මාතෘකාව" size="26"></label>
+  <label>අකුරු ප්‍රමාණය <input id="fsz" type="range" min="16" max="48" value="26"></label>
+  <label>ගං නම පරතරය <input id="sp" type="range" min="0" max="0.6" step="0.02" value="0.15" style="width:90px"></label>
+  <label>අමුණු රේඛා පරතරය <input id="gp" type="range" min="0.04" max="0.4" step="0.01" value="0.17" style="width:90px"></label>
+  <label>තිත ප්‍රමාණය <input id="dr" type="range" min="0.05" max="0.4" step="0.01" value="0.14" style="width:90px"></label>
+  <label class="cb"><input id="grd" type="checkbox" checked> කොටු (පෙනුමට පමණි)</label>
+  <button class="alt" id="clr">සියල්ල මකන්න</button>
+  <button class="alt" id="rst" title="Move කළ නම් මුල් තැනට">නම් යළි සකසන්න</button>
+ </div>
  <span id="st"></span>
 </header>
 <main><div id="vp"><div id="box"><canvas id="cv"></canvas></div></div></main>
@@ -634,6 +668,8 @@ $('mvt').onchange=()=>{const on=$('mvt').checked;
 $('rst').onclick=()=>{const o=JSON.parse(ORIG);for(const k in o)DATA[k]=o[k].concat((DATA[k]||[]).filter(it=>it.cu));draw();};
 
 /* ---------- අනෙකුත් පාලන ---------- */
+new ResizeObserver(()=>Z.apply()).observe($('box'));/* header/ සැකසුම් විවෘත-වැසීමෙන් පසු සිතියම තිරයට ගැලපේ */
+$('optb').onclick=()=>$('opts').classList.toggle('on');
 $('map').onchange=e=>{ad=null;doneMsg='';refreshBar();load(e.target.value);};
 $('dr').oninput=$('gp').oninput=$('sp').oninput=$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
 $('clr').onclick=()=>{marked.clear();sel.clear();badge(0);draw();};
