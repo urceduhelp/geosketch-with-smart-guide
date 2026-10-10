@@ -62,6 +62,15 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
 #cl button{margin-left:auto;padding:1px 8px;background:var(--red)}
 #ab{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:11;display:none;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:94vw;background:#fff;border:2px solid #2e7d32;border-radius:10px;box-shadow:0 6px 24px #0005;padding:8px 12px;font-size:13px}
 #ab button{padding:5px 10px;font-size:13px}
+/* වර්ග පෙරහන */
+#cf{margin:6px 8px 0;font-size:12px}
+#cf .cfh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;color:#456;gap:8px}
+#cf .cfh a{color:#0b78b8;cursor:pointer;white-space:nowrap}
+#cf .cfc{display:flex;flex-wrap:wrap;gap:5px;max-height:100px;overflow:auto}
+#cf .fc{border:1px solid #9bb;border-radius:12px;padding:1px 9px;cursor:pointer;background:#fff;user-select:none}
+#cf .fc i{font-style:normal;color:#678;margin-left:3px}
+#cf .fc.on{background:var(--grid);color:#fff;border-color:var(--grid)}#cf .fc.on i{color:#fff}
+#pi .gl{display:block;font-size:11px;color:#1b7a3a}
 </style>
 </head>
 <body>
@@ -87,10 +96,12 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
 <div id="pl">
  <div class="ph"><b>ස්ථාන නාමාවලිය</b><span>තෝරාගත්: <b id="pc">0</b></span></div>
  <button id="padd">➕ මෙහි නැති නමක් ඇතුළත් කරන්න</button>
+ <div id="cf"></div>
  <input id="ps" placeholder="සොයන්න...">
  <div id="pi"></div>
  <div class="pf">
   <button id="pok">OK</button>
+  <button id="pvis" title="දැනට ලැයිස්තුවේ පෙනෙන (වර්ග පෙරහනට අනුව) සියල්ල තෝරා සිතියමට යොදයි">පෙනෙන සියල්ල සිතියමට ▶</button>
   <button class="alt" id="pall">පෙනෙන සියල්ල තෝරන්න</button>
   <button class="alt" id="pclr">සියල්ල ඉවත් කරන්න</button>
   <button class="alt" id="pcl">වසන්න</button>
@@ -110,6 +121,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
   <label><input type="radio" name="ck" value="a"> ▭ Area එකකි</label>
  </div>
  <div id="cx"></div>
+ <div><b>3. වර්ග (අවශ්‍ය නම්)</b> <small style="color:#678">එකකට වඩා තෝරා ගත හැක</small><div id="cpk"></div></div>
  <div class="ci" id="cinfo"></div>
  <div style="display:flex;gap:8px"><button id="cgo">ආරම්භ කරන්න ▶</button><button class="alt" id="cno">වසන්න</button></div>
  <h4 id="clh">ඔබ එක් කළ නම් (මෙම සිතියමේ)</h4>
@@ -322,7 +334,10 @@ DATA['al_india']=[];
 const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu'),pl=$('pl');
 const ORIG=JSON.stringify(DATA);/* Move කිරීමට පෙර මුල් තැන් (Reset සඳහා) */
 const IC={p:'●',a:'▭',r:'≈',d:'‖'};
-let cur,img,L,hi=null,marked=new Set(),sel=new Set(),drag=null;
+let cur,img,L,hi=null,marked=new Set(),sel=new Set(),drag=null,cf=new Set(),tmpCats=[];
+const NONE='__none__',esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+/* වර්ග පෙරහන: කිසිවක් තෝරා නැතිනම් සියල්ල. කිහිපයක් තෝරා ඇත්නම් ඒවායින් ඕනෑම එකකට අයත් */
+const catOk=it=>{if(!cf.size)return true;const g=it.g||[];return g.length?g.some(c=>cf.has(c)):cf.has(NONE);};
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const badge=n=>$('bc').textContent=n;
@@ -330,7 +345,7 @@ const badge=n=>$('bc').textContent=n;
 async function load(k){
  cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';pl.style.display='none';
  try{await fontReady();img=await loadImg(cur.url);}catch(e){$('st').textContent='රූපය load වුණේ නැත';return;}
- L=layout(img);marked=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
+ L=layout(img);marked=new Set();cf=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
 let ad=null,doneMsg='';/* ad = දැනට ඇතුළත් කරමින් සිටින අලුත් නම */
@@ -372,17 +387,32 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ---------- ස්ථාන නාමාවලිය (Dropdown + Tick) ---------- */
+function visibleRows(){const q=$('ps').value.trim().toLowerCase();
+ return (DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>(!q||it.n.toLowerCase().includes(q))&&catOk(it));}
+function buildChips(){
+ const host=$('cf'),items=DATA[cur.k]||[],cnt={};let none=0;
+ items.forEach(it=>{const g=it.g||[];if(!g.length)none++;g.forEach(c=>cnt[c]=(cnt[c]||0)+1);});
+ const names=catList(Object.keys(cnt)).filter(c=>cnt[c]);
+ if(!names.length){cf.clear();host.style.display='none';return;}/* මෙම සිතියමේ වර්ග නැත */
+ [...cf].forEach(c=>{if(c==NONE?!none:!cnt[c])cf.delete(c);});
+ host.style.display='';
+ host.innerHTML='<div class="cfh"><span><b>🏷 වර්ග අනුව පෙරන්න</b> (කිහිපයක් තෝරා ගත හැක)</span><a>පෙරහන ඉවත් කරන්න</a></div><div class="cfc"></div>';
+ host.querySelector('a').onclick=()=>{cf.clear();buildList();};
+ const box=host.querySelector('.cfc'),mk=(key,label,n)=>{const c=document.createElement('span');c.className='fc'+(cf.has(key)?' on':'');
+  c.innerHTML=`${esc(label)}<i>${n}</i>`;c.onclick=()=>{cf.has(key)?cf.delete(key):cf.add(key);buildList();};box.appendChild(c);};
+ names.forEach(c=>mk(c,c,cnt[c]));
+ if(none)mk(NONE,'වර්ගයක් නැති',none);
+}
 function buildList(){
- const q=$('ps').value.trim().toLowerCase(),box=$('pi');box.innerHTML='';
- const rows=(DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>!q||it.n.toLowerCase().includes(q))
-  .sort((a,b)=>a[0].n.localeCompare(b[0].n,'si'));/* අකාරාදී පිළිවෙල */
+ const box=$('pi');box.innerHTML='';buildChips();
+ const rows=visibleRows().sort((a,b)=>a[0].n.localeCompare(b[0].n,'si'));/* අකාරාදී පිළිවෙල */
  if(!rows.length){box.innerHTML='<em>ස්ථාන නැත</em>';return;}
  rows.forEach(([it,i])=>{
   const lb=document.createElement('label'),cb=document.createElement('input');
   cb.type='checkbox';cb.checked=sel.has(i);
   cb.onchange=()=>{cb.checked?sel.add(i):sel.delete(i);count();};
   const cells=itemCells(L,it).slice(0,3).join(' ');
-  lb.appendChild(cb);lb.insertAdjacentHTML('beforeend',`<span>${it.nd?'➚':IC[it.t]} ${it.n}${it.cu?' ✎':''}</span><small>${cells}</small>`);
+  lb.appendChild(cb);lb.insertAdjacentHTML('beforeend',`<span>${it.nd?'➚':IC[it.t]} ${esc(it.n)}${it.cu?' ✎':''}${it.g&&it.g.length?`<span class="gl">${esc(it.g.join(' · '))}</span>`:''}</span><small>${cells}</small>`);
   box.appendChild(lb);});
 }
 function count(){$('pc').textContent=sel.size;badge(sel.size);}
@@ -398,9 +428,8 @@ $('plb').onclick=e=>{
  pl.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';
 };
 $('ps').oninput=buildList;
-$('pall').onclick=()=>{[...$('pi').querySelectorAll('input')].forEach(c=>c.checked=true);
- const q=$('ps').value.trim().toLowerCase();
- (DATA[cur.k]||[]).forEach((it,i)=>{if(!q||it.n.toLowerCase().includes(q))sel.add(i);});count();};
+$('pall').onclick=()=>{visibleRows().forEach(([,i])=>sel.add(i));buildList();count();};
+$('pvis').onclick=()=>{visibleRows().forEach(([,i])=>sel.add(i));marked=new Set(sel);pl.style.display='none';badge(marked.size);draw();};
 $('pclr').onclick=()=>{sel.clear();buildList();count();};
 $('pok').onclick=()=>{marked=new Set(sel);pl.style.display='none';badge(marked.size);draw();};
 $('pcl').onclick=()=>{pl.style.display='none';badge(marked.size);};
@@ -442,6 +471,8 @@ load(MAPS[0].k);
 /* =====================================================================
    ➕ මෙහි නැති නමක් ඇතුළත් කිරීම (තාවකාලික මතකය – Reload කළ විට මැකේ)
    ===================================================================== */
+const catsAll=()=>catList(tmpCats,...Object.values(DATA).map(usedCats));
+const cpk=catPicker($('cpk'),{list:catsAll,onNew:n=>{if(!tmpCats.includes(n))tmpCats.push(n);}});
 const KT={p:'p',r:'r',c:'d',w:'d',a:'a'};/* ඇළ සහ අමුණ දෙකම සමාන්තර රේඛා ද්විත්වය */
 const INFO={
  p:'<b>● ස්ථානයක්:</b> "ආරම්භ කරන්න" ඔබා සිතියමේ එම ස්ථානය තිබෙන තැන click කරන්න. තිතක් සහ නම ඇඳේ. ඉන්පසු නම / තිත drag කර ගෙන යා හැක (ඊතලයක් ස්වයංක්‍රීයව එක් වේ).',
@@ -461,7 +492,7 @@ document.querySelectorAll('[name=ck]').forEach(r=>r.onchange=cxUpdate);
 function renderCu(){
  const box=$('cl');box.innerHTML='';
  (DATA[cur.k]||[]).forEach((it,i)=>{if(!it.cu)return;
-  const d=document.createElement('div');d.textContent=`${it.nd?'➚':IC[it.t]} ${it.n}`;
+  const d=document.createElement('div');d.textContent=`${it.nd?'➚':IC[it.t]} ${it.n}${it.g&&it.g.length?'  ['+it.g.join(', ')+']':''}`;
   const b=document.createElement('button');b.textContent='×';b.title='මකන්න';b.onclick=()=>delItem(i);d.appendChild(b);box.appendChild(d);});
  $('clh').style.display=box.children.length?'':'none';
 }
@@ -475,7 +506,7 @@ function addItem(it){
 }
 function openCu(){
  menu.style.display='none';pl.style.display='none';hi=null;
- $('cn').value='';document.querySelector('[name=ck][value=p]').checked=true;cxUpdate();renderCu();
+ $('cn').value='';document.querySelector('[name=ck][value=p]').checked=true;cxUpdate();renderCu();cpk.refresh();
  $('cdlg').style.display='flex';$('cn').focus();
 }
 $('padd').onclick=e=>{e.stopPropagation();openCu();};
@@ -487,7 +518,7 @@ $('cgo').onclick=()=>{
  const n=$('cn').value.trim();
  if(!n){alert('පළමුව ස්ථාන නාමය ඇතුළත් කරන්න');$('cn').focus();return;}
  const k=ckind();
- ad={n,k,t:KT[k],pts:[],pend:null,mode:k=='p'?$('cm').value:null,c:k=='a'?$('cc').value:null,pt:k=='a'?$('cpt').value:null};
+ ad={n,k,t:KT[k],g:cpk.get(),pts:[],pend:null,mode:k=='p'?$('cm').value:null,c:k=='a'?$('cc').value:null,pt:k=='a'?$('cpt').value:null};
  doneMsg='';$('cdlg').style.display='none';setMove(false);
  cv.style.cursor='crosshair';refreshBar();draw();
 };
@@ -510,6 +541,7 @@ function refreshBar(){
  $('at').textContent=dr?adHint():doneMsg;
 }
 function adDone(it,hint){
+ if(ad.g&&ad.g.length)it.g=ad.g.slice();
  addItem(it);const n=ad.n;ad=null;
  doneMsg=`✓ "${n}" සිතියමට ඇතුළත් කළා. ${hint} (✋ Move සක්‍රියයි)`;
  setMove(true);refreshBar();draw();renderCu();
