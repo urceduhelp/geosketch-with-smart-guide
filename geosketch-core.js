@@ -208,7 +208,7 @@ function setupZoom(cv,box,getL,vp){
  bar.innerHTML='<button data-a="out" title="Zoom out">−</button><span>100%</span><button data-a="in" title="Zoom in">+</button><button data-a="w">පළලට</button><button data-a="fit">ගැලපෙන</button><button data-a="pan" title="එක ඇඟිල්ලෙන් සිතියම අදින්න (Scroll). නැවත ඔබා අක්‍රිය කරන්න">✥</button><button data-a="min" title="මෙම පෙට්ටිය කුඩා/විශාල කරන්න">⋯</button>';
  vp.appendChild(bar);
  cv.style.maxWidth=cv.style.maxHeight='none';cv.style.flex='none';cv.style.margin='auto';
- let z=1,pm=false,pn=null,swallow=false;
+ let z=1,pm=false,pn=null,swallow=false,api=null;
 /* ---- සිතියම අදින (pan) ක්‍රමය: ✥ බොත්තම, හෝ Move මෙවලමේදී හිස් තැනක් අදින විට (Z.startPan) ---- */
  function startPan(e){pn={x:e.clientX,y:e.clientY,sl:box.scrollLeft,st:box.scrollTop,id:e.pointerId,mv:false};try{cv.setPointerCapture(e.pointerId);}catch(_){}}
  addEventListener('pointermove',e=>{if(!pn||e.pointerId!=pn.id)return;const dx=e.clientX-pn.x,dy=e.clientY-pn.y;
@@ -218,7 +218,7 @@ function setupZoom(cv,box,getL,vp){
  cv.addEventListener('pointerdown',e=>{if(!pm)return;startPan(e);e.stopImmediatePropagation();e.preventDefault();},true);
  cv.addEventListener('click',e=>{if(pm||swallow){e.stopImmediatePropagation();e.preventDefault();}},true);
  const fit=()=>{const L=getL();return Math.max(.05,Math.min((box.clientWidth-6)/L.W,(box.clientHeight-6)/L.H));};
- function apply(){const L=getL();if(!L)return;const f=fit()*z;cv.style.width=L.W*f+'px';cv.style.height=L.H*f+'px';bar.children[1].textContent=Math.round(z*100)+'%';}
+ function apply(){const L=getL();if(!L)return;const f=fit()*z;cv.style.width=L.W*f+'px';cv.style.height=L.H*f+'px';bar.children[1].textContent=Math.round(z*100)+'%';if(api&&api.onzoom)api.onzoom();}
  function set(nz,cx,cy){
   if(!getL())return;nz=Math.min(8,Math.max(.2,nz));
   const b=box.getBoundingClientRect();if(cx==null){cx=box.clientWidth/2;cy=box.clientHeight/2;}
@@ -236,14 +236,14 @@ function setupZoom(cv,box,getL,vp){
  box.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey))return;e.preventDefault();
   const b=box.getBoundingClientRect();set(z*(e.deltaY<0?1.12:1/1.12),e.clientX-b.left,e.clientY-b.top);},{passive:false});
  addEventListener('resize',apply);
- return{apply,reset,startPan};
+ api={apply,reset,startPan};return api;
 }
 
 
 /* ===================== වර්ග (Categories) =====================
    අයිතමයක වර්ග: it.g = ['ගංගාව','වැව',...]  (එකකට වඩා තිබිය හැක; නැතිනම් it.g නැත)
    DEFCATS = මුල් වර්ග ලැයිස්තුව. අලුත් වර්ග editor/index හි Dropdown එකෙන්ම එක් කළ හැක. */
-const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','යුධබිම','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ඇළ මාර්ගය','අමුණ'];
+const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ඇළ මාර්ගය','අමුණ'];
 const catList=(...ex)=>{const s=new Set(DEFCATS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(c)));return[...s];};
 /* විභාග වර්ෂ: it.yr = ['2022','2019',...] (කිහිපයක් විය හැක; "2022(2021)" වැනි ලිවිය ද හැක). (it.y = සිතියමේ y ඛණ්ඩාංකය, එබැවින් yr භාවිතා කරයි) */
 const DEFYEARS=(()=>{const a=[];for(let y=new Date().getFullYear()+1;y>=2005;y--)a.push(String(y));return a;})();
