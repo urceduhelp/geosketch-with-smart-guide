@@ -202,13 +202,21 @@ function footerText(){const d=new Date(),p=n=>String(n).padStart(2,'0');return`C
    බොත්තම්: − + පළලට ගැලපෙන | Ctrl + Mouse wheel | scroll bars වලින් pan */
 function setupZoom(cv,box,getL,vp){
  const st=document.createElement('style');
- st.textContent='.zbar{position:absolute;right:20px;top:10px;z-index:5;display:flex;gap:4px;align-items:center;background:#fffe;padding:4px 6px;border-radius:8px;box-shadow:0 1px 8px #0004}.zbar button{padding:3px 10px}.zbar span{min-width:46px;text-align:center;font-size:13px;color:#0d2b45}';
+ st.textContent='.zbar{position:absolute;right:20px;top:10px;z-index:5;display:flex;gap:4px;align-items:center;background:#fffe;padding:4px 6px;border-radius:8px;box-shadow:0 1px 8px #0004}.zbar button{padding:3px 10px}.zbar span{min-width:46px;text-align:center;font-size:13px;color:#0d2b45}.zbar button.on{background:#0d2b45}.zbar.zmin>*:not([data-a=pan]):not([data-a=min]){display:none}canvas.zpan{touch-action:none!important;cursor:grab!important}@media(max-width:700px){.zbar{right:8px;top:6px;padding:3px 4px;gap:3px}.zbar button{padding:3px 8px;font-size:13px}.zbar span{min-width:36px;font-size:12px}}';
  document.head.appendChild(st);
  const bar=document.createElement('div');bar.className='zbar';
- bar.innerHTML='<button data-a="out" title="Zoom out">−</button><span>100%</span><button data-a="in" title="Zoom in">+</button><button data-a="w">පළලට</button><button data-a="fit">ගැලපෙන</button>';
+ bar.innerHTML='<button data-a="out" title="Zoom out">−</button><span>100%</span><button data-a="in" title="Zoom in">+</button><button data-a="w">පළලට</button><button data-a="fit">ගැලපෙන</button><button data-a="pan" title="එක ඇඟිල්ලෙන් සිතියම අදින්න (Scroll). නැවත ඔබා අක්‍රිය කරන්න">✥</button><button data-a="min" title="මෙම පෙට්ටිය කුඩා/විශාල කරන්න">⋯</button>';
  vp.appendChild(bar);
  cv.style.maxWidth=cv.style.maxHeight='none';cv.style.flex='none';cv.style.margin='auto';
- let z=1;
+ let z=1,pm=false,pn=null,swallow=false;
+/* ---- සිතියම අදින (pan) ක්‍රමය: ✥ බොත්තම, හෝ Move මෙවලමේදී හිස් තැනක් අදින විට (Z.startPan) ---- */
+ function startPan(e){pn={x:e.clientX,y:e.clientY,sl:box.scrollLeft,st:box.scrollTop,id:e.pointerId,mv:false};try{cv.setPointerCapture(e.pointerId);}catch(_){}}
+ addEventListener('pointermove',e=>{if(!pn||e.pointerId!=pn.id)return;const dx=e.clientX-pn.x,dy=e.clientY-pn.y;
+  if(Math.abs(dx)+Math.abs(dy)>4)pn.mv=true;box.scrollLeft=pn.sl-dx;box.scrollTop=pn.st-dy;});
+ const endPan=e=>{if(pn&&e.pointerId==pn.id){swallow=pn.mv;pn=null;setTimeout(()=>swallow=false,60);}};
+ addEventListener('pointerup',endPan);addEventListener('pointercancel',endPan);
+ cv.addEventListener('pointerdown',e=>{if(!pm)return;startPan(e);e.stopImmediatePropagation();e.preventDefault();},true);
+ cv.addEventListener('click',e=>{if(pm||swallow){e.stopImmediatePropagation();e.preventDefault();}},true);
  const fit=()=>{const L=getL();return Math.max(.05,Math.min((box.clientWidth-6)/L.W,(box.clientHeight-6)/L.H));};
  function apply(){const L=getL();if(!L)return;const f=fit()*z;cv.style.width=L.W*f+'px';cv.style.height=L.H*f+'px';bar.children[1].textContent=Math.round(z*100)+'%';}
  function set(nz,cx,cy){
@@ -221,19 +229,21 @@ function setupZoom(cv,box,getL,vp){
  }
  function reset(){z=1;apply();box.scrollLeft=box.scrollTop=0;}
  bar.onclick=e=>{const a=e.target.dataset.a;if(!a)return;
+  if(a=='pan'){pm=!pm;cv.classList.toggle('zpan',pm);e.target.classList.toggle('on',pm);return;}
+  if(a=='min'){bar.classList.toggle('zmin');return;}
   if(a=='in')set(z*1.25);else if(a=='out')set(z/1.25);else if(a=='fit')reset();
   else if(a=='w'){z=1;set(((box.clientWidth-24)/getL().W)/fit());box.scrollTop=0;}};
  box.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey))return;e.preventDefault();
   const b=box.getBoundingClientRect();set(z*(e.deltaY<0?1.12:1/1.12),e.clientX-b.left,e.clientY-b.top);},{passive:false});
  addEventListener('resize',apply);
- return{apply,reset};
+ return{apply,reset,startPan};
 }
 
 
 /* ===================== වර්ග (Categories) =====================
    අයිතමයක වර්ග: it.g = ['ගංගාව','වැව',...]  (එකකට වඩා තිබිය හැක; නැතිනම් it.g නැත)
    DEFCATS = මුල් වර්ග ලැයිස්තුව. අලුත් වර්ග editor/index හි Dropdown එකෙන්ම එක් කළ හැක. */
-const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','බලකොටුව','පර්යේෂණායතනය','යුධ බිම','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ජලාශ','ඇළ මාර්ගය','අමුණ'];
+const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','යුධබිම','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ඇළ මාර්ගය','අමුණ'];
 const catList=(...ex)=>{const s=new Set(DEFCATS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(c)));return[...s];};
 /* විභාග වර්ෂ: it.yr = ['2022','2019',...] (කිහිපයක් විය හැක; "2022(2021)" වැනි ලිවිය ද හැක). (it.y = සිතියමේ y ඛණ්ඩාංකය, එබැවින් yr භාවිතා කරයි) */
 const DEFYEARS=(()=>{const a=[];for(let y=new Date().getFullYear()+1;y>=2005;y--)a.push(String(y));return a;})();
