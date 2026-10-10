@@ -228,3 +228,47 @@ function setupZoom(cv,box,getL,vp){
  addEventListener('resize',apply);
  return{apply,reset};
 }
+
+
+/* ===================== වර්ග (Categories) =====================
+   අයිතමයක වර්ග: it.g = ['ගංගාව','වැව',...]  (එකකට වඩා තිබිය හැක; නැතිනම් it.g නැත)
+   DEFCATS = මුල් වර්ග ලැයිස්තුව. අලුත් වර්ග editor/index හි Dropdown එකෙන්ම එක් කළ හැක. */
+const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ඇළ මාර්ගය','අමුණ'];
+const catList=(...ex)=>{const s=new Set(DEFCATS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(c)));return[...s];};
+const usedCats=items=>{const s=new Set();(items||[]).forEach(it=>(it.g||[]).forEach(c=>s.add(c)));return[...s];};
+/* නම අනුව වර්ග අනුමාන කිරීම (වර්ගයක් නැති අයිතම සඳහා පමණි) */
+function guessCats(it){const n=(it.n||'').trim(),g=[];
+ if(it.t=='r'||/(ගඟ|ඔය|ආරු)$/.test(n))g.push('ගංගාව');
+ if(/වැව/.test(n))g.push('වැව');
+ if(/ඇළ/.test(n))g.push('ඇළ මාර්ගය');
+ if(/අමුණ/.test(n))g.push('අමුණ');
+ if(it.t=='d'&&!g.length)g.push('ඇළ මාර්ගය');
+ return g;}
+
+/* වර්ග තෝරන Widget: Dropdown + ➕ අලුත් වර්ගයක් + තෝරාගත් වර්ග (chips)
+   o.list() → සියලු වර්ග නාම | o.onNew(name) → අලුත් වර්ගයක් සෑදූ විට | o.onChange(arr)
+   ලැබෙන්නේ {get(), set(arr), refresh()} */
+function catPicker(host,o){
+ if(!document.getElementById('cpst')){const st=document.createElement('style');st.id='cpst';
+  st.textContent='.cp-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}.cp select{flex:1;min-width:150px;padding:5px 8px;border-radius:6px;border:1px solid #9bb;color:#0d2b45;background:#fff;font:inherit}.cp button{padding:4px 9px!important;font-size:12px!important}.cp-nw{display:none;gap:6px;margin-top:6px}.cp-nw input{flex:1;padding:5px 8px!important}.cp-ch{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.cp-c{background:#e8f5fd;border:1px solid #1aa7ec;color:#0d2b45;border-radius:12px;padding:1px 4px 1px 9px;font-size:12px;display:inline-flex;gap:4px;align-items:center}.cp-c b{cursor:pointer;color:#d6212b;padding:0 4px}.cp-e{font-size:12px;color:#789}';
+  document.head.appendChild(st);}
+ host.classList.add('cp');let sel=[];
+ host.innerHTML='<div class="cp-row"><select></select><button type="button" class="alt">➕ අලුත් වර්ගයක්</button></div><div class="cp-nw"><input type="text" placeholder="අලුත් වර්ගයේ නම"><button type="button">එක් කරන්න</button></div><div class="cp-ch"></div>';
+ const[row,nw,ch]=host.children,s=row.children[0],nb=row.children[1],ni=nw.children[0],nok=nw.children[1];
+ const fire=()=>o.onChange&&o.onChange(sel.slice());
+ function render(){
+  s.innerHTML='';s.add(new Option('— Dropdown එකෙන් වර්ගයක් තෝරන්න —',''));
+  o.list().filter(c=>!sel.includes(c)).forEach(c=>s.add(new Option(c,c)));
+  ch.innerHTML='';
+  if(!sel.length){const e=document.createElement('span');e.className='cp-e';e.textContent='වර්ගයක් තෝරා නැත (අවශ්‍ය නැතිනම් එලෙසම තබන්න)';ch.appendChild(e);}
+  sel.forEach(c=>{const x=document.createElement('span');x.className='cp-c';x.append(c);
+   const b=document.createElement('b');b.textContent='×';b.title='ඉවත් කරන්න';b.onclick=()=>{sel=sel.filter(v=>v!=c);render();fire();};x.appendChild(b);ch.appendChild(x);});
+ }
+ s.onchange=()=>{if(s.value&&!sel.includes(s.value)){sel.push(s.value);render();fire();}};
+ nb.onclick=()=>{const on=nw.style.display!='flex';nw.style.display=on?'flex':'none';if(on)ni.focus();};
+ const addNew=()=>{const n=ni.value.trim();if(!n)return;if(!o.list().includes(n)&&o.onNew)o.onNew(n);
+  if(!sel.includes(n))sel.push(n);ni.value='';nw.style.display='none';render();fire();};
+ nok.onclick=addNew;ni.onkeydown=e=>{e.stopPropagation();if(e.key=='Enter'){e.preventDefault();addNew();}};
+ render();
+ return{get:()=>sel.slice(),set:a=>{sel=[...a];render();},refresh:render};
+}
