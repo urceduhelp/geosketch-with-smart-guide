@@ -25,9 +25,9 @@ aside{display:flex;flex-direction:column;gap:10px}
 .tools label{display:block;padding:3px 0;cursor:pointer}
 .row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 #name{width:100%}
-#list{max-height:170px;overflow:auto;margin:0;padding:0;list-style:none}
-#list li{display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #eef3f6;align-items:center}
-#list small{color:#678;margin-left:auto}#list button{padding:1px 7px;background:var(--red)}
+#list{max-height:230px;overflow:auto;margin:0;padding:0;list-style:none}
+#list li{display:flex;flex-wrap:wrap;gap:6px;padding:3px 0;border-bottom:1px solid #eef3f6;align-items:center}
+#list small{color:#678;margin-left:auto}#list input{padding:0}.gc{flex-basis:100%;font-size:11px;color:#1b7a3a;padding-left:24px}#bulk button{padding:3px 8px;font-size:12px}#bulk{font-size:12px}#list button{padding:1px 7px;background:var(--red)}
 #out{width:100%;height:190px;font:12px/1.4 Consolas,monospace;white-space:pre}
 #hint{color:#456;min-height:34px}
 </style>
@@ -58,10 +58,19 @@ aside{display:flex;flex-direction:column;gap:10px}
    <select id="pat" title="ප්‍රදේශයේ Pattern"><option value="s">සම්පූර්ණ වර්ණය</option><option value="h">තිරස් රේඛා</option><option value="v">සිරස් රේඛා</option><option value="d1">ඇලි රේඛා /</option><option value="d2">ඇලි රේඛා \</option><option value="g">කොටු</option><option value="x">ඇල කොටු</option><option value="o">තිත්</option></select>
    <label><input id="hl" type="checkbox"> අමුණේ නම සිතියමේ නොලියන්න</label>
    <span>අකුරු</span><input id="fsz" type="range" min="16" max="48" value="26" style="width:90px"></div>
+   <div style="margin-top:8px"><b>වර්ග</b> <small style="color:#678">(එකකට වඩා තෝරා ගත හැක · ඊළඟ අයිතමවලටත් රඳා පවතී)</small><div id="cpk"></div></div>
    <div class="row" style="margin-top:6px"><button id="fin">අවසන් (Enter)</button><button class="alt" id="undo">Undo</button><button class="alt" id="cancel">අවලංගු</button></div>
    <div id="hint"></div>
   </div>
-  <div class="box"><h3>ලකුණු කළ ස්ථාන</h3><ul id="list"></ul></div>
+  <div class="box"><h3>ලකුණු කළ ස්ථාන</h3>
+   <div class="row" id="bulk" style="margin-bottom:6px">
+    <label><input type="checkbox" id="ball"> සියල්ල</label>
+    <button class="alt" id="badd" title="ටික් කළ අයිතමවලට, 'වර්ග' හි තෝරා ඇති වර්ග එක් කරයි">＋ වර්ග</button>
+    <button class="alt" id="bdel" title="ටික් කළ අයිතමවලින්, 'වර්ග' හි තෝරා ඇති වර්ග ඉවත් කරයි">− වර්ග</button>
+    <button class="alt" id="bset" title="ටික් කළ අයිතමවල වර්ග, 'වර්ග' හි තෝරා ඇති ඒවාම පමණක් කරයි">＝ වර්ග</button>
+    <button class="alt" id="bguess" title="වර්ගයක් නැති අයිතමවලට නම අනුව වර්ග යොදයි">නම අනුව අනුමාන</button>
+   </div>
+   <ul id="list"></ul></div>
   <div class="box"><h3>GeoSketch වෙත paste කිරීමට Code</h3>
    <textarea id="out" spellcheck="false"></textarea>
    <div class="row" style="margin-top:6px"><button id="copy">Copy</button><button class="alt" id="loadc">මෙම Code එක load කරන්න</button><button class="alt" id="reset">සියල්ල මකන්න</button></div>
@@ -87,13 +96,19 @@ const hints={
  mv:'නමක් (හෝ තිතක්) මත mouse එක තබා drag කරන්න. ඊතලය ස්වයංක්‍රීයව දිගු/කෙටි වී 90° හැරේ.'
 };
 const r4=n=>Math.round(n*1e4)/1e4;
+/* ---- වර්ග ---- */
+const ck=new Set();/* ලැයිස්තුවේ ටික් කළ අයිතම */
+const loadCustom=()=>{try{return JSON.parse(localStorage.getItem('gs_cats')||'[]');}catch(e){return[];}};
+function allCats(){const u=[];MAPS.forEach(m=>{try{u.push(usedCats(cur&&m.k==cur.k?items:JSON.parse(localStorage.getItem('gs_'+m.k)||'[]')));}catch(e){}});return catList(loadCustom(),...u);}
+const cp=catPicker($('cpk'),{list:allCats,onNew:n=>{const a=loadCustom();if(!a.includes(n)){a.push(n);try{localStorage.setItem('gs_cats',JSON.stringify(a));}catch(e){}}}});
+const G=()=>{const g=cp.get();return g.length?{g}:{};};
 
 async function load(k){
  cur=MAPS.find(m=>m.k==k);await fontReady();
  try{img=await loadImg(cur.url);}catch(e){alert('රූපය load වුණේ නැත');return;}
  L=layout(img);tmp=[];pend=null;Z.reset();
  try{items=JSON.parse(localStorage.getItem('gs_'+k)||'[]');}catch(e){items=[];}
- redraw();
+ ck.clear();cp.refresh();redraw();
 }
 function save(){try{localStorage.setItem('gs_'+cur.k,JSON.stringify(items));}catch(e){}}
 function redraw(){
@@ -105,15 +120,18 @@ function redraw(){
  $('hint').textContent=hints[tool()];
  const ul=$('list');ul.innerHTML='';
  items.forEach((it,i)=>{const li=document.createElement('li');
-  li.innerHTML=`${it.nd?'➜':IC[it.t]} ${it.n}<small>${itemCells(L,it).slice(0,6).join(' ')}</small>`;
-  const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);changed();};li.appendChild(b);ul.appendChild(li);});
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=ck.has(i);cb.onchange=()=>{cb.checked?ck.add(i):ck.delete(i);};li.appendChild(cb);
+  li.insertAdjacentHTML('beforeend',`<span>${it.nd?'➜':IC[it.t]} ${it.n}</span><small>${itemCells(L,it).slice(0,6).join(' ')}</small>`);
+  const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);ck.clear();changed();};li.appendChild(b);
+  if(it.g&&it.g.length)li.insertAdjacentHTML('beforeend',`<span class="gc">🏷 ${it.g.join(' · ')}</span>`);
+  ul.appendChild(li);});
  $('out').value=code();
 }
 function code(){
  return `// >>> MAP:${cur.k}\nDATA['${cur.k}']=[\n`+
-  items.map(it=>`  // ${it.n} [${TL[it.t]}]\n  ${JSON.stringify(it)}`).join(',\n')+`\n];\n// <<< MAP:${cur.k}`;
+  items.map(it=>`  // ${it.n} [${TL[it.t]}]${it.g&&it.g.length?' {'+it.g.join(', ')+'}':''}\n  ${JSON.stringify(it)}`).join(',\n')+`\n];\n// <<< MAP:${cur.k}`;
 }
-function changed(){save();redraw();}
+function changed(){save();cp.refresh();redraw();}
 function nm(){const n=$('name').value.trim();if(!n){alert('පළමුව නම ඇතුළත් කරන්න');$('name').focus();}return n;}
 
 /* ---------- Click කර ලකුණු කිරීම ---------- */
@@ -121,10 +139,10 @@ cv.onclick=e=>{
  if(tool()=='mv')return;
  const[x,y]=pointer(cv,L,e);if(x<0||y<0||x>1||y>1)return;
  const t=tool(),p=[r4(x),r4(y)];
- if(t=='p'){const n=nm();if(!n)return;items.push({n,t:'p',x:p[0],y:p[1]});$('name').value='';changed();}
+ if(t=='p'){const n=nm();if(!n)return;items.push(Object.assign({n,t:'p',x:p[0],y:p[1]},G()));$('name').value='';changed();}
  else if(t=='pa'||t=='na'){
   if(!pend){if(!nm())return;pend=p;redraw();}
-  else{items.push(Object.assign({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{}));pend=null;$('name').value='';changed();}
+  else{items.push(Object.assign({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{},G()));pend=null;$('name').value='';changed();}
  }else{tmp.push(p);redraw();}
 };
 
@@ -165,10 +183,10 @@ function finish(){
  const t=tool();if(t!='a'&&t!='r'&&t!='d')return;
  if(tmp.length<(t=='a'?3:2)){alert(t=='a'?'ලක්ෂ්‍ය 3ක්වත් අවශ්‍යයි':'ලක්ෂ්‍ය 2ක්වත් අවශ්‍යයි');return;}
  const n=nm();if(!n)return;
- items.push(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts:tmp}:t=='d'?Object.assign({n,t:'d',pts:tmp},$('hl').checked?{hl:1}:{}):{n,t:'r',pts:tmp});tmp=[];$('name').value='';changed();
+ items.push(Object.assign(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts:tmp}:t=='d'?Object.assign({n,t:'d',pts:tmp},$('hl').checked?{hl:1}:{}):{n,t:'r',pts:tmp},G()));tmp=[];$('name').value='';changed();
 }
 $('fin').onclick=finish;
-$('undo').onclick=()=>{if(pend)pend=null;else if(tmp.length)tmp.pop();else items.pop();changed();};
+$('undo').onclick=()=>{if(pend)pend=null;else if(tmp.length)tmp.pop();else{items.pop();ck.clear();}changed();};
 $('cancel').onclick=()=>{tmp=[];pend=null;redraw();};
 document.addEventListener('keydown',e=>{if(e.key=='Enter'&&document.activeElement.id!='out')finish();if(e.key=='Escape'){tmp=[];pend=null;redraw();}});
 document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=null;
@@ -177,9 +195,25 @@ document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=nul
 $('fsz').oninput=redraw;
 $('map').onchange=e=>load(e.target.value);
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);}catch(e){$('out').select();document.execCommand('copy');}$('copy').textContent='Copy වුණා ✓';setTimeout(()=>$('copy').textContent='Copy',1500);};
-$('loadc').onclick=()=>{try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
-$('reset').onclick=()=>{if(confirm('මෙම සිතියමේ සියල්ල මකන්නද?')){items=[];changed();}};
+$('loadc').onclick=()=>{try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();ck.clear();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
+$('reset').onclick=()=>{if(confirm('මෙම සිතියමේ සියල්ල මකන්නද?')){items=[];ck.clear();changed();}};
 $('lo').onclick=()=>{sessionStorage.removeItem('gs_admin');location.href='index.html';};
+/* ---------- වර්ග: ටික් කළ අයිතමවලට bulk ක්‍රියා ---------- */
+function bulk(f){
+ if(!ck.size){alert('පළමුව ලැයිස්තුවේ අයිතම ටික් කරන්න');return;}
+ ck.forEach(i=>{const it=items[i];if(!it)return;f(it);if(it.g&&!it.g.length)delete it.g;});changed();
+}
+const needG=()=>{const g=cp.get();if(!g.length)alert('"වර්ග" කොටසේ Dropdown එකෙන් වර්ග තෝරන්න');return g;};
+$('badd').onclick=()=>{if(!ck.size)return bulk();const g=needG();if(g.length)bulk(it=>{it.g=[...new Set([...(it.g||[]),...g])];});};
+$('bdel').onclick=()=>{if(!ck.size)return bulk();const g=needG();if(g.length)bulk(it=>{it.g=(it.g||[]).filter(c=>!g.includes(c));});};
+$('bset').onclick=()=>{if(!ck.size)return bulk();const g=cp.get();if(!g.length&&!confirm('ටික් කළ අයිතමවල වර්ග සියල්ල ඉවත් කරන්නද?'))return;bulk(it=>{it.g=g.slice();});};
+$('ball').onchange=ev=>{ck.clear();if(ev.target.checked)items.forEach((_,i)=>ck.add(i));redraw();};
+$('bguess').onclick=()=>{
+ const t=items.filter(it=>!(it.g&&it.g.length)&&guessCats(it).length);
+ if(!t.length){alert('අනුමාන කළ හැකි, වර්ගයක් නැති අයිතම නැත');return;}
+ if(!confirm(`වර්ගයක් නැති අයිතම ${t.length}කට නම අනුව වර්ග යොදන්නද?\n(…ගඟ / …ඔය / …ආරු → ගංගාව, …වැව → වැව, ඇළ, අමුණ)\nපසුව ඒවා වෙනස් කළ හැක.`))return;
+ t.forEach(it=>it.g=guessCats(it));changed();
+};
 load(MAPS[0].k);
 </script>
 </body>
