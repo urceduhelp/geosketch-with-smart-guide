@@ -615,7 +615,7 @@ document.addEventListener('click',e=>{if(pl.style.display=='flex'&&!pl.contains(
 const r4=n=>Math.round(n*1e4)/1e4;
 const hitAt=e=>{const[nx,ny]=pointer(cv,L,e);return hitItem(cv.getContext('2d'),L,DATA[cur.k]||[],i=>marked.has(i),nx,ny,+$('fsz').value,+$('dr').value);};
 cv.onpointerdown=e=>{
- if(!$('mvt').checked)return;const h=hitAt(e);if(!h)return;
+ if(!$('mvt').checked)return;const h=hitAt(e);if(!h){Z.startPan(e);return;}
  const[nx,ny]=pointer(cv,L,e);
  /* ඊතලයක් නැති නමක් නම්, දැනට නම තිබෙන තැනින් පටන් ගනී (ඊතලයක් එක් වේ) */
  drag={it:DATA[cur.k][h.i],keys:h.keys,ox:h.bx-nx,oy:h.by-ny};
