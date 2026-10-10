@@ -122,6 +122,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
  </div>
  <div id="cx"></div>
  <div><b>3. වර්ග (අවශ්‍ය නම්)</b> <small style="color:#678">එකකට වඩා තෝරා ගත හැක</small><div id="cpk"></div></div>
+ <div><b>4. විභාග වර්ෂය (අවශ්‍ය නම්)</b> <small style="color:#678">ස්ථානය ලැබුණු වර්ෂ; කිහිපයක් තෝරා ගත හැක</small><div id="ypk"></div></div>
  <div class="ci" id="cinfo"></div>
  <div style="display:flex;gap:8px"><button id="cgo">ආරම්භ කරන්න ▶</button><button class="alt" id="cno">වසන්න</button></div>
  <h4 id="clh">ඔබ එක් කළ නම් (මෙම සිතියමේ)</h4>
@@ -157,12 +158,12 @@ const DATA={};
 
 // >>> MAP:ol_lanka
 DATA['ol_lanka']=[
-  // නල්ලූර් [ස්ථානය] {උපපාලන මධ්‍යස්ථානය, නගරය, පූජා නගරය}
-  {"n":"නල්ලූර්","t":"p","x":0.3185,"y":0.1375,"lx":0.1931,"ly":0.0724,"g":["උපපාලන මධ්‍යස්ථානය","නගරය","පූජා නගරය"]},
+  // නල්ලූර් [ස්ථානය]
+  {"n":"නල්ලූර්","t":"p","x":0.3185,"y":0.1375,"lx":0.1931,"ly":0.0724},
   // යාපනය [ස්ථානය]
   {"n":"යාපනය","t":"p","x":0.3115,"y":0.1437,"lx":0.1871,"ly":0.2059},
-  // සූකරතිත්ථ [ස්ථානය] {වරාය}
-  {"n":"සූකරතිත්ථ","t":"p","x":0.272,"y":0.14,"lx":0.1674,"ly":0.1697,"g":["වරාය"]},
+  // සූකරතිත්ථ [ස්ථානය]
+  {"n":"සූකරතිත්ථ","t":"p","x":0.272,"y":0.14,"lx":0.1674,"ly":0.1697},
   // අලිමංකඩ [ස්ථානය]
   {"n":"අලිමංකඩ","t":"p","x":0.4134,"y":0.1673,"lx":0.5145,"ly":0.1247},
   // වල්ලිපුරම් [ස්ථානය]
@@ -175,8 +176,8 @@ DATA['ol_lanka']=[
   {"n":"කනගරායන් ආරු","t":"r","pts":[[0.4486,0.199],[0.4486,0.2201],[0.4504,0.2406],[0.4609,0.2649],[0.4741,0.2879],[0.482,0.3059],[0.482,0.3233]]},
   // මල්වතු ඔය [ගඟ]
   {"n":"මල්වතු ඔය","t":"r","pts":[[0.3282,0.3171],[0.3809,0.3475],[0.4214,0.4016]]},
-  // දඹකොළපටුන [ස්ථානය] {වරාය}
-  {"n":"දඹකොළපටුන","t":"p","x":0.2956,"y":0.11,"lx":0.1573,"ly":0.0919,"g":["වරාය"]},
+  // දඹකොළපටුන [ස්ථානය]
+  {"n":"දඹකොළපටුන","t":"p","x":0.2956,"y":0.11,"lx":0.1573,"ly":0.0919},
   // කන්දරෝඩෙයි [ස්ථානය]
   {"n":"කන්දරෝඩෙයි","t":"p","x":0.3,"y":0.1237,"lx":0.159,"ly":0.1185},
   // හැමන්හෛල් [ස්ථානය]
@@ -193,8 +194,8 @@ DATA['ol_lanka']=[
   {"n":"තිරුකේතීශ්වරම්","t":"p","x":0.2888,"y":0.2932,"lx":0.1448,"ly":0.2483},
   // මන්නාරම [ස්ථානය]
   {"n":"මන්නාරම","t":"p","x":0.2675,"y":0.281,"lx":0.1794,"ly":0.2792},
-  // මාතොට [ස්ථානය] {වරාය}
-  {"n":"මාතොට","t":"p","x":0.2807,"y":0.2927,"lx":0.1867,"ly":0.3062,"g":["වරාය"]},
+  // මාතොට [ස්ථානය]
+  {"n":"මාතොට","t":"p","x":0.2807,"y":0.2927,"lx":0.1867,"ly":0.3062},
   // මහ ඔය [ස්ථානය]
   {"n":"මහ ඔය","t":"p","x":0.5295,"y":0.294,"lx":0.6629,"ly":0.2643,"nd":1},
   // යාන් ඔය [ස්ථානය]
@@ -243,12 +244,12 @@ DATA['ol_lanka']=[
   {"n":"පොම්පරිප්පු","t":"p","x":0.259,"y":0.4166,"lx":0.1651,"ly":0.4105},
   // තිසා වැව [ස්ථානය]
   {"n":"තිසා වැව","t":"p","x":0.4023,"y":0.4186,"lx":0.3664,"ly":0.4465},
-  // කල්පිටිය [ස්ථානය] {වරාය}
-  {"n":"කල්පිටිය","t":"p","x":0.2217,"y":0.4414,"lx":0.148,"ly":0.4403,"g":["වරාය"]},
+  // කල්පිටිය [ස්ථානය]
+  {"n":"කල්පිටිය","t":"p","x":0.2217,"y":0.4414,"lx":0.148,"ly":0.4403},
   // නාච්චිදූව වැව [ස්ථානය]
   {"n":"නාච්චිදූව වැව","t":"p","x":0.4402,"y":0.4343,"lx":0.1242,"ly":0.4982},
-  // පුත්තලම [ස්ථානය] {වරාය}
-  {"n":"පුත්තලම","t":"p","x":0.2382,"y":0.4708,"lx":0.1472,"ly":0.4759,"g":["වරාය"]},
+  // පුත්තලම [ස්ථානය]
+  {"n":"පුත්තලම","t":"p","x":0.2382,"y":0.4708,"lx":0.1472,"ly":0.4759},
   // යෝධ ඇළ [අමුණ/ඇළ]
   {"n":"යෝධ ඇළ","t":"d","pts":[[0.4498,0.4785],[0.4183,0.4465],[0.4034,0.4206]]},
   // යෝධ ඇළ [ස්ථානය]
@@ -259,22 +260,22 @@ DATA['ol_lanka']=[
   {"n":"යාපහුව","t":"p","x":0.3851,"y":0.5361,"lx":0.1145,"ly":0.5823},
   // පඬුවස්නුවර [ස්ථානය]
   {"n":"පඬුවස්නුවර","t":"p","x":0.2991,"y":0.577,"lx":0.3002,"ly":0.5993},
-  // සලාවත්තොට [ස්ථානය] {වරාය}
-  {"n":"සලාවත්තොට","t":"p","x":0.2372,"y":0.5702,"lx":0.0813,"ly":0.5714,"g":["වරාය"]},
+  // සලාවත්තොට [ස්ථානය]
+  {"n":"සලාවත්තොට","t":"p","x":0.2372,"y":0.5702,"lx":0.0813,"ly":0.5714},
   // මුන්නේස්වරම් කෝවිල [ස්ථානය]
   {"n":"මුන්නේස්වරම් කෝවිල","t":"p","x":0.2446,"y":0.5726,"lx":0.0922,"ly":0.5997},
   // ලුණුවිල [ස්ථානය]
   {"n":"ලුණුවිල","t":"p","x":0.2406,"y":0.5941,"lx":0.1128,"ly":0.631},
   // වික්ටෝරියා ජලාශය [ස්ථානය]
   {"n":"වික්ටෝරියා ජලාශය","t":"p","x":0.5158,"y":0.6318,"lx":0.5163,"ly":0.6022},
-  // මීගමුව [ස්ථානය] {වරාය}
-  {"n":"මීගමුව","t":"p","x":0.2464,"y":0.6484,"lx":0.1672,"ly":0.6512,"g":["වරාය"]},
+  // මීගමුව [ස්ථානය]
+  {"n":"මීගමුව","t":"p","x":0.2464,"y":0.6484,"lx":0.1672,"ly":0.6512},
   // මුතුරාජවෙල [ස්ථානය]
   {"n":"මුතුරාජවෙල","t":"p","x":0.2538,"y":0.6711,"lx":0.1369,"ly":0.6674},
   // පේරාදෙණිය [ස්ථානය]
   {"n":"පේරාදෙණිය","t":"p","x":0.4676,"y":0.6561,"lx":0.2979,"ly":0.6585},
-  // කොළඹ [ස්ථානය] {වරාය}
-  {"n":"කොළඹ","t":"p","x":0.2458,"y":0.6991,"lx":0.1741,"ly":0.6954,"g":["වරාය"]},
+  // කොළඹ [ස්ථානය]
+  {"n":"කොළඹ","t":"p","x":0.2458,"y":0.6991,"lx":0.1741,"ly":0.6954},
   // කැළණිය [ස්ථානය]
   {"n":"කැළණිය","t":"p","x":0.2613,"y":0.6962,"lx":0.1409,"ly":0.7157},
   // කෝට්ටේ [ස්ථානය]
@@ -283,26 +284,26 @@ DATA['ol_lanka']=[
   {"n":"මුල්ලේරියාව","t":"p","x":0.2602,"y":0.7043,"lx":0.129,"ly":0.7332},
   // කොත්මලේ ජලාශය [ස්ථානය]
   {"n":"කොත්මලේ ජලාශය","t":"p","x":0.4786,"y":0.6823,"lx":0.3529,"ly":0.6844},
-  // කාළතිත්ථ [ස්ථානය] {වරාය}
-  {"n":"කාළතිත්ථ","t":"p","x":0.2766,"y":0.7751,"lx":0.1971,"ly":0.777,"g":["වරාය"]},
+  // කාළතිත්ථ [ස්ථානය]
+  {"n":"කාළතිත්ථ","t":"p","x":0.2766,"y":0.7751,"lx":0.1971,"ly":0.777},
   // පාහියන් ලෙන [ස්ථානය]
   {"n":"පාහියන් ලෙන","t":"p","x":0.3482,"y":0.7645,"lx":0.1722,"ly":0.794},
-  // බේරුවල [ස්ථානය] {වරාය}
-  {"n":"බේරුවල","t":"p","x":0.286,"y":0.8,"lx":0.1842,"ly":0.81,"g":["වරාය"]},
-  // බෙන්තර [ස්ථානය] {වරාය}
-  {"n":"බෙන්තර","t":"p","x":0.2901,"y":0.8058,"lx":0.2,"ly":0.8235,"g":["වරාය"]},
+  // බේරුවල [ස්ථානය]
+  {"n":"බේරුවල","t":"p","x":0.286,"y":0.8,"lx":0.1842,"ly":0.81},
+  // බෙන්තර [ස්ථානය]
+  {"n":"බෙන්තර","t":"p","x":0.2901,"y":0.8058,"lx":0.2,"ly":0.8235},
   // සමනල වැව [ස්ථානය]
   {"n":"සමනල වැව","t":"p","x":0.5173,"y":0.7662,"lx":0.5235,"ly":0.9285},
   // චන්ද්‍රිකා වැව [ස්ථානය]
   {"n":"චන්ද්‍රිකා වැව","t":"p","x":0.5411,"y":0.8359,"lx":0.2655,"ly":0.9075},
-  // තොටළු තොට [ස්ථානය] {වරාය}
-  {"n":"තොටළු තොට","t":"p","x":0.6781,"y":0.8552,"lx":0.6831,"ly":0.8947,"g":["වරාය"]},
-  // තොටගමුව [ස්ථානය] {වරාය}
-  {"n":"තොටගමුව","t":"p","x":0.3186,"y":0.8668,"lx":0.2593,"ly":0.8554,"g":["වරාය"]},
-  // ගාල්ල [ස්ථානය] {වරාය}
-  {"n":"ගාල්ල","t":"p","x":0.3606,"y":0.8893,"lx":0.3527,"ly":0.9378,"g":["වරාය"]},
-  // මාතර [ස්ථානය] {වරාය}
-  {"n":"මාතර","t":"p","x":0.4424,"y":0.9057,"lx":0.4378,"ly":0.9615,"g":["වරාය"]}
+  // තොටළු තොට [ස්ථානය]
+  {"n":"තොටළු තොට","t":"p","x":0.6781,"y":0.8552,"lx":0.6831,"ly":0.8947},
+  // තොටගමුව [ස්ථානය]
+  {"n":"තොටගමුව","t":"p","x":0.3186,"y":0.8668,"lx":0.2593,"ly":0.8554},
+  // ගාල්ල [ස්ථානය]
+  {"n":"ගාල්ල","t":"p","x":0.3606,"y":0.8893,"lx":0.3527,"ly":0.9378},
+  // මාතර [ස්ථානය]
+  {"n":"මාතර","t":"p","x":0.4445,"y":0.9067,"lx":0.4378,"ly":0.9615}
 ];
 // <<< MAP:ol_lanka
 
@@ -334,10 +335,12 @@ DATA['al_india']=[];
 const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu'),pl=$('pl');
 const ORIG=JSON.stringify(DATA);/* Move කිරීමට පෙර මුල් තැන් (Reset සඳහා) */
 const IC={p:'●',a:'▭',r:'≈',d:'‖'};
-let cur,img,L,hi=null,marked=new Set(),sel=new Set(),drag=null,cf=new Set(),tmpCats=[];
+let cur,img,L,hi=null,marked=new Set(),sel=new Set(),drag=null,cf=new Set(),yf=new Set(),tmpCats=[],tmpYears=[];
 const NONE='__none__',esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 /* වර්ග පෙරහන: කිසිවක් තෝරා නැතිනම් සියල්ල. කිහිපයක් තෝරා ඇත්නම් ඒවායින් ඕනෑම එකකට අයත් */
-const catOk=it=>{if(!cf.size)return true;const g=it.g||[];return g.length?g.some(c=>cf.has(c)):cf.has(NONE);};
+const tagLine=it=>[(it.g||[]).join(' · '),(it.yr||[]).length?'📅 '+it.yr.join(', '):''].filter(Boolean).join('   ');
+/* වර්ග කිහිපයක් තෝරා ඇත්නම් ඒවායින් ඕනෑම එකක්; වර්ෂ කිහිපයක් තෝරා ඇත්නම් ඒවායින් ඕනෑම එකක්; වර්ග සහ වර්ෂ දෙකම තෝරා ඇත්නම් දෙකටම ගැළපිය යුතුය */
+const itemOk=it=>{const t=(S,f)=>{if(!S.size)return true;const g=it[f]||[];return g.length?g.some(c=>S.has(c)):S.has(NONE);};return t(cf,'g')&&t(yf,'yr');};
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const badge=n=>$('bc').textContent=n;
@@ -345,7 +348,7 @@ const badge=n=>$('bc').textContent=n;
 async function load(k){
  cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';pl.style.display='none';
  try{await fontReady();img=await loadImg(cur.url);}catch(e){$('st').textContent='රූපය load වුණේ නැත';return;}
- L=layout(img);marked=new Set();cf=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
+ L=layout(img);marked=new Set();cf=new Set();yf=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
 let ad=null,doneMsg='';/* ad = දැනට ඇතුළත් කරමින් සිටින අලුත් නම */
@@ -388,20 +391,24 @@ document.addEventListener('keydown',e=>{
 
 /* ---------- ස්ථාන නාමාවලිය (Dropdown + Tick) ---------- */
 function visibleRows(){const q=$('ps').value.trim().toLowerCase();
- return (DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>(!q||it.n.toLowerCase().includes(q))&&catOk(it));}
+ return (DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>(!q||it.n.toLowerCase().includes(q))&&itemOk(it));}
 function buildChips(){
- const host=$('cf'),items=DATA[cur.k]||[],cnt={};let none=0;
- items.forEach(it=>{const g=it.g||[];if(!g.length)none++;g.forEach(c=>cnt[c]=(cnt[c]||0)+1);});
- const names=catList(Object.keys(cnt)).filter(c=>cnt[c]);
- if(!names.length){cf.clear();host.style.display='none';return;}/* මෙම සිතියමේ වර්ග නැත */
- [...cf].forEach(c=>{if(c==NONE?!none:!cnt[c])cf.delete(c);});
- host.style.display='';
- host.innerHTML='<div class="cfh"><span><b>🏷 වර්ග අනුව පෙරන්න</b> (කිහිපයක් තෝරා ගත හැක)</span><a>පෙරහන ඉවත් කරන්න</a></div><div class="cfc"></div>';
- host.querySelector('a').onclick=()=>{cf.clear();buildList();};
- const box=host.querySelector('.cfc'),mk=(key,label,n)=>{const c=document.createElement('span');c.className='fc'+(cf.has(key)?' on':'');
-  c.innerHTML=`${esc(label)}<i>${n}</i>`;c.onclick=()=>{cf.has(key)?cf.delete(key):cf.add(key);buildList();};box.appendChild(c);};
- names.forEach(c=>mk(c,c,cnt[c]));
- if(none)mk(NONE,'වර්ගයක් නැති',none);
+ const host=$('cf'),items=DATA[cur.k]||[];host.innerHTML='';let n=0;
+ [['g',cf,'🏷 වර්ග අනුව පෙරන්න',catList,'වර්ගයක් නැති'],['yr',yf,'📅 විභාග වර්ෂය අනුව පෙරන්න',yearList,'වර්ෂයක් නැති']].forEach(([f,S,title,lister,noneLbl])=>{
+  const cnt={};let none=0;
+  items.forEach(it=>{const g=it[f]||[];if(!g.length)none++;g.forEach(c=>cnt[c]=(cnt[c]||0)+1);});
+  const names=lister(Object.keys(cnt)).filter(c=>cnt[c]);
+  if(!names.length){S.clear();return;}/* මෙම සිතියමේ මෙම ආකාරයේ දත්ත නැත */
+  [...S].forEach(c=>{if(c==NONE?!none:!cnt[c])S.delete(c);});
+  n++;const d=document.createElement('div');d.style.marginBottom='6px';
+  d.innerHTML=`<div class="cfh"><span><b>${title}</b></span><a>ඉවත් කරන්න</a></div><div class="cfc"></div>`;
+  d.querySelector('a').onclick=()=>{S.clear();buildList();};
+  const box=d.querySelector('.cfc'),mk=(key,label,k)=>{const c=document.createElement('span');c.className='fc'+(S.has(key)?' on':'');
+   c.innerHTML=`${esc(label)}<i>${k}</i>`;c.onclick=()=>{S.has(key)?S.delete(key):S.add(key);buildList();};box.appendChild(c);};
+  names.forEach(c=>mk(c,c,cnt[c]));if(none)mk(NONE,noneLbl,none);
+  host.appendChild(d);});
+ if(n==2)host.insertAdjacentHTML('beforeend','<div style="color:#789">වර්ග සහ වර්ෂ දෙකම තෝරා ඇත්නම් දෙකටම ගැළපෙන ඒවා පෙන්වයි.</div>');
+ host.style.display=n?'':'none';
 }
 function buildList(){
  const box=$('pi');box.innerHTML='';buildChips();
@@ -412,7 +419,7 @@ function buildList(){
   cb.type='checkbox';cb.checked=sel.has(i);
   cb.onchange=()=>{cb.checked?sel.add(i):sel.delete(i);count();};
   const cells=itemCells(L,it).slice(0,3).join(' ');
-  lb.appendChild(cb);lb.insertAdjacentHTML('beforeend',`<span>${it.nd?'➚':IC[it.t]} ${esc(it.n)}${it.cu?' ✎':''}${it.g&&it.g.length?`<span class="gl">${esc(it.g.join(' · '))}</span>`:''}</span><small>${cells}</small>`);
+  lb.appendChild(cb);lb.insertAdjacentHTML('beforeend',`<span>${it.nd?'➚':IC[it.t]} ${esc(it.n)}${it.cu?' ✎':''}${tagLine(it)?`<span class="gl">${esc(tagLine(it))}</span>`:''}</span><small>${cells}</small>`);
   box.appendChild(lb);});
 }
 function count(){$('pc').textContent=sel.size;badge(sel.size);}
@@ -473,6 +480,8 @@ load(MAPS[0].k);
    ===================================================================== */
 const catsAll=()=>catList(tmpCats,...Object.values(DATA).map(usedCats));
 const cpk=catPicker($('cpk'),{list:catsAll,onNew:n=>{if(!tmpCats.includes(n))tmpCats.push(n);}});
+const yearsAll=()=>yearList(tmpYears,...Object.values(DATA).map(usedYears));
+const ypk=catPicker($('ypk'),{list:yearsAll,ph:'— Dropdown එකෙන් වර්ෂයක් තෝරන්න —',newBtn:'➕ වෙනත් වර්ෂයක්',newPh:'උදා: 2022 හෝ 2022(2021)',empty:'වර්ෂයක් තෝරා නැත (අවශ්‍ය නැතිනම් එලෙසම තබන්න)',onNew:n=>{if(!tmpYears.includes(n))tmpYears.push(n);}});
 const KT={p:'p',r:'r',c:'d',w:'d',a:'a'};/* ඇළ සහ අමුණ දෙකම සමාන්තර රේඛා ද්විත්වය */
 const INFO={
  p:'<b>● ස්ථානයක්:</b> "ආරම්භ කරන්න" ඔබා සිතියමේ එම ස්ථානය තිබෙන තැන click කරන්න. තිතක් සහ නම ඇඳේ. ඉන්පසු නම / තිත drag කර ගෙන යා හැක (ඊතලයක් ස්වයංක්‍රීයව එක් වේ).',
@@ -492,7 +501,7 @@ document.querySelectorAll('[name=ck]').forEach(r=>r.onchange=cxUpdate);
 function renderCu(){
  const box=$('cl');box.innerHTML='';
  (DATA[cur.k]||[]).forEach((it,i)=>{if(!it.cu)return;
-  const d=document.createElement('div');d.textContent=`${it.nd?'➚':IC[it.t]} ${it.n}${it.g&&it.g.length?'  ['+it.g.join(', ')+']':''}`;
+  const d=document.createElement('div');d.textContent=`${it.nd?'➚':IC[it.t]} ${it.n}${it.g&&it.g.length?'  ['+it.g.join(', ')+']':''}${it.yr&&it.yr.length?'  📅'+it.yr.join(', '):''}`;
   const b=document.createElement('button');b.textContent='×';b.title='මකන්න';b.onclick=()=>delItem(i);d.appendChild(b);box.appendChild(d);});
  $('clh').style.display=box.children.length?'':'none';
 }
@@ -506,7 +515,7 @@ function addItem(it){
 }
 function openCu(){
  menu.style.display='none';pl.style.display='none';hi=null;
- $('cn').value='';document.querySelector('[name=ck][value=p]').checked=true;cxUpdate();renderCu();cpk.refresh();
+ $('cn').value='';document.querySelector('[name=ck][value=p]').checked=true;cxUpdate();renderCu();cpk.refresh();ypk.refresh();
  $('cdlg').style.display='flex';$('cn').focus();
 }
 $('padd').onclick=e=>{e.stopPropagation();openCu();};
@@ -518,7 +527,7 @@ $('cgo').onclick=()=>{
  const n=$('cn').value.trim();
  if(!n){alert('පළමුව ස්ථාන නාමය ඇතුළත් කරන්න');$('cn').focus();return;}
  const k=ckind();
- ad={n,k,t:KT[k],g:cpk.get(),pts:[],pend:null,mode:k=='p'?$('cm').value:null,c:k=='a'?$('cc').value:null,pt:k=='a'?$('cpt').value:null};
+ ad={n,k,t:KT[k],g:cpk.get(),yr:ypk.get(),pts:[],pend:null,mode:k=='p'?$('cm').value:null,c:k=='a'?$('cc').value:null,pt:k=='a'?$('cpt').value:null};
  doneMsg='';$('cdlg').style.display='none';setMove(false);
  cv.style.cursor='crosshair';refreshBar();draw();
 };
@@ -542,6 +551,7 @@ function refreshBar(){
 }
 function adDone(it,hint){
  if(ad.g&&ad.g.length)it.g=ad.g.slice();
+ if(ad.yr&&ad.yr.length)it.yr=ad.yr.slice();
  addItem(it);const n=ad.n;ad=null;
  doneMsg=`✓ "${n}" සිතියමට ඇතුළත් කළා. ${hint} (✋ Move සක්‍රියයි)`;
  setMove(true);refreshBar();draw();renderCu();
