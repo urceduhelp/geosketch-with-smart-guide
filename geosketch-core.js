@@ -233,8 +233,13 @@ function setupZoom(cv,box,getL,vp){
 /* ===================== වර්ග (Categories) =====================
    අයිතමයක වර්ග: it.g = ['ගංගාව','වැව',...]  (එකකට වඩා තිබිය හැක; නැතිනම් it.g නැත)
    DEFCATS = මුල් වර්ග ලැයිස්තුව. අලුත් වර්ග editor/index හි Dropdown එකෙන්ම එක් කළ හැක. */
-const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ඇළ මාර්ගය','අමුණ','පූජා නගරය','2015','2016','2017','2018','2019','2020','2021','2022','2023','2024','2025','2026'];
+const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ඇළ මාර්ගය','අමුණ'];
 const catList=(...ex)=>{const s=new Set(DEFCATS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(c)));return[...s];};
+/* විභාග වර්ෂ: it.yr = ['2022','2019',...] (කිහිපයක් විය හැක; "2022(2021)" වැනි ලිවිය ද හැක). (it.y = සිතියමේ y ඛණ්ඩාංකය, එබැවින් yr භාවිතා කරයි) */
+const DEFYEARS=(()=>{const a=[];for(let y=new Date().getFullYear()+1;y>=2005;y--)a.push(String(y));return a;})();
+const yrKey=v=>{const m=String(v).match(/\d{4}/);return m?+m[0]:0;};
+const yearList=(...ex)=>{const s=new Set(DEFYEARS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(String(c))));return[...s].sort((a,b)=>yrKey(b)-yrKey(a)||a.localeCompare(b));};
+const usedYears=items=>{const s=new Set();(items||[]).forEach(it=>(it.yr||[]).forEach(c=>s.add(String(c))));return[...s];};
 const usedCats=items=>{const s=new Set();(items||[]).forEach(it=>(it.g||[]).forEach(c=>s.add(c)));return[...s];};
 /* නම අනුව වර්ග අනුමාන කිරීම (වර්ගයක් නැති අයිතම සඳහා පමණි) */
 function guessCats(it){const n=(it.n||'').trim(),g=[];
@@ -255,12 +260,13 @@ function catPicker(host,o){
  host.classList.add('cp');let sel=[];
  host.innerHTML='<div class="cp-row"><select></select><button type="button" class="alt">➕ අලුත් වර්ගයක්</button></div><div class="cp-nw"><input type="text" placeholder="අලුත් වර්ගයේ නම"><button type="button">එක් කරන්න</button></div><div class="cp-ch"></div>';
  const[row,nw,ch]=host.children,s=row.children[0],nb=row.children[1],ni=nw.children[0],nok=nw.children[1];
+ if(o.newBtn)nb.textContent=o.newBtn;if(o.newPh)ni.placeholder=o.newPh;
  const fire=()=>o.onChange&&o.onChange(sel.slice());
  function render(){
-  s.innerHTML='';s.add(new Option('— Dropdown එකෙන් වර්ගයක් තෝරන්න —',''));
+  s.innerHTML='';s.add(new Option(o.ph||'— Dropdown එකෙන් වර්ගයක් තෝරන්න —',''));
   o.list().filter(c=>!sel.includes(c)).forEach(c=>s.add(new Option(c,c)));
   ch.innerHTML='';
-  if(!sel.length){const e=document.createElement('span');e.className='cp-e';e.textContent='වර්ගයක් තෝරා නැත (අවශ්‍ය නැතිනම් එලෙසම තබන්න)';ch.appendChild(e);}
+  if(!sel.length){const e=document.createElement('span');e.className='cp-e';e.textContent=o.empty||'වර්ගයක් තෝරා නැත (අවශ්‍ය නැතිනම් එලෙසම තබන්න)';ch.appendChild(e);}
   sel.forEach(c=>{const x=document.createElement('span');x.className='cp-c';x.append(c);
    const b=document.createElement('b');b.textContent='×';b.title='ඉවත් කරන්න';b.onclick=()=>{sel=sel.filter(v=>v!=c);render();fire();};x.appendChild(b);ch.appendChild(x);});
  }
