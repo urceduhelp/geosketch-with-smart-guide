@@ -171,7 +171,7 @@ function hit(e){
  return null;
 }
 cv.onpointerdown=e=>{
- if(tool()!='mv')return;const h=hit(e);if(!h)return;
+ if(tool()!='mv')return;const h=hit(e);if(!h){Z.startPan(e);return;}
  const it=items[h.i],[nx,ny]=pointer(cv,L,e),k=h.w=='l'?['lx','ly']:['x','y'];
  /* ඊතලයක් නැති සාමාන්‍ය නමක් නම්, දැනට නම තිබෙන තැනින් පටන් ගනී */
  const bx=h.w=='l'&&it.lx==null?(h.cx-L.ix)/L.iw:it[k[0]],
