@@ -553,7 +553,7 @@ const badge=n=>$('bc').textContent=n;
 
 async function load(k){
  cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';pl.style.display='none';
-try{const r=await Promise.all([fontReady(),loadImg(cur.url)]);img=r[1];}
+ try{await fontReady();img=await loadImg(cur.url);}catch(e){$('st').textContent='රූපය load වුණේ නැත';return;}
  L=layout(img);marked=new Set();cf=new Set();yf=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
