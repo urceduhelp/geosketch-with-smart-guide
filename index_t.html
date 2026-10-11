@@ -96,11 +96,22 @@ select{max-width:100%;min-width:0}
  #ab{bottom:22px;font-size:12px;padding:6px 8px;gap:6px}
  #ab button{padding:4px 8px;font-size:12px}
 }
+/* மொழி மாற்றும் பொத்தான்கள் */
+#lang{display:flex;gap:4px;align-items:center}
+#lang a{color:#fff;text-decoration:none;font-size:13px;padding:4px 10px;border-radius:14px;border:1px solid #ffffff55;white-space:nowrap}
+#lang a:hover{background:#ffffff22}
+#lang a.on{background:var(--grid);border-color:var(--grid);font-weight:700;pointer-events:none}
+@media(max-width:760px){#lang a{font-size:12px;padding:3px 8px}}
 </style>
 </head>
 <body>
 <header>
  <h1>Geo<i>Sketch</i></h1>
+ <nav id="lang">
+  <a href="index.html" lang="si">සිංහල</a>
+  <a class="on" href="index_t.html">தமிழ்</a>
+  <a href="index_e.html" lang="en">English</a>
+ </nav>
  <label class="mapl">வரைபடம் <select id="map"></select></label>
  <button id="plb">📍 இடப் பட்டியல் <span id="bc">0</span></button>
  <label class="mvl"><input id="mvt" type="checkbox"> ✋ பெயர்களை நகர்த்து</label>
