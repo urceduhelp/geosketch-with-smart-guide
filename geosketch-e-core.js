@@ -243,7 +243,7 @@ function setupZoom(cv,box,getL,vp){
 /* ===================== Categories =====================
    Categories of an item: it.g = ['River','Tank',...]  (can be more than one; if none, it.g is absent)
    DEFCATS = the default category list. New categories can be added from the dropdown in the editor / index. */
-const DEFCATS=['River','Tributary','Historical Site','Prehistoric Site','Protohistoric Site','Port','Country','Area','Town','Old Administrative Unit','New Administrative Unit','Kingdom','Sub-administrative Centre','Tank','Canal','Anicut'];
+const DEFCATS=['City','Sacred City','Historical Place','Kingdom','Port','Protohistoric site','Tank','River','Region','Ancient Administrative Unit','Fort','Canal','Reservoir','Prehistoric site','Sub-administrative Center','Research Institute','Agricultural land','Marshland','Botanical garden','Battlefield','Residual hill','Rock','Plain','Inland Pier','Weir','Economic Center', 'Tributary','Country','Area', ,'New Administrative Unit',];
 const catList=(...ex)=>{const s=new Set(DEFCATS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(c)));return[...s];};
 /* Exam years: it.yr = ['2022','2019',...] (can be several; forms like "2022(2021)" are also allowed). (it.y = the y coordinate on the map, hence yr is used) */
 const DEFYEARS=(()=>{const a=[];for(let y=new Date().getFullYear()+1;y>=2005;y--)a.push(String(y));return a;})();
