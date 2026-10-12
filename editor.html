@@ -35,6 +35,11 @@ aside{display:flex;flex-direction:column;gap:10px}
 #tabs button{padding:4px 12px}
 #tgt{font-size:12px;color:#678;margin:4px 0}
 #warn{font-size:12px;color:#b45309;margin-top:6px;line-height:1.5}
+#sgw{position:relative}
+#sg{display:none;position:absolute;left:0;right:0;top:100%;z-index:30;background:#fff;border:1px solid #9bb;border-radius:6px;box-shadow:0 6px 18px #0003;max-height:220px;overflow:auto;margin-top:2px}
+#sg div{padding:6px 10px;cursor:pointer;border-bottom:1px solid #eef3f6}
+#sg div:hover,#sg div.on{background:#e3f3fd}
+#sg small{color:#678;margin-left:8px}
 </style>
 </head>
 <body>
@@ -59,7 +64,7 @@ aside{display:flex;flex-direction:column;gap:10px}
    <label style="border-top:1px solid #eef3f6;margin-top:4px;padding-top:6px"><input type="checkbox" id="cmp" checked> 👁 සරල පෙනුම – තිත් පමණක් පෙන්වන්න <small style="color:#678">(තිතක් click කර නම බලන්න)</small></label>
   </div>
   <div class="box"><h3>නම</h3>
-   <input id="name" placeholder="උදා: මහවැලි ගඟ">
+   <div id="sgw"><input id="name" placeholder="උදා: මහවැලි ගඟ" autocomplete="off"><div id="sg"></div></div>
    <div class="nms"><input id="nameT" placeholder="தமிழ் பெயர் (අවශ්‍ය නම්)"><input id="nameE" placeholder="English name (optional)"></div>
    <small style="color:#678">දෙමළ / English නම හිස්ව තැබුවහොත් ශබ්දකෝෂයෙන් (Supabase) ස්වයංක්‍රීයව ලබා ගනී; එහි නැත්නම් එම භාෂා කේතයේ සිංහල නම ම යෙදේ. වර්ග ද ශබ්දකෝෂයෙන් පරිවර්තනය වේ.</small>
    <div class="row" style="margin-top:6px"><span>වර්ණය</span><input id="col" type="color" value="#ff9800" style="padding:0;width:42px">
@@ -178,7 +183,7 @@ async function loadDict(){
   src=all.length?'cache':'none';
  }
  Object.values(DICT).forEach(m=>m.clear());
- all.forEach(r=>{if(DICT[r.kind])DICT[r.kind].set(nk(r.si),{ta:r.ta,en:r.en});});
+ all.forEach(r=>{if(DICT[r.kind])DICT[r.kind].set(nk(r.si),{ta:r.ta,en:r.en,si:r.si});});
  tx.textContent=src=='none'?'📚 ශබ්දකෝෂය ලබා ගත නොහැක (ගොනුවේ ඇති වර්ග පමණක් භාවිතා වේ)':`📚 ශබ්දකෝෂය: වචන ${all.length}ක්`+(src=='cache'?' (offline – පැරණි පිටපත)':'');
  if(cur)refreshOut();
 }
@@ -417,6 +422,37 @@ $('bguess').onclick=()=>{
  if(!confirm(`වර්ගයක් නැති අයිතම ${t.length}කට නම අනුව වර්ග යොදන්නද?\n(…ගඟ / …ඔය / …ආරු → ගංගාව, …වැව → වැව, ඇළ, අමුණ)\nපසුව ඒවා වෙනස් කළ හැක.`))return;
  t.forEach(it=>it.g=guessCats(it));changed();
 };
+/* ---------- නම ටයිප් කරන විට යෝජනා (ශබ්දකෝෂයේ si column එකෙන්) ---------- */
+const sg=$('sg');let sgI=-1,sgL=[];
+function sgHide(){sg.style.display='none';sgI=-1;sgL=[];}
+function sgPick(i){const r=sgL[i];if(!r)return;$('name').value=r.si;sgHide();$('name').focus();}
+function sgMark(){[...sg.children].forEach((d,i)=>d.className=i==sgI?'on':'');}
+function sgShow(){
+ const q=nk($('name').value).toLowerCase();
+ if(q.length<2){sgHide();return;}
+ const a=[];
+ DICT.place.forEach((r,k)=>{const s=k.toLowerCase(),p=s.indexOf(q);if(p>=0)a.push({r,p,l:s.length});});
+ a.sort((x,y)=>(x.p?1:0)-(y.p?1:0)||x.l-y.l);/* මුලින්ම ආරම්භ වන ඒවා පළමුව */
+ sgL=a.slice(0,8).map(x=>x.r);sgI=-1;sg.innerHTML='';
+ if(!sgL.length){sg.style.display='none';return;}
+ sgL.forEach((r,i)=>{
+  const d=document.createElement('div');d.textContent=r.si;
+  const t=[r.ta,r.en].filter(Boolean).join(' · ');
+  if(t){const s=document.createElement('small');s.textContent=t;d.appendChild(s);}
+  d.onmousedown=e=>{e.preventDefault();sgPick(i);};
+  sg.appendChild(d);
+ });
+ sg.style.display='block';
+}
+$('name').addEventListener('input',sgShow);
+$('name').addEventListener('blur',sgHide);
+$('name').addEventListener('keydown',e=>{
+ if(sg.style.display!='block')return;
+ if(e.key=='ArrowDown'){e.preventDefault();sgI=(sgI+1)%sgL.length;sgMark();}
+ else if(e.key=='ArrowUp'){e.preventDefault();sgI=(sgI-1+sgL.length)%sgL.length;sgMark();}
+ else if(e.key=='Enter'&&sgI>=0){e.preventDefault();e.stopPropagation();sgPick(sgI);}
+ else if(e.key=='Escape'){e.stopPropagation();sgHide();}
+});
 $('dref').onclick=loadDict;
 $('warn').onclick=e=>{if(e.target.id=='pushm')pushMissing();};
 loadDict();
