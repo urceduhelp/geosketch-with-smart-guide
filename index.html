@@ -16,9 +16,9 @@ select,button,input{font:inherit}
 select,button{padding:6px 10px;border-radius:6px;border:1px solid #9bb;background:#fff;color:var(--ink)}
 button{cursor:pointer;background:var(--grid);color:#fff;border:0;font-weight:700}
 button.alt{background:#fff;color:var(--ink);border:1px solid #9bb;font-weight:400}
-body{height:100vh;display:flex;flex-direction:column}
+body{height:100vh;height:100dvh;display:flex;flex-direction:column}
 header{flex:none}
-main{flex:1;min-height:320px;padding:10px}
+main{flex:1;min-height:0;padding:10px}
 #vp{position:relative;height:100%}
 #box{height:100%;overflow:auto;display:flex;background:#dbe5ec;border:1px solid #c3d5e0;border-radius:6px}
 canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:manipulation}
@@ -73,11 +73,9 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:m
 #pi .gl{display:block;font-size:11px;color:#1b7a3a}
 /* ===== Mobile / පටු තිර ===== */
 html,body{max-width:100%;overflow-x:hidden}
-body{height:100vh;height:100dvh}
 select{max-width:100%;min-width:0}
 #optb{display:none}
 #opts{display:contents}
-main{min-height:0}
 @media(max-width:760px){
  body{font-size:14px}
  header{padding:6px 8px;gap:6px 8px}
@@ -95,7 +93,7 @@ main{min-height:0}
  #opts label.cb{flex-direction:row;align-items:center;gap:6px}
  #opts label.ol{grid-column:1/-1}
  #opts input[type=range],#opts input#ttl{width:100%!important}
- #opts input#ttl{box-sizing:border-box;padding:6px 8px;border-radius:6px;border:1px solid #9bb}
+ #opts input#ttl{padding:6px 8px;border-radius:6px;border:1px solid #9bb}
  #opts button{padding:6px 8px}
  main{padding:4px}
  #adm{bottom:2px;right:4px;font-size:11px;padding:1px 6px;opacity:.75}
@@ -192,12 +190,13 @@ main{min-height:0}
  <div style="display:flex;gap:8px"><button id="ok">ඇතුල් වන්න</button><button class="alt" id="no">වසන්න</button></div>
 </div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="geosketch-core.js"></script>
 <script>
 /* =====================================================================
-   ██  DATA PASTE AREA  ██
-   editor.html එකෙන් ලැබෙන code එක, අදාළ සිතියමේ
-   ">>> MAP:xxx"  සිට  "<<< MAP:xxx"  දක්වා කොටස සම්පූර්ණයෙන් replace කරන්න.
+   ██  දත්ත (Backup)  ██
+   දැන් දත්ත Supabase DB එකෙන් ස්වයංක්‍රීයව load වේ.
+   පහත කොටස භාවිත වන්නේ Internet / DB නැති විට පමණි.
    ===================================================================== */
 const DATA={};
 
@@ -513,8 +512,8 @@ DATA['ol_lanka']=[
   {"n":"මාතලේ","t":"p","x":0.4755,"y":0.5882,"lx":0.5403,"ly":0.6014,"g":["ඓතිහාසික ස්ථානය","බලකොටුව","යුධ බිම","පූජා නගරය"]},
   // පොල්ගොල්ල අමුණ [අමුණ/ඇළ] {අමුණ, ජලාශ}
   {"n":"පොල්ගොල්ල අමුණ","t":"d","pts":[[0.4819,0.6196],[0.48,0.6296]],"g":["අමුණ","ජලාශ"]},
-  // පොල්ගොල්ල අමුණ [ස්ථානය] {අමුණ, ජලාශ}
-  {"n":"පොල්ගොල්ල අමුණ","t":"p","x":0.4806,"y":0.62,"lx":0.478,"ly":0.5683,"nd":1,"g":["අමුණ","ජලාශ"]},
+  // පොල්ගොල්ල අමුණ [ස්ථානය] {අමුණ, ජලාශ}
+  {"n":"පොල්ගොල්ල අමුණ","t":"p","x":0.4806,"y":0.62,"lx":0.478,"ly":0.5683,"nd":1,"g":["අමුණ","ජලාශ"]},
   // මහියංගනය [ස්ථානය] {යුධ බිම, ඓතිහාසික ස්ථානය, පූජා නගරය}
   {"n":"මහියංගනය","t":"p","x":0.5923,"y":0.6296,"lx":0.6713,"ly":0.6527,"g":["යුධ බිම","ඓතිහාසික ස්ථානය","පූජා නගරය"]},
   // බෙල්ලන්බැදි පැලැස්ස [ස්ථානය] {ප්‍රාග් ඓතිහාසික ස්ථානය}
@@ -549,13 +548,33 @@ DATA['al_lanka']=[];
 // >>> MAP:al_india
 DATA['al_india']=[];
 // <<< MAP:al_india
-/* ██  END OF DATA PASTE AREA  ██ */
+/* ██  දත්ත (Backup) අවසානය  ██ */
+
+/* ---------- Supabase DB එකෙන් දත්ත load කිරීම ---------- */
+const DB_LANG='si';/* si = index.html · ta = index_t.html · en = index_e.html */
+const SUPABASE_URL='https://jcijglwpkfluyzrltimk.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaWpnbHdwa2ZsdXl6cmx0aW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MzU3OTUsImV4cCI6MjA4MjQxMTc5NX0.dvT8OiyVEiYn_DhkMakmSq1Vvr4REDr0kYPnyqCtWHs';
+async function loadFromDB(){
+ const ck='gs_mapdata_'+DB_LANG;let rows=null,src='db';
+ try{
+  if(!window.supabase)throw new Error('no lib');
+  const sbx=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const{data,error}=await sbx.from('map_data').select('map_key,data').eq('lang',DB_LANG);
+  if(error)throw error;
+  rows=data;try{localStorage.setItem(ck,JSON.stringify(rows));}catch(e){}
+ }catch(e){
+  try{rows=JSON.parse(localStorage.getItem(ck)||'null');}catch(_){rows=null;}
+  src=rows?'cache':'file';
+ }
+ if(rows&&rows.length)rows.forEach(r=>{DATA[r.map_key]=r.data;});
+ return src;
+}
 
 const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu'),pl=$('pl');
-const ORIG=JSON.stringify(DATA);/* Move කිරීමට පෙර මුල් තැන් (Reset සඳහා) */
+let ORIG=JSON.stringify(DATA);/* Move කිරීමට පෙර මුල් තැන් (Reset සඳහා) */
 const IC={p:'●',a:'▭',r:'≈',d:'‖'};
-let cur,img,L,hi=null,marked=new Set(),sel=new Set(),drag=null,cf=new Set(),yf=new Set(),tmpCats=[],tmpYears=[];
-const NONE='__none__',esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let cur,img=null,L,hi=null,marked=new Set(),sel=new Set(),drag=null,cf=new Set(),yf=new Set(),tmpCats=[],tmpYears=[];
+const NONE='__none__',esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 /* වර්ග පෙරහන: කිසිවක් තෝරා නැතිනම් සියල්ල. කිහිපයක් තෝරා ඇත්නම් ඒවායින් ඕනෑම එකකට අයත් */
 const tagLine=it=>[(it.g||[]).join(' · '),(it.yr||[]).length?'📅 '+it.yr.join(', '):''].filter(Boolean).join('   ');
 /* වර්ග කිහිපයක් තෝරා ඇත්නම් ඒවායින් ඕනෑම එකක්; වර්ෂ කිහිපයක් තෝරා ඇත්නම් ඒවායින් ඕනෑම එකක්; වර්ග සහ වර්ෂ දෙකම තෝරා ඇත්නම් දෙකටම ගැළපිය යුතුය */
@@ -563,15 +582,18 @@ const itemOk=it=>{const t=(S,f)=>{if(!S.size)return true;const g=it[f]||[];retur
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const badge=n=>$('bc').textContent=n;
+const closePl=()=>{pl.style.display='none';badge(marked.size);};/* නාමාවලිය වසන විට ගණන යාවත්කාලීන කරයි */
 
 async function load(k){
  cur=MAPS.find(m=>m.k==k);$('st').textContent='load වෙමින්...';menu.style.display='none';pl.style.display='none';
- try{await fontReady();img=await loadImg(cur.url);}catch(e){$('st').textContent='රූපය load වුණේ නැත';return;}
+ img=null;/* අසාර්ථක වුවහොත් පරණ රූපය ඇඳීම වැළැක්වීමට */
+ try{await fontReady();img=await loadImg(cur.url);}catch(e){img=null;$('st').textContent='රූපය load වුණේ නැත';return;}
  L=layout(img);marked=new Set();cf=new Set();yf=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
  $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} කොටු`;
 }
 let ad=null,doneMsg='';/* ad = දැනට ඇතුළත් කරමින් සිටින අලුත් නම */
 function draw(ex){/* ex=true → Export: කොටු, අකුරු/ඉලක්කම්, highlight නැත */
+ if(!img||!L)return;
  const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,sp:+$('sp').value,gp:+$('gp').value,dr:+$('dr').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
  if(hi&&!ex){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
  if(ad&&!ex){const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
@@ -584,16 +606,16 @@ function draw(ex){/* ex=true → Export: කොටු, අකුරු/ඉලක
 
 /* ---------- කොටුවක් click කර ස්ථාන තේරීම ---------- */
 cv.onclick=e=>{
- if($('mvt').checked)return;
+ if(!img||$('mvt').checked)return;
  if(ad){addClick(e);return;}
  const[nx,ny]=pointer(cv,L,e);
  if(nx<0||ny<0||nx>=1||ny>=1){menu.style.display='none';hi=null;draw();return;}
  const c=Math.floor(nx*L.cols),r=Math.floor(ny*L.rows),id=colName(c)+(r+1);
- hi=[c,r];draw();pl.style.display='none';
+ hi=[c,r];draw();if(pl.style.display=='flex')closePl();
  const list=(DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>itemCells(L,it).includes(id));
  menu.innerHTML=`<b>කොටුව ${id}</b>`+(list.length?'':'<em>මෙම කොටුවේ ස්ථාන නැත</em>');
  list.forEach(([it,i])=>{const d=document.createElement('div');d.className=marked.has(i)?'on':'';
-  d.innerHTML=`${it.nd?'➚':IC[it.t]} ${it.n}<span>${marked.has(i)?'✓':''}</span>`;
+  d.innerHTML=`${it.nd?'➚':IC[it.t]} ${esc(it.n)}<span>${marked.has(i)?'✓':''}</span>`;
   d.onclick=ev=>{ev.stopPropagation();marked.has(i)?marked.delete(i):marked.add(i);badge(marked.size);menu.style.display='none';hi=null;draw();};
   menu.appendChild(d);});
  menu.style.display='block';
@@ -601,7 +623,7 @@ cv.onclick=e=>{
  menu.style.top=Math.max(4,Math.min(e.clientY,innerHeight-menu.offsetHeight-4))+'px';
 };
 document.addEventListener('keydown',e=>{
- if(e.key=='Escape'){menu.style.display='none';pl.style.display='none';
+ if(e.key=='Escape'){menu.style.display='none';if(pl.style.display=='flex')closePl();
   if($('cdlg').style.display=='flex')$('cdlg').style.display='none';
   else if(ad)adCancel();
   hi=null;draw();}
@@ -643,8 +665,8 @@ function buildList(){
 }
 function count(){$('pc').textContent=sel.size;badge(sel.size);}
 $('plb').onclick=e=>{
- e.stopPropagation();
- if(pl.style.display=='flex'){pl.style.display='none';badge(marked.size);return;}
+ e.stopPropagation();if(!img)return;
+ if(pl.style.display=='flex'){closePl();return;}
  menu.style.display='none';hi=null;draw();
  sel=new Set(marked);$('ps').value='';buildList();count();
  pl.style.display='flex';
@@ -655,25 +677,25 @@ $('plb').onclick=e=>{
 };
 $('ps').oninput=buildList;
 $('pall').onclick=()=>{visibleRows().forEach(([,i])=>sel.add(i));buildList();count();};
-$('pvis').onclick=()=>{visibleRows().forEach(([,i])=>sel.add(i));marked=new Set(sel);pl.style.display='none';badge(marked.size);draw();};
+$('pvis').onclick=()=>{visibleRows().forEach(([,i])=>sel.add(i));marked=new Set(sel);closePl();draw();};
 $('pclr').onclick=()=>{sel.clear();buildList();count();};
-$('pok').onclick=()=>{marked=new Set(sel);pl.style.display='none';badge(marked.size);draw();};
-$('pcl').onclick=()=>{pl.style.display='none';badge(marked.size);};
+$('pok').onclick=()=>{marked=new Set(sel);closePl();draw();};
+$('pcl').onclick=closePl;
 pl.onclick=e=>e.stopPropagation();
-document.addEventListener('click',e=>{if(pl.style.display=='flex'&&!pl.contains(e.target)){pl.style.display='none';badge(marked.size);}});
+document.addEventListener('click',e=>{if(pl.style.display=='flex'&&!pl.contains(e.target))closePl();});
 
 /* ---------- නම් / තිත් / ගං නම් Move කිරීම (drag) – සියලු වර්ග (core හි hitItem / dragTo) ---------- */
 const r4=n=>Math.round(n*1e4)/1e4;
-const hitAt=e=>{const[nx,ny]=pointer(cv,L,e);return hitItem(cv.getContext('2d'),L,DATA[cur.k]||[],i=>marked.has(i),nx,ny,+$('fsz').value,+$('dr').value);};
+const hitAt=e=>{if(!img)return null;const[nx,ny]=pointer(cv,L,e);return hitItem(cv.getContext('2d'),L,DATA[cur.k]||[],i=>marked.has(i),nx,ny,+$('fsz').value,+$('dr').value);};
 cv.onpointerdown=e=>{
- if(!$('mvt').checked)return;const h=hitAt(e);if(!h){Z.startPan(e);return;}
+ if(!img||!$('mvt').checked)return;const h=hitAt(e);if(!h){Z.startPan(e);return;}
  const[nx,ny]=pointer(cv,L,e);
  /* ඊතලයක් නැති නමක් නම්, දැනට නම තිබෙන තැනින් පටන් ගනී (ඊතලයක් එක් වේ) */
  drag={it:DATA[cur.k][h.i],keys:h.keys,ox:h.bx-nx,oy:h.by-ny};
  cv.setPointerCapture(e.pointerId);e.preventDefault();
 };
 cv.onpointermove=e=>{
- if(!$('mvt').checked)return;
+ if(!img||!$('mvt').checked)return;
  if(drag){const[x,y]=pointer(cv,L,e);dragTo(drag,x,y);draw();}
  else cv.style.cursor=hitAt(e)?'move':'default';
 };
@@ -690,10 +712,12 @@ $('optb').onclick=()=>$('opts').classList.toggle('on');
 $('map').onchange=e=>{ad=null;doneMsg='';refreshBar();load(e.target.value);};
 $('dr').oninput=$('gp').oninput=$('sp').oninput=$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
 $('clr').onclick=()=>{marked.clear();sel.clear();badge(0);draw();};
-function exp(f){draw(true);try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}draw();}
+function exp(f){if(!img)return;draw(true);try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Export කළ නොහැක: රූපය CORS නිසා අවහිරයි. Internet සම්බන්ධතාව බලා page එක refresh කරන්න.');}draw();}
 $('jpg').onclick=()=>exp(exportJPG);
 $('pdf').onclick=()=>exp(exportPDF);
-load(MAPS[0].k);
+/* දත්ත DB එකෙන් load කර, ඉන්පසු පළමු සිතියම විවෘත කරයි */
+$('st').textContent='දත්ත load වෙමින්...';
+loadFromDB().then(()=>{ORIG=JSON.stringify(DATA);load(MAPS[0].k);});
 
 
 /* =====================================================================
@@ -735,11 +759,12 @@ function addItem(it){
  it.cu=1;const a=DATA[cur.k]=DATA[cur.k]||[];a.push(it);marked.add(a.length-1);badge(marked.size);
 }
 function openCu(){
+ if(!img)return;
  menu.style.display='none';pl.style.display='none';hi=null;
  $('cn').value='';document.querySelector('[name=ck][value=p]').checked=true;cxUpdate();renderCu();cpk.refresh();ypk.refresh();
  $('cdlg').style.display='flex';$('cn').focus();
 }
-$('padd').onclick=e=>{e.stopPropagation();openCu();};
+$('padd').onclick=e=>{e.stopPropagation();badge(marked.size);openCu();};
 $('cno').onclick=()=>$('cdlg').style.display='none';
 $('cn').onkeydown=e=>{if(e.key=='Enter')$('cgo').click();};
 
