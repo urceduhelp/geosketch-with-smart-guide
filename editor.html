@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GeoSketch – Data Feed</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#0d2b45;--grid:#1aa7ec;--paper:#f4f8fb;--red:#d6212b}
 *{box-sizing:border-box}
-body{margin:0;font:14px 'Noto Sans Sinhala','Iskoola Pota',sans-serif;background:var(--paper);color:var(--ink)}
+body{margin:0;font:14px 'Noto Sans Sinhala','Noto Sans Tamil','Iskoola Pota','Latha',sans-serif;background:var(--paper);color:var(--ink)}
 header{background:var(--ink);color:#fff;padding:10px 16px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 h1{margin:0;font-size:20px}h1 i{font-style:normal;color:var(--grid)}
 select,button,input,textarea{font:inherit;padding:6px 9px;border-radius:6px;border:1px solid #9bb;color:var(--ink)}
@@ -31,6 +31,10 @@ aside{display:flex;flex-direction:column;gap:10px}
 #out{width:100%;height:190px;font:12px/1.4 Consolas,monospace;white-space:pre}
 #hint{color:#456;min-height:34px}
 #info{position:fixed;z-index:9;display:none;max-width:min(88vw,300px);background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 20px #0004;padding:8px 10px;font-size:13px;line-height:1.5}#info b{font-size:15px}#info .row{margin-top:6px}#info button{padding:3px 10px;font-size:12px}
+.nms{display:flex;gap:6px;margin-top:6px}.nms input{flex:1;min-width:0}
+#tabs button{padding:4px 12px}
+#tgt{font-size:12px;color:#678;margin:4px 0}
+#warn{font-size:12px;color:#b45309;margin-top:6px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -56,11 +60,13 @@ aside{display:flex;flex-direction:column;gap:10px}
   </div>
   <div class="box"><h3>නම</h3>
    <input id="name" placeholder="උදා: මහවැලි ගඟ">
+   <div class="nms"><input id="nameT" placeholder="தமிழ் பெயர் (අවශ්‍ය නම්)"><input id="nameE" placeholder="English name (optional)"></div>
+   <small style="color:#678">දෙමළ / English නම හිස්ව තැබුවහොත්, එම භාෂා කේතයේ සිංහල නම ම යෙදේ. වර්ග ස්වයංක්‍රීයව පරිවර්තනය වේ.</small>
    <div class="row" style="margin-top:6px"><span>වර්ණය</span><input id="col" type="color" value="#ff9800" style="padding:0;width:42px">
    <select id="pat" title="ප්‍රදේශයේ Pattern"><option value="s">සම්පූර්ණ වර්ණය</option><option value="h">තිරස් රේඛා</option><option value="v">සිරස් රේඛා</option><option value="d1">ඇලි රේඛා /</option><option value="d2">ඇලි රේඛා \</option><option value="g">කොටු</option><option value="x">ඇල කොටු</option><option value="o">තිත්</option></select>
    <label><input id="hl" type="checkbox"> අමුණේ නම සිතියමේ නොලියන්න</label>
    <span>අකුරු</span><input id="fsz" type="range" min="16" max="48" value="26" style="width:90px"></div>
-   <div style="margin-top:8px"><b>වර්ග</b> <small style="color:#678">(එකකට වඩා තෝරා ගත හැක · ඊළඟ අයිතමවලටත් රඳා පවතී)</small><div id="cpk"></div></div>
+   <div style="margin-top:8px"><b>වර්ග</b> <small style="color:#678">(සිංහලෙන් තෝරන්න; දෙමළ / English ස්වයංක්‍රීයව යෙදේ · එකකට වඩා තෝරා ගත හැක · ඊළඟ අයිතමවලටත් රඳා පවතී)</small><div id="cpk"></div></div>
    <div style="margin-top:8px"><b>විභාග වර්ෂය</b> <small style="color:#678">(ස්ථානය ලැබුණු විභාග වර්ෂ; කිහිපයක් තෝරා ගත හැක)</small><div id="ypk"></div></div>
    <div class="row" style="margin-top:6px"><button id="fin">අවසන් (Enter)</button><button class="alt" id="undo">Undo</button><button class="alt" id="cancel">අවලංගු</button></div>
    <div id="hint"></div>
@@ -79,8 +85,11 @@ aside{display:flex;flex-direction:column;gap:10px}
     <button class="alt" id="bguess" title="වර්ගයක් නැති අයිතමවලට නම අනුව වර්ග යොදයි">නම අනුව අනුමාන</button>
    </div>
    <ul id="list"></ul></div>
-  <div class="box"><h3>GeoSketch වෙත paste කිරීමට Code</h3>
+  <div class="box"><h3>GeoSketch වෙත paste කිරීමට Code (භාෂා 3යි)</h3>
+   <div class="row" id="tabs"><button data-l="si">සිංහල</button><button class="alt" data-l="ta">தமிழ்</button><button class="alt" data-l="en">English</button></div>
+   <div id="tgt"></div>
    <textarea id="out" spellcheck="false"></textarea>
+   <div id="warn"></div>
    <div class="row" style="margin-top:6px"><button id="copy">Copy</button><button class="alt" id="loadc">මෙම Code එක load කරන්න</button><button class="alt" id="reset">සියල්ල මකන්න</button></div>
   </div>
  </aside>
@@ -90,11 +99,14 @@ aside{display:flex;flex-direction:column;gap:10px}
 <script>
 if(!isAdmin())location.replace('index.html');
 const $=id=>document.getElementById(id),cv=$('cv');
-let cur,img,L,items=[],tmp=[],pend=null,drag=null,insp=null,zt=0;
+let cur,img,L,items=[],tmp=[],pend=null,drag=null,insp=null,zt=0,lang='si';
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const tool=()=>document.querySelector('[name=t]:checked').value;
 const TL={p:'ස්ථානය',a:'ප්‍රදේශය',r:'ගඟ',d:'අමුණ/ඇළ'},IC={p:'●',a:'▭',r:'≈',d:'‖'};
+/* code comment වල ස්ථාන වර්ගය (භාෂා 3) */
+const TLL={si:TL,ta:{p:'இடம்',a:'பகுதி',r:'ஆறு',d:'அணை/கால்வாய்'},en:{p:'Place',a:'Area',r:'River',d:'Weir/Canal'}};
+const FILES={si:'index.html',ta:'index_t.html',en:'index_e.html'};
 const hints={
  p:'සිතියමේ ස්ථානය click කරන්න.',
  pa:'පළමුව ස්ථානය, ඉන්පසු නම තබන තැන click කරන්න.',
@@ -105,16 +117,66 @@ const hints={
  mv:'නමක් (හෝ තිතක්) මත mouse එක තබා drag කරන්න. ඊතලය ස්වයංක්‍රීයව දිගු/කෙටි වී 90° හැරේ.'
 };
 const r4=n=>Math.round(n*1e4)/1e4;
+
+/* ---- වර්ග පරිවර්තන (සිංහල → தமிழ் / English) ---- */
+const CATTR={
+ 'නගරය':['நகரம்','City'],
+ 'පූජා නගරය':['வழிபாட்டு நகரம்','Sacred City'],
+ 'ඓතිහාසික ස්ථානය':['வரலாற்றுத் தலம்','Historical Place'],
+ 'රාජධානිය':['இராச்சியம்','Kingdom'],
+ 'වරාය':['துறைமுகம்','Port'],
+ 'පූර්ව ඓතිහාසික ස්ථානය':['ஆதி வரலாற்றுத் தலம்','Protohistoric site'],
+ 'වැව':['குளம்','Tank'],
+ 'ගංගාව':['ஆறு','River'],
+ 'ප්‍රදේශය':['பகுதி','Region'],
+ 'පැරණි පරිපාලන ඒකකය':['பழைய நிர்வாக அலகு','Ancient Administrative Unit'],
+ 'බලකොටුව':['கோட்டை','Fort'],
+ 'ඇළ මාර්ගය':['கால்வாய்','Canal'],
+ 'ජලාශ':['நீர்த்தேக்கம்','Reservoir'],
+ 'ප්‍රාග් ඓතිහාසික ස්ථානය':['வரலாற்றுக்கு முந்தைய தலம்','Prehistoric site'],
+ 'උපපාලන මධ්‍යස්ථානය':['உப நிர்வாக மையம்','Sub-administrative Center'],
+ 'පර්යේෂණායතනය':['ஆய்வு நிறுவனம்','Research Institute'],
+ 'කෘෂි බිම':['விவசாய நிலம்','Agricultural land'],
+ 'වගුරු බිම':['சதுப்பு நிலம்','Marshland'],
+ 'උද්භිද උද්‍යානය':['தாவரவியல் பூங்கா','Botanical garden'],
+ 'යුධ බිම':['போர்க்களம்','Battlefield'],
+ 'ශේෂ කන්ද':['எச்சக் குன்று','Residual hill'],
+ 'පර්වතය':['பாறை','Rock'],
+ 'තැන්න':['மேட்டுச் சமவெளி','Plain'],
+ 'අභ්‍යන්තර තොටුපොළ':['உள்நாட்டுக் கடவை','Inland Pier'],
+ 'අමුණ':['அணைக்கட்டு','Weir'],
+ 'ආර්ථික මධ්‍යස්ථානය':['பொருளாதார மையம்','Economic Center'],
+ /* පහත ඒවා ඔබ ලබා දුන් ලැයිස්තුවේ නැත; මා විසින් එක් කළ ඒවා (අවශ්‍ය නම් නිවැරදි කරන්න) */
+ 'අතු ගංගාව':['துணை ஆறு','Tributary'],
+ 'රට':['நாடு','Country'],
+ 'නව පරිපාලන ඒකකය':['புதிய நிர்வாக அலகு','New Administrative Unit']
+};
+const nk=s=>String(s).replace(/\u200d/g,'').replace(/\s+/g,' ').trim();/* ZWJ / අමතර හිස්තැන් නොසලකයි */
+const CATN={};Object.keys(CATTR).forEach(k=>CATN[nk(k)]=CATTR[k]);
+const loadCM=()=>{try{return JSON.parse(localStorage.getItem('gs_catmap')||'{}');}catch(e){return{};}};
+function trCat(c,l){if(l=='si')return c;const m=CATN[nk(c)]||loadCM()[c];return m&&m[l=='ta'?0:1]?m[l=='ta'?0:1]:null;}
+function askTr(n){/* අලුත් වර්ගයක් සෑදූ විට එහි දෙමළ / English නම අසයි */
+ if(CATN[nk(n)]||loadCM()[n])return;
+ const ta=prompt(`"${n}" වර්ගයේ දෙමළ නම (හිස් නම් සිංහලෙන්ම යෙදේ):`,'');
+ const en=prompt(`"${n}" වර්ගයේ English නම (හිස් නම් සිංහලෙන්ම යෙදේ):`,'');
+ if(!(ta||'').trim()&&!(en||'').trim())return;
+ const m=loadCM();m[n]=[(ta||'').trim()||n,(en||'').trim()||n];
+ try{localStorage.setItem('gs_catmap',JSON.stringify(m));}catch(e){}
+}
+
 /* ---- වර්ග ---- */
 const ck=new Set();/* ලැයිස්තුවේ ටික් කළ අයිතම */
 const loadCustom=()=>{try{return JSON.parse(localStorage.getItem('gs_cats')||'[]');}catch(e){return[];}};
 function allCats(){const u=[];MAPS.forEach(m=>{try{u.push(usedCats(cur&&m.k==cur.k?items:JSON.parse(localStorage.getItem('gs_'+m.k)||'[]')));}catch(e){}});return catList(loadCustom(),...u);}
-const cp=catPicker($('cpk'),{list:allCats,onNew:n=>{const a=loadCustom();if(!a.includes(n)){a.push(n);try{localStorage.setItem('gs_cats',JSON.stringify(a));}catch(e){}}}});
+const cp=catPicker($('cpk'),{list:allCats,onNew:n=>{const a=loadCustom();if(!a.includes(n)){a.push(n);try{localStorage.setItem('gs_cats',JSON.stringify(a));}catch(e){}}askTr(n);}});
 const loadYears=()=>{try{return JSON.parse(localStorage.getItem('gs_years')||'[]');}catch(e){return[];}};
 function allYears(){const u=[];MAPS.forEach(m=>{try{u.push(usedYears(cur&&m.k==cur.k?items:JSON.parse(localStorage.getItem('gs_'+m.k)||'[]')));}catch(e){}});return yearList(loadYears(),...u);}
 const ypk=catPicker($('ypk'),{list:allYears,ph:'— Dropdown එකෙන් වර්ෂයක් තෝරන්න —',newBtn:'➕ වෙනත් වර්ෂයක්',newPh:'උදා: 2022 හෝ 2022(2021)',empty:'වර්ෂයක් තෝරා නැත (අවශ්‍ය නැතිනම් එලෙසම තබන්න)',
  onNew:n=>{const a=loadYears();if(!a.includes(n)){a.push(n);try{localStorage.setItem('gs_years',JSON.stringify(a));}catch(e){}}}});
 const G=()=>{const g=cp.get(),y=ypk.get();return Object.assign(g.length?{g}:{},y.length?{yr:y}:{});};
+/* දෙමළ / English නම් (nt / ne) */
+const TN=()=>{const o={},t=$('nameT').value.trim(),e=$('nameE').value.trim();if(t)o.nt=t;if(e)o.ne=e;return o;};
+const clearNames=()=>{$('name').value='';$('nameT').value='';$('nameE').value='';};
 
 async function load(k){
  cur=MAPS.find(m=>m.k==k);await fontReady();
@@ -137,16 +199,40 @@ function redraw(){
  const ul=$('list');ul.innerHTML='';
  items.forEach((it,i)=>{const li=document.createElement('li');
   const cb=document.createElement('input');cb.type='checkbox';cb.checked=ck.has(i);cb.onchange=()=>{cb.checked?ck.add(i):ck.delete(i);};li.appendChild(cb);
-  li.insertAdjacentHTML('beforeend',`<span>${it.nd?'➜':IC[it.t]} ${it.n}</span><small>${itemCells(L,it).slice(0,6).join(' ')}</small>`);
+  li.insertAdjacentHTML('beforeend',`<span>${it.nd?'➜':IC[it.t]} ${esc(it.n)}</span><small>${itemCells(L,it).slice(0,6).join(' ')}</small>`);
   const sp=li.querySelector('span');sp.style.cursor='pointer';sp.title='සිතියමේ මෙම ස්ථානය පෙන්වන්න';sp.onclick=()=>locate(i);if(i===insp)li.style.background='#fff3e0';
+  const tb=document.createElement('button');tb.textContent='🌐';tb.title='දෙමළ / English නම සංස්කරණය කරන්න';tb.style.background='#2e7d32';
+  tb.onclick=()=>{const t=prompt('දෙමළ නම (හිස් නම් සිංහල නම යෙදේ):',it.nt||'');if(t===null)return;
+   const e=prompt('English name (blank = Sinhala name):',it.ne||'');if(e===null)return;
+   if(t.trim())it.nt=t.trim();else delete it.nt;if(e.trim())it.ne=e.trim();else delete it.ne;changed();};
+  li.appendChild(tb);
   const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);ck.clear();hideInfo();changed();};li.appendChild(b);
-  if((it.g&&it.g.length)||(it.yr&&it.yr.length))li.insertAdjacentHTML('beforeend',`<span class="gc">${it.g&&it.g.length?'🏷 '+it.g.join(' · '):''}${it.yr&&it.yr.length?'  📅 '+it.yr.join(', '):''}</span>`);
+  const meta=[it.g&&it.g.length?'🏷 '+it.g.map(esc).join(' · '):'',it.yr&&it.yr.length?'📅 '+it.yr.map(esc).join(', '):'',(it.nt||it.ne)?'🌐 '+esc(it.nt||'–')+' | '+esc(it.ne||'–'):''].filter(Boolean).join('  ');
+  if(meta)li.insertAdjacentHTML('beforeend',`<span class="gc">${meta}</span>`);
   ul.appendChild(li);});
- $('out').value=code();
+ refreshOut();
 }
-function code(){
+/* භාෂාවකට අදාළ අයිතමයක් සාදයි (නම + වර්ග පරිවර්තනය) */
+function conv(it,l){
+ const o=Object.assign({},it);
+ if(l=='si'){if(!o.nt)delete o.nt;if(!o.ne)delete o.ne;return o;}/* nt/ne සිංහල code එකේ තබයි (නැවත load කිරීමට) */
+ const nn=l=='ta'?it.nt:it.ne;delete o.nt;delete o.ne;
+ if(nn&&nn.trim())o.n=nn.trim();
+ if(o.g)o.g=o.g.map(c=>trCat(c,l)||c);
+ return o;
+}
+function code(l=lang){
  return `// >>> MAP:${cur.k}\nDATA['${cur.k}']=[\n`+
-  items.map(it=>`  // ${it.n} [${TL[it.t]}]${it.g&&it.g.length?' {'+it.g.join(', ')+'}':''}${it.yr&&it.yr.length?' <'+it.yr.join(', ')+'>':''}\n  ${JSON.stringify(it)}`).join(',\n')+`\n];\n// <<< MAP:${cur.k}`;
+  items.map(it=>{const o=conv(it,l);return `  // ${o.n} [${TLL[l][it.t]}]${o.g&&o.g.length?' {'+o.g.join(', ')+'}':''}${o.yr&&o.yr.length?' <'+o.yr.join(', ')+'>':''}\n  ${JSON.stringify(o)}`;}).join(',\n')+`\n];\n// <<< MAP:${cur.k}`;
+}
+function refreshOut(){
+ $('out').value=code(lang);
+ $('tgt').textContent='මෙය paste කළ යුත්තේ: '+FILES[lang]+' (DATA PASTE AREA හි)';
+ if(lang=='si'){$('warn').innerHTML='';return;}
+ const mc=new Set();let mn=0;
+ items.forEach(it=>{(it.g||[]).forEach(c=>{if(!trCat(c,lang))mc.add(c);});const nn=lang=='ta'?it.nt:it.ne;if(!(nn&&nn.trim()))mn++;});
+ $('warn').innerHTML=(mc.size?`⚠ පරිවර්තනය නැති වර්ග (සිංහලෙන් ම යෙදේ): ${[...mc].map(esc).join(', ')}<br>`:'')+
+  (mn?`ℹ ${lang=='ta'?'දෙමළ':'ඉංග්‍රීසි'} නම නැති අයිතම ${mn}ක් (සිංහල නම යෙදේ). ලැයිස්තුවේ 🌐 බොත්තමෙන් එක් කළ හැක.`:'');
 }
 function changed(){save();cp.refresh();ypk.refresh();redraw();}
 function nm(){const n=$('name').value.trim();if(!n){alert('පළමුව නම ඇතුළත් කරන්න');$('name').focus();}return n;}
@@ -171,7 +257,7 @@ function hideInfo(){insp=null;$('info').style.display='none';}
 function redraw0(i,e){insp=i;redraw();showInfo(i,e.clientX,e.clientY);}
 function showInfo(i,cx,cy){
  insp=i;const it=items[i],d=$('info');
- const tags=[(it.g||[]).length?'🏷 '+it.g.map(esc).join(' · '):'',(it.yr||[]).length?'📅 '+it.yr.map(esc).join(', '):''].filter(Boolean).join('<br>');
+ const tags=[(it.g||[]).length?'🏷 '+it.g.map(esc).join(' · '):'',(it.yr||[]).length?'📅 '+it.yr.map(esc).join(', '):'',(it.nt||it.ne)?'🌐 '+esc(it.nt||'–')+' | '+esc(it.ne||'–'):''].filter(Boolean).join('<br>');
  d.innerHTML=`<b>${esc(it.n)}</b><div style="color:#456">${TL[it.t]}${it.nd?' (ඊතලය පමණි)':''} · ${itemCells(L,it).slice(0,6).join(' ')}</div>${tags?'<div>'+tags+'</div>':''}`+
   '<div class="row"><button class="alt" id="ix">වසන්න</button><button id="idl" style="background:var(--red)">ඉවත් කරන්න</button></div>';
  $('ix').onclick=()=>{hideInfo();redraw();};
@@ -201,10 +287,10 @@ cv.onclick=e=>{
  }
  const[x,y]=pointer(cv,L,e);if(x<0||y<0||x>1||y>1)return;
  const t=tool(),p=[r4(x),r4(y)];
- if(t=='p'){const n=nm();if(!n)return;items.push(Object.assign({n,t:'p',x:p[0],y:p[1]},G()));$('name').value='';changed();}
+ if(t=='p'){const n=nm();if(!n)return;items.push(Object.assign({n,t:'p',x:p[0],y:p[1]},TN(),G()));clearNames();changed();}
  else if(t=='pa'||t=='na'){
   if(!pend){if(!nm())return;pend=p;redraw();}
-  else{items.push(Object.assign({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{},G()));pend=null;$('name').value='';changed();}
+  else{items.push(Object.assign({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{},TN(),G()));pend=null;clearNames();changed();}
  }else{tmp.push(p);redraw();}
 };
 
@@ -245,7 +331,7 @@ function finish(){
  const t=tool();if(t!='a'&&t!='r'&&t!='d')return;
  if(tmp.length<(t=='a'?3:2)){alert(t=='a'?'ලක්ෂ්‍ය 3ක්වත් අවශ්‍යයි':'ලක්ෂ්‍ය 2ක්වත් අවශ්‍යයි');return;}
  const n=nm();if(!n)return;
- items.push(Object.assign(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts:tmp}:t=='d'?Object.assign({n,t:'d',pts:tmp},$('hl').checked?{hl:1}:{}):{n,t:'r',pts:tmp},G()));tmp=[];$('name').value='';changed();
+ items.push(Object.assign(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts:tmp}:t=='d'?Object.assign({n,t:'d',pts:tmp},$('hl').checked?{hl:1}:{}):{n,t:'r',pts:tmp},TN(),G()));tmp=[];clearNames();changed();
 }
 $('fin').onclick=finish;
 $('undo').onclick=()=>{if(pend)pend=null;else if(tmp.length)tmp.pop();else{items.pop();ck.clear();hideInfo();}changed();};
@@ -256,8 +342,13 @@ document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=nul
  cv.style.touchAction=tool()=='mv'?'none':'manipulation';redraw();});
 $('fsz').oninput=redraw;
 $('map').onchange=e=>load(e.target.value);
+/* භාෂා tabs */
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;
+ document.querySelectorAll('#tabs button').forEach(x=>x.className=x==b?'':'alt');refreshOut();});
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText($('out').value);}catch(e){$('out').select();document.execCommand('copy');}$('copy').textContent='Copy වුණා ✓';setTimeout(()=>$('copy').textContent='Copy',1500);};
-$('loadc').onclick=()=>{try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();ck.clear();hideInfo();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
+$('loadc').onclick=()=>{
+ if(lang!='si'){alert('නැවත load කළ හැක්කේ "සිංහල" tab එකේ Code එක පමණි. එය තෝරා නැවත උත්සාහ කරන්න.');return;}
+ try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();ck.clear();hideInfo();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
 $('reset').onclick=()=>{if(confirm('මෙම සිතියමේ සියල්ල මකන්නද?')){items=[];ck.clear();hideInfo();changed();}};
 $('lo').onclick=()=>{sessionStorage.removeItem('gs_admin');location.href='index.html';};
 /* ---------- වර්ග: ටික් කළ අයිතමවලට bulk ක්‍රියා ---------- */
