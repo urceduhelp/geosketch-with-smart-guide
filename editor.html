@@ -61,7 +61,7 @@ aside{display:flex;flex-direction:column;gap:10px}
   <div class="box"><h3>නම</h3>
    <input id="name" placeholder="උදා: මහවැලි ගඟ">
    <div class="nms"><input id="nameT" placeholder="தமிழ் பெயர் (අවශ්‍ය නම්)"><input id="nameE" placeholder="English name (optional)"></div>
-   <small style="color:#678">දෙමළ / English නම හිස්ව තැබුවහොත්, එම භාෂා කේතයේ සිංහල නම ම යෙදේ. වර්ග ස්වයංක්‍රීයව පරිවර්තනය වේ.</small>
+   <small style="color:#678">දෙමළ / English නම හිස්ව තැබුවහොත් ශබ්දකෝෂයෙන් (Supabase) ස්වයංක්‍රීයව ලබා ගනී; එහි නැත්නම් එම භාෂා කේතයේ සිංහල නම ම යෙදේ. වර්ග ද ශබ්දකෝෂයෙන් පරිවර්තනය වේ.</small>
    <div class="row" style="margin-top:6px"><span>වර්ණය</span><input id="col" type="color" value="#ff9800" style="padding:0;width:42px">
    <select id="pat" title="ප්‍රදේශයේ Pattern"><option value="s">සම්පූර්ණ වර්ණය</option><option value="h">තිරස් රේඛා</option><option value="v">සිරස් රේඛා</option><option value="d1">ඇලි රේඛා /</option><option value="d2">ඇලි රේඛා \</option><option value="g">කොටු</option><option value="x">ඇල කොටු</option><option value="o">තිත්</option></select>
    <label><input id="hl" type="checkbox"> අමුණේ නම සිතියමේ නොලියන්න</label>
@@ -87,6 +87,7 @@ aside{display:flex;flex-direction:column;gap:10px}
    <ul id="list"></ul></div>
   <div class="box"><h3>GeoSketch වෙත paste කිරීමට Code (භාෂා 3යි)</h3>
    <div class="row" id="tabs"><button data-l="si">සිංහල</button><button class="alt" data-l="ta">தமிழ்</button><button class="alt" data-l="en">English</button></div>
+   <div class="row" style="font-size:12px;margin-top:4px"><span id="dtx" style="color:#456">📚 ශබ්දකෝෂය…</span><button class="alt" id="dref" title="ශබ්දකෝෂය නැවත load කරන්න" style="padding:2px 8px;font-size:12px">🔄</button><a href="dictionary.html" target="_blank">ශබ්දකෝෂය විවෘත කරන්න ↗</a></div>
    <div id="tgt"></div>
    <textarea id="out" spellcheck="false"></textarea>
    <div id="warn"></div>
@@ -95,6 +96,7 @@ aside{display:flex;flex-direction:column;gap:10px}
  </aside>
 </div>
 <div id="info"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="geosketch-core.js"></script>
 <script>
 if(!isAdmin())location.replace('index.html');
@@ -154,7 +156,50 @@ const CATTR={
 const nk=s=>String(s).replace(/\u200d/g,'').replace(/\s+/g,' ').trim();/* ZWJ / අමතර හිස්තැන් නොසලකයි */
 const CATN={};Object.keys(CATTR).forEach(k=>CATN[nk(k)]=CATTR[k]);
 const loadCM=()=>{try{return JSON.parse(localStorage.getItem('gs_catmap')||'{}');}catch(e){return{};}};
-function trCat(c,l){if(l=='si')return c;const m=CATN[nk(c)]||loadCM()[c];return m&&m[l=='ta'?0:1]?m[l=='ta'?0:1]:null;}
+/* ---- ශබ්දකෝෂය (Supabase) ---- */
+const SUPABASE_URL='https://jcijglwpkfluyzrltimk.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaWpnbHdwa2ZsdXl6cmx0aW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MzU3OTUsImV4cCI6MjA4MjQxMTc5NX0.dvT8OiyVEiYn_DhkMakmSq1Vvr4REDr0kYPnyqCtWHs';
+let sb=null;try{if(window.supabase)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);}catch(e){sb=null;}
+const DICT={category:new Map(),place:new Map(),other:new Map()};
+const dget=(kind,si)=>(DICT[kind]||new Map()).get(nk(si))||null;
+const dtr=(kind,si,l)=>{const r=dget(kind,si);return r&&r[l]?r[l]:null;};/* l = 'ta' | 'en' */
+async function loadDict(){
+ const tx=$('dtx');tx.textContent='📚 ශබ්දකෝෂය load වෙමින්...';
+ let all=[],src='online';
+ try{
+  if(!sb)throw new Error('no client');
+  for(let from=0;;from+=1000){
+   const{data,error}=await sb.from('dictionary').select('kind,si,ta,en').order('id').range(from,from+999);
+   if(error)throw error;all=all.concat(data);if(data.length<1000)break;
+  }
+  try{localStorage.setItem('gs_dict_cache',JSON.stringify(all));}catch(e){}
+ }catch(e){
+  try{all=JSON.parse(localStorage.getItem('gs_dict_cache')||'[]');}catch(_){all=[];}
+  src=all.length?'cache':'none';
+ }
+ Object.values(DICT).forEach(m=>m.clear());
+ all.forEach(r=>{if(DICT[r.kind])DICT[r.kind].set(nk(r.si),{ta:r.ta,en:r.en});});
+ tx.textContent=src=='none'?'📚 ශබ්දකෝෂය ලබා ගත නොහැක (ගොනුවේ ඇති වර්ග පමණක් භාවිතා වේ)':`📚 ශබ්දකෝෂය: වචන ${all.length}ක්`+(src=='cache'?' (offline – පැරණි පිටපත)':'');
+ if(cur)refreshOut();
+}
+async function dictSession(){try{if(!sb)return null;const{data}=await sb.auth.getSession();return data.session;}catch(e){return null;}}
+async function dictAdd(kind,si,ta,en){/* Admin login වී ඇත්නම් පමණක්, ශබ්දකෝෂයට වචනයක් එක් කරයි */
+ try{if(!sb||dget(kind,si)||!(await dictSession()))return;
+  const{error}=await sb.from('dictionary').insert({kind,si,ta:ta||null,en:en||null});if(!error)await loadDict();}catch(e){}
+}
+async function pushMissing(){/* ශබ්දකෝෂයේ නැති වචන (අදාළ පරිවර්තන හිස්ව) එක් කරයි; පසුව dictionary.html හි පුරවන්න */
+ if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
+ if(!(await dictSession())){alert('ශබ්දකෝෂයට වචන එක් කිරීමට, dictionary.html හි Admin ලෙස login වී, නැවත මෙම පිටුව refresh කර උත්සාහ කරන්න.');return;}
+ const recs=[],seen=new Set(),add=(kind,si,ta,en)=>{const k=kind+'|'+nk(si);if(seen.has(k)||dget(kind,si))return;seen.add(k);recs.push({kind,si,ta:ta||null,en:en||null});};
+ items.forEach(it=>{add('place',it.n,it.nt,it.ne);(it.g||[]).forEach(c=>{const m=CATN[nk(c)]||loadCM()[c];add('category',c,m?m[0]:null,m?m[1]:null);});});
+ if(!recs.length){alert('ශබ්දකෝෂයට එක් කිරීමට අලුත් වචන නැත');return;}
+ const{error}=await sb.from('dictionary').insert(recs);
+ if(error){alert('අසාර්ථකයි: '+error.message);return;}
+ alert(`වචන ${recs.length}ක් ශබ්දකෝෂයට එක් කළා. දෙමළ / English පරිවර්තන පිරවීමට dictionary.html හි "පරිවර්තනය නැති ඒවා පමණක්" තෝරන්න.`);
+ await loadDict();
+}
+/* වර්ගයක පරිවර්තනය: පළමුව ශබ්දකෝෂය, ඉන්පසු ගොනුවේ ඇති මුල් ලැයිස්තුව / ඔබ අතින් දුන් ඒවා */
+function trCat(c,l){if(l=='si')return c;const d=dtr('category',c,l);if(d)return d;const m=CATN[nk(c)]||loadCM()[c];return m&&m[l=='ta'?0:1]?m[l=='ta'?0:1]:null;}
 function askTr(n){/* අලුත් වර්ගයක් සෑදූ විට එහි දෙමළ / English නම අසයි */
  if(CATN[nk(n)]||loadCM()[n])return;
  const ta=prompt(`"${n}" වර්ගයේ දෙමළ නම (හිස් නම් සිංහලෙන්ම යෙදේ):`,'');
@@ -162,6 +207,7 @@ function askTr(n){/* අලුත් වර්ගයක් සෑදූ වි�
  if(!(ta||'').trim()&&!(en||'').trim())return;
  const m=loadCM();m[n]=[(ta||'').trim()||n,(en||'').trim()||n];
  try{localStorage.setItem('gs_catmap',JSON.stringify(m));}catch(e){}
+ dictAdd('category',n,(ta||'').trim(),(en||'').trim());
 }
 
 /* ---- වර්ග ---- */
@@ -216,7 +262,7 @@ function redraw(){
 function conv(it,l){
  const o=Object.assign({},it);
  if(l=='si'){if(!o.nt)delete o.nt;if(!o.ne)delete o.ne;return o;}/* nt/ne සිංහල code එකේ තබයි (නැවත load කිරීමට) */
- const nn=l=='ta'?it.nt:it.ne;delete o.nt;delete o.ne;
+ const nn=(l=='ta'?it.nt:it.ne)||dtr('place',it.n,l);delete o.nt;delete o.ne;/* අතින් දුන් නම > ශබ්දකෝෂය > සිංහල නම */
  if(nn&&nn.trim())o.n=nn.trim();
  if(o.g)o.g=o.g.map(c=>trCat(c,l)||c);
  return o;
@@ -230,9 +276,10 @@ function refreshOut(){
  $('tgt').textContent='මෙය paste කළ යුත්තේ: '+FILES[lang]+' (DATA PASTE AREA හි)';
  if(lang=='si'){$('warn').innerHTML='';return;}
  const mc=new Set();let mn=0;
- items.forEach(it=>{(it.g||[]).forEach(c=>{if(!trCat(c,lang))mc.add(c);});const nn=lang=='ta'?it.nt:it.ne;if(!(nn&&nn.trim()))mn++;});
+ items.forEach(it=>{(it.g||[]).forEach(c=>{if(!trCat(c,lang))mc.add(c);});const nn=(lang=='ta'?it.nt:it.ne)||dtr('place',it.n,lang);if(!(nn&&nn.trim()))mn++;});
  $('warn').innerHTML=(mc.size?`⚠ පරිවර්තනය නැති වර්ග (සිංහලෙන් ම යෙදේ): ${[...mc].map(esc).join(', ')}<br>`:'')+
-  (mn?`ℹ ${lang=='ta'?'දෙමළ':'ඉංග්‍රීසි'} නම නැති අයිතම ${mn}ක් (සිංහල නම යෙදේ). ලැයිස්තුවේ 🌐 බොත්තමෙන් එක් කළ හැක.`:'');
+  (mn?`ℹ ${lang=='ta'?'දෙමළ':'ඉංග්‍රීසි'} නම ශබ්දකෝෂයේ නැති අයිතම ${mn}ක් (සිංහල නම යෙදේ). ලැයිස්තුවේ 🌐 බොත්තමෙන් එක් කළ හැක.`:'')+
+  (mc.size||mn?'<br><button class="alt" id="pushm" style="padding:3px 9px;font-size:12px;margin-top:4px">📤 නැති වචන ශබ්දකෝෂයට යවන්න</button>':'');
 }
 function changed(){save();cp.refresh();ypk.refresh();redraw();}
 function nm(){const n=$('name').value.trim();if(!n){alert('පළමුව නම ඇතුළත් කරන්න');$('name').focus();}return n;}
@@ -370,6 +417,9 @@ $('bguess').onclick=()=>{
  if(!confirm(`වර්ගයක් නැති අයිතම ${t.length}කට නම අනුව වර්ග යොදන්නද?\n(…ගඟ / …ඔය / …ආරු → ගංගාව, …වැව → වැව, ඇළ, අමුණ)\nපසුව ඒවා වෙනස් කළ හැක.`))return;
  t.forEach(it=>it.g=guessCats(it));changed();
 };
+$('dref').onclick=loadDict;
+$('warn').onclick=e=>{if(e.target.id=='pushm')pushMissing();};
+loadDict();
 load(MAPS[0].k);
 </script>
 </body>
