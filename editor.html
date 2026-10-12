@@ -96,7 +96,7 @@ aside{display:flex;flex-direction:column;gap:10px}
    <div id="tgt"></div>
    <textarea id="out" spellcheck="false"></textarea>
    <div id="warn"></div>
-   <div class="row" style="margin-top:6px"><button id="copy">Copy</button><button class="alt" id="loadc">මෙම Code එක load කරන්න</button><button class="alt" id="reset">සියල්ල මකන්න</button></div>
+   <div class="row" style="margin-top:6px"><button id="copy">Copy</button><button id="dbsave">☁ DB එකට Save</button><button class="alt" id="dbload">☁ DB එකෙන් Load</button><button class="alt" id="loadc">මෙම Code එක load කරන්න</button><button class="alt" id="reset">සියල්ල මකන්න</button></div>
   </div>
  </aside>
 </div>
@@ -453,6 +453,23 @@ $('name').addEventListener('keydown',e=>{
  else if(e.key=='Enter'&&sgI>=0){e.preventDefault();e.stopPropagation();sgPick(sgI);}
  else if(e.key=='Escape'){e.stopPropagation();sgHide();}
 });
+/* ---------- DB එකට Save / DB එකෙන් Load ---------- */
+let DBC=null;
+$('dbsave').onclick=async()=>{
+ if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
+ if(!DBC){const e=prompt('ශබ්දකෝෂ admin email:');if(!e)return;const p=prompt('මුරපදය:');if(!p)return;DBC={e:e.trim(),p};}
+ const data={si:items.map(it=>conv(it,'si')),ta:items.map(it=>conv(it,'ta')),en:items.map(it=>conv(it,'en'))};
+ const{error}=await sb.rpc('map_save',{p_email:DBC.e,p_password:DBC.p,p_map:cur.k,p_data:data});
+ if(error){DBC=null;alert('Save අසාර්ථකයි: '+error.message);return;}
+ alert('"'+cur.name+'" සිතියමේ දත්ත DB එකට Save කළා ✓');
+};
+$('dbload').onclick=async()=>{
+ if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
+ const{data,error}=await sb.from('map_data').select('data').eq('map_key',cur.k).eq('lang','si').maybeSingle();
+ if(error||!data){alert('මෙම සිතියමට DB එකේ දත්ත නැත');return;}
+ if(!confirm('දැනට ඇති ලැයිස්තුව DB එකේ දත්ත මගින් ප්‍රතිස්ථාපනය කරන්නද?'))return;
+ items=data.data;ck.clear();hideInfo();changed();
+};
 $('dref').onclick=loadDict;
 $('warn').onclick=e=>{if(e.target.id=='pushm')pushMissing();};
 loadDict();
