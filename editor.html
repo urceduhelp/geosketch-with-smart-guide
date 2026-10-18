@@ -48,6 +48,7 @@ aside{display:flex;flex-direction:column;gap:10px}
  <select id="map"></select>
  <span id="cell">කොටුව: –</span>
  <a href="index.html" style="margin-left:auto;color:#9fd8f7">← GeoSketch</a>
+ <span id="who" style="font-size:12px;color:#9fd8f7"></span>
  <a href="#" id="lo" style="color:#fff">Logout</a>
 </header>
 <div class="app">
@@ -194,7 +195,7 @@ async function dictAdd(kind,si,ta,en){/* Admin login වී ඇත්නම් �
 }
 async function pushMissing(){/* ශබ්දකෝෂයේ නැති වචන (අදාළ පරිවර්තන හිස්ව) එක් කරයි; පසුව dictionary.html හි පුරවන්න */
  if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
- if(!(await dictSession())){alert('ශබ්දකෝෂයට වචන එක් කිරීමට, dictionary.html හි Admin ලෙස login වී, නැවත මෙම පිටුව refresh කර උත්සාහ කරන්න.');return;}
+ if(!(await dbLogin()))return;
  const recs=[],seen=new Set(),add=(kind,si,ta,en)=>{const k=kind+'|'+nk(si);if(seen.has(k)||dget(kind,si))return;seen.add(k);recs.push({kind,si,ta:ta||null,en:en||null});};
  items.forEach(it=>{add('place',it.n,it.nt,it.ne);(it.g||[]).forEach(c=>{const m=CATN[nk(c)]||loadCM()[c];add('category',c,m?m[0]:null,m?m[1]:null);});});
  if(!recs.length){alert('ශබ්දකෝෂයට එක් කිරීමට අලුත් වචන නැත');return;}
@@ -402,7 +403,7 @@ $('loadc').onclick=()=>{
  if(lang!='si'){alert('නැවත load කළ හැක්කේ "සිංහල" tab එකේ Code එක පමණි. එය තෝරා නැවත උත්සාහ කරන්න.');return;}
  try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();ck.clear();hideInfo();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
 $('reset').onclick=()=>{if(confirm('මෙම සිතියමේ සියල්ල මකන්නද?')){items=[];ck.clear();hideInfo();changed();}};
-$('lo').onclick=()=>{sessionStorage.removeItem('gs_admin');location.href='index.html';};
+$('lo').onclick=async()=>{sessionStorage.removeItem('gs_admin');try{if(sb)await sb.auth.signOut();}catch(e){}location.href='index.html';};
 /* ---------- වර්ග: ටික් කළ අයිතමවලට bulk ක්‍රියා ---------- */
 function bulkOp(fl,mode){
  if(!ck.size){alert('පළමුව ලැයිස්තුවේ අයිතම ටික් කරන්න');return;}
@@ -454,14 +455,39 @@ $('name').addEventListener('keydown',e=>{
  else if(e.key=='Escape'){e.stopPropagation();sgHide();}
 });
 /* ---------- DB එකට Save / DB එකෙන් Load ---------- */
-let DBC=null;
+/* Supabase Authentication හරහා login වී Save කිරීම.
+   මුරපදය මතකයේ තබා නොගනී; login වූ පසු session එක Supabase විසින් browser එකේ තබයි (Logout කරන තෙක් නැවත අහන්නේ නැත).
+   දත්ත ලිවීමට අවසර ඇත්තේ Supabase හි RLS policy මගින් අවසර දුන් admin email වලට පමණි. */
+async function dbLogin(){
+ const s=await dictSession();if(s)return s;
+ const e=prompt('Supabase admin email:');if(!e)return null;
+ const p=prompt('මුරපදය:');if(!p)return null;
+ const{data,error}=await sb.auth.signInWithPassword({email:e.trim(),password:p});
+ if(error){alert('Login අසාර්ථකයි: '+error.message);return null;}
+ updAuth();return data.session;
+}
+function updAuth(){dictSession().then(s=>{$('who').textContent=s&&s.user?'☁ '+(s.user.email||''):'';});}
 $('dbsave').onclick=async()=>{
  if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
- if(!DBC){const e=prompt('ශබ්දකෝෂ admin email:');if(!e)return;const p=prompt('මුරපදය:');if(!p)return;DBC={e:e.trim(),p};}
+ const s=await dbLogin();if(!s)return;
  const data={si:items.map(it=>conv(it,'si')),ta:items.map(it=>conv(it,'ta')),en:items.map(it=>conv(it,'en'))};
- const{error}=await sb.rpc('map_save',{p_email:DBC.e,p_password:DBC.p,p_map:cur.k,p_data:data});
- if(error){DBC=null;alert('Save අසාර්ථකයි: '+error.message);return;}
- alert('"'+cur.name+'" සිතියමේ දත්ත DB එකට Save කළා ✓');
+ const btn=$('dbsave');btn.disabled=true;
+ try{
+  for(const l of ['si','ta','en']){
+   const u=await sb.from('map_data').update({data:data[l]}).eq('map_key',cur.k).eq('lang',l).select('map_key');
+   if(u.error)throw u.error;
+   if(!u.data||!u.data.length){/* තවම නැත්නම් අලුතින් ඇතුළත් කරයි */
+    const i=await sb.from('map_data').insert({map_key:cur.k,lang:l,data:data[l]});
+    if(i.error)throw i.error;
+   }
+  }
+  alert('"'+cur.name+'" සිතියමේ දත්ත DB එකට Save කළා ✓ ('+s.user.email+')');
+ }catch(err){
+  const m=String((err&&err.message)||err);
+  if(/jwt|expired/i.test(m)){try{await sb.auth.signOut();}catch(_){}updAuth();alert('Login කාලය අවසන්. නැවත Save ඔබා login වන්න.');}
+  else if(/row-level security|permission denied|42501/i.test(m+(err&&err.code||'')))alert('Save අසාර්ථකයි: මෙම ගිණුමට (' +s.user.email+') දත්ත ලිවීමට අවසර නැත.\nSupabase → SQL Editor හි, දී ඇති RLS policy SQL එක ධාවනය කර ඇති බවත්, එහි ඔබේ email එක ඇතුළත් බවත් පරීක්ෂා කරන්න.');
+  else alert('Save අසාර්ථකයි: '+m);
+ }finally{btn.disabled=false;}
 };
 $('dbload').onclick=async()=>{
  if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
@@ -472,6 +498,7 @@ $('dbload').onclick=async()=>{
 };
 $('dref').onclick=loadDict;
 $('warn').onclick=e=>{if(e.target.id=='pushm')pushMissing();};
+updAuth();
 loadDict();
 load(MAPS[0].k);
 </script>
