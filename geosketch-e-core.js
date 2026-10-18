@@ -2,7 +2,7 @@
 const B='https://raw.githubusercontent.com/urceduhelp/geo-sketch-map-make/main/';
 const MAPS=[
 {k:'ol_lanka',name:'O/L Sri Lanka Map',url:B+'2022(2021)OL%20Lanka-01.jpg'},
-{k:'ol_eurasia',name:'O/L Eurasia Map',url:B+'2022(2021)OL%20Lanka-02.jpg'},
+{k:'ol_eurasia',name:'O/L Eurasia Map',url:B+'2022(2021)OL-Euracia02.jpg'},
 {k:'ol_world',name:'Complete World Map',url:B+'2022(2021)OL%20world-02.jpg'},
 {k:'al_europe1',name:'A/L Europe Map (up to the Black Sea)',url:B+'AL_Europe_1.jpg'},
 {k:'al_europe2',name:'A/L Europe Map (up to the Caspian Sea)',url:B+'AL_Europe_2.jpg'},
