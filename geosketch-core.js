@@ -2,7 +2,7 @@
 const B='https://raw.githubusercontent.com/urceduhelp/geo-sketch-map-make/main/';
 const MAPS=[
 {k:'ol_lanka',name:'සාමාන්‍ය පෙළ ලංකා සිතියම',url:B+'2022(2021)OL%20Lanka-01.jpg'},
-{k:'ol_eurasia',name:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',url:B+'2022(2021)OL-Euracia02.jpg'},
+{k:'ol_eurasia',name:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',url:B+'https://raw.githubusercontent.com/urceduhelp/geo-sketch-map-make/main/2022(2021)OL-Euracia02.jpg'},
 {k:'ol_world',name:'සම්පූර්ණ ලෝක සිතියම',url:B+'2022(2021)OL%20world-02.jpg'},
 {k:'al_europe1',name:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',url:B+'AL_Europe_1.jpg'},
 {k:'al_europe2',name:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',url:B+'AL_Europe_2.jpg'},
