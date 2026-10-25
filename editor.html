@@ -53,7 +53,11 @@ aside{display:flex;flex-direction:column;gap:10px}
 #bm .sec{border:1px solid #cfe0ea;border-radius:8px;padding:8px;margin-top:10px}
 #bm .sec h4{margin:0 0 4px;font-size:13px}
 /* ---- Queue (ස්ථාන රාශියක් එකවර) ---- */
-#qt{width:100%;height:130px;margin-top:4px}
+#qw{position:relative;height:130px;margin-top:4px}
+#qbk,#qt{position:absolute;left:0;top:0;margin:0;width:100%;height:100%;padding:6px 9px;border:1px solid #9bb;border-radius:6px;font:13px/1.5 'Noto Sans Sinhala','Noto Sans Tamil','Iskoola Pota','Latha',sans-serif;white-space:pre;letter-spacing:normal;box-sizing:border-box}
+#qbk{overflow:hidden;color:transparent;background:#fff;pointer-events:none}
+#qt{background:transparent;overflow:auto;resize:none;color:var(--ink)}
+#qbk mark{background:#ffc4c4;color:transparent;border-radius:3px}
 #qp{position:fixed;z-index:60;display:none;width:min(92vw,300px);background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 8px 24px #0005;padding:6px}
 #qp #qs{width:100%}
 #ql{max-height:240px;overflow:auto;margin-top:4px}
@@ -99,8 +103,9 @@ aside{display:flex;flex-direction:column;gap:10px}
    <div id="hint"></div>
   </div>
   <div class="box" id="qbox"><h3>📋 ස්ථාන රාශියක් එකවර (Queue)</h3>
-   <small style="color:#678">එකම වර්ගයේ ස්ථාන කිහිපයක නම් මෙහි ලියන්න / paste කරන්න (එක් පේළියකට එක් නමක්). ඉහත "වර්ග" සහ "විභාග වර්ෂය" එක් වරක් තෝරන්න. ඉන්පසු මෙවලම තෝරා සිතියමේ click කරන්න; එතැනම නම් ලැයිස්තුව ඇරේ, අදාළ නම තෝරන්න. තෝරාගත් නම ලැයිස්තුවෙන් ඉවත් වේ.<br>විකල්ප: එක් පේළියක <b>නම | தமிழ் | English</b> ලෙසද ලිවිය හැක.</small>
-   <textarea id="qt" spellcheck="false" placeholder="උදා:&#10;අනුරාධපුරය&#10;පොළොන්නරුව&#10;මිහින්තලය"></textarea>
+   <small style="color:#678"><b style="color:#d6212b">රතු පාටින් පෙනෙන නම්</b> ශබ්දකෝෂයේ (DB) නැති ඒවායි; ඒවා පහළින් Copy කළ හැක.<br>එකම වර්ගයේ ස්ථාන කිහිපයක නම් මෙහි ලියන්න / paste කරන්න (එක් පේළියකට එක් නමක්). ඉහත "වර්ග" සහ "විභාග වර්ෂය" එක් වරක් තෝරන්න. ඉන්පසු මෙවලම තෝරා සිතියමේ click කරන්න; එතැනම නම් ලැයිස්තුව ඇරේ, අදාළ නම තෝරන්න. තෝරාගත් නම ලැයිස්තුවෙන් ඉවත් වේ.<br>විකල්ප: එක් පේළියක <b>නම | தமிழ் | English</b> ලෙසද ලිවිය හැක.</small>
+   <div id="qw"><div id="qbk"></div><textarea id="qt" wrap="off" spellcheck="false" placeholder="උදා:&#10;අනුරාධපුරය&#10;පොළොන්නරුව&#10;මිහින්තලය"></textarea></div>
+   <div id="qm" style="display:none;margin-top:6px"><div id="qml" style="font-size:12px;line-height:1.5;color:#d6212b"></div><button class="alt" id="qmc" style="padding:3px 9px;font-size:12px;margin-top:4px">📋 Copy (සිංහල නම් පමණක්)</button></div>
    <div class="row" style="margin-top:6px"><label><input type="checkbox" id="qon" checked> Queue ක්‍රමය භාවිතා කරන්න</label><span id="qc" style="color:#1b7a3a;font-weight:700">ඉතිරි: 0</span><button class="alt" id="qclr" style="padding:3px 9px;font-size:12px;margin-left:auto">හිස් කරන්න</button></div>
   </div>
   <div class="box"><h3>ලකුණු කළ ස්ථාන</h3>
@@ -256,7 +261,7 @@ async function loadDict(){
  Object.values(DICT).forEach(m=>m.clear());
  all.forEach(r=>{if(DICT[r.kind])DICT[r.kind].set(nk(r.si),{ta:r.ta,en:r.en,si:r.si});});
  tx.textContent=src=='none'?'📚 ශබ්දකෝෂය ලබා ගත නොහැක (ගොනුවේ ඇති වර්ග පමණක් භාවිතා වේ)':`📚 ශබ්දකෝෂය: වචන ${all.length}ක්`+(src=='cache'?' (offline – පැරණි පිටපත)':'');
- if(cur)refreshOut();
+ if(cur)refreshOut();qHL();
 }
 async function dictSession(){try{if(!sb)return null;const{data}=await sb.auth.getSession();return data.session;}catch(e){return null;}}
 async function dictAdd(kind,si,ta,en){/* Admin login වී ඇත්නම් පමණක්, ශබ්දකෝෂයට වචනයක් එක් කරයි */
@@ -568,7 +573,7 @@ function qNames(){return $('qt').value.split('\n').map(x=>x.trim()).filter(Boole
  if(p[1]&&p[1].trim())o.nt=p[1].trim();if(p[2]&&p[2].trim())o.ne=p[2].trim();return o;}).filter(o=>o.n);}
 const qTN=en=>{const o={};if(en.nt)o.nt=en.nt;if(en.ne)o.ne=en.ne;return o;};
 function qActive(){return $('qon').checked&&tool()!='mv'&&qNames().length>0;}
-function qSave(){try{localStorage.setItem('gs_queue',$('qt').value);}catch(e){}$('qc').textContent='ඉතිරි: '+qNames().length;}
+function qSave(){try{localStorage.setItem('gs_queue',$('qt').value);}catch(e){}$('qc').textContent='ඉතිරි: '+qNames().length;qHL();}
 function qRemove(en){const ls=$('qt').value.split('\n'),k=ls.findIndex(l=>l.trim()==en.raw);if(k>=0)ls.splice(k,1);$('qt').value=ls.join('\n');qSave();}
 function qMark(){const c=[...$('ql').children];c.forEach((d,i)=>d.className=(qlist.length&&i==qi)?'on':'');if(c[qi]&&qlist.length)c[qi].scrollIntoView({block:'nearest'});}
 function qFilter(){
@@ -590,6 +595,31 @@ function openQP(xy,cb){
 }
 function closeQP(redo=true){qcb=null;$('qp').style.display='none';const had=qpv;qpv=null;if(had&&redo&&L)redraw();}
 function qPick(i){const en=qlist[i];if(!en)return;const cb=qcb;closeQP(false);if(cb)cb(en);}
+/* ශබ්දකෝෂයේ (DB) නැති නම් රතු පාටින් දැක්වීම + Copy */
+function qMissing(){
+ if(!DICT.place.size)return null;/* ශබ්දකෝෂය load වී නැත */
+ const seen=new Set(),o=[];
+ qNames().forEach(e=>{const k=nk(e.n);if(!DICT.place.has(k)&&!seen.has(k)){seen.add(k);o.push(e.n);}});
+ return o;
+}
+function qHL(){
+ const bk=$('qbk'),ta=$('qt');if(!bk||!ta)return;
+ const miss=qMissing(),ms=new Set((miss||[]).map(nk));
+ bk.innerHTML=ta.value.split('\n').map(l=>{const t=l.trim();if(!t)return esc(l);
+  const n=t.split(/\s*[|\t]\s*/)[0].trim();return n&&ms.has(nk(n))?'<mark>'+esc(l)+'</mark>':esc(l);}).join('\n')+'\n';
+ bk.scrollTop=ta.scrollTop;bk.scrollLeft=ta.scrollLeft;
+ const box=$('qm'),lab=$('qml'),btn=$('qmc');
+ if(miss===null){box.style.display=qNames().length?'block':'none';lab.style.color='#678';lab.textContent='ශබ්දකෝෂය load වී නැති නිසා DB එකේ ඇත්දැයි පරීක්ෂා කළ නොහැක.';btn.style.display='none';return;}
+ if(!miss.length){box.style.display='none';return;}
+ box.style.display='block';lab.style.color='#d6212b';btn.style.display='';
+ lab.textContent='DB එකේ නැති නම් '+miss.length+'ක්: '+miss.join(' · ');
+}
+$('qt').onscroll=()=>{$('qbk').scrollTop=$('qt').scrollTop;$('qbk').scrollLeft=$('qt').scrollLeft;};
+$('qmc').onclick=async()=>{
+ const txt=(qMissing()||[]).join('/');if(!txt)return;
+ try{await navigator.clipboard.writeText(txt);}catch(e){const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}
+ const b=$('qmc'),o=b.textContent;b.textContent='Copy වුණා ✓';setTimeout(()=>b.textContent=o,1500);
+};
 $('qt').oninput=qSave;
 $('qon').onchange=redraw;
 $('qclr').onclick=()=>{if(!$('qt').value.trim()||confirm('Queue එකේ සියල්ල මකන්නද?')){$('qt').value='';qSave();redraw();}};
