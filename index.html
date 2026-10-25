@@ -112,6 +112,8 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <button id="tyb" data-t="types"></button>
  <button id="rmb" type="button" data-t="rmb"></button>
  <button id="hwo" type="button" data-t="howb"></button>
+ <button id="exj" type="button">⬇ JPG</button>
+ <button id="exp" type="button">⬇ PDF</button>
  <button id="mvb" type="button" title="Move: නම ඇදගෙන යන්න">✋</button>
  <button id="stb">⚙</button>
  <span id="st"></span>
@@ -138,6 +140,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
   <label><span data-t="vstr"></span><input id="vA" type="range" min="0.1" max="0.8" step="0.05" value="0.3"></label>
   <label><span data-t="vtone"></span><select id="vC"></select></label>
   <label><span data-t="fsz"></span><input id="fsz" type="range" min="18" max="44" value="26"></label>
+  <label><span data-t="exg"></span><input id="exg" type="checkbox" checked></label>
   <label><button id="mrs" type="button" data-t="mvrs"></button></label>
  </div></div>
 
@@ -153,19 +156,19 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
 <script>
 /* ---------- භාෂා / Language texts ---------- */
 const T={
- si:{map:'සිතියම',letters:'අකුරු ▾',places:'📍 ස්ථාන නාමාවලිය',types:'🗂 සිතියම් වර්ග',settings:'සැකසුම්',spread:'නම් එකිනෙක මත යෑම වළක්වන්න',ripl:'තට්ටු කළ විට රතු වළලු පෙන්වන්න',howb:'❓ භාවිතය',howt:'GeoSketch භාවිතා කරන්නේ කෙසේද?',howok:'තේරුණා, වසන්න',hown:'නැවත පෙන්වන්න එපා',nnum:'ආසන්න ස්ථාන ගණන',rivs:'ආසන්න ගංගා ද පෙන්වන්න',mvon:'✋ Move සක්‍රියයි: නමක් ඇදගෙන යන්න (හිස් තැනක් අදිමින් සිතියම ගෙන යන්න)',mvrs:'Move කළ නම් යළි මුල් තැනට',veil:'මෘදු ආවරණය',vstr:'ආවරණ තීව්‍රතාව',vtone:'ආවරණ වර්ණය',fsz:'අකුරු ප්‍රමාණය',
+ si:{map:'සිතියම',letters:'අකුරු ▾',places:'📍 ස්ථාන නාමාවලිය',types:'🗂 සිතියම් වර්ග',settings:'සැකසුම්',spread:'නම් එකිනෙක මත යෑම වළක්වන්න',ripl:'තට්ටු කළ විට රතු වළලු පෙන්වන්න',howb:'❓ භාවිතය',howt:'GeoSketch භාවිතා කරන්නේ කෙසේද?',howok:'තේරුණා, වසන්න',hown:'නැවත පෙන්වන්න එපා',nnum:'ආසන්න ස්ථාන ගණන',rivs:'ආසන්න ගංගා ද පෙන්වන්න',mvon:'✋ Move සක්‍රියයි: නමක් ඇදගෙන යන්න (හිස් තැනක් අදිමින් සිතියම ගෙන යන්න)',mvrs:'Move කළ නම් යළි මුල් තැනට',veil:'මෘදු ආවරණය',vstr:'ආවරණ තීව්‍රතාව',vtone:'ආවරණ වර්ණය',fsz:'අකුරු ප්‍රමාණය',exg:'JPG / PDF වලට කොටු දැල ඇතුළත් කරන්න',
   rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. ඇතුළත් කළ යුතු වර්ග තෝරන්න',rm2:'2. ස්ථාන ගණන තෝරන්න',rmgo:'🎲 සිතියම සාදන්න',rma:'සියල්ල තෝරන්න',rmn:'හිස් කරන්න',rmneed:'අවම වශයෙන් වර්ගයක් තෝරන්න',rmres:'Random සිතියම',
   rmerr:(k,n)=>`තෝරාගත් වර්ග ගණන ${k} කි. ස්ථාන ගණන (${n}) එයට වඩා අඩුය. සියලු වර්ග ආවරණය කිරීමට අවම වශයෙන් ස්ථාන ${k} ක් අවශ්‍යයි.`,
   rmnone:'තෝරාගත් වර්ගවලින් ස්ථාන හමු නොවීය',
   ph:'ස්ථානයක් සොයන්න...',none:'ස්ථානයක් හමු නොවීය',hint:'ස්ථානයක් සොයන්න, අකුරක් තෝරන්න, නැතිනම් නාමාවලියෙන් තෝරන්න. සිතියමේ ස්ථානයක් ක්ලික් කළ ද හැක',near:'+ ආසන්න ස්ථාන',nodata:'මෙම සිතියමට දත්ත නැත',pickLetter:'අකුරක් තෝරන්න',loading:'load වෙමින්...',
   tones:['සුදු','ළා කහ','ළා නිල්','ළා කොළ'],all:'වර්ගයේ සියල්ල'},
- ta:{map:'வரைபடம்',letters:'எழுத்துகள் ▾',places:'📍 இடப்பெயர் பட்டியல்',types:'🗂 வரைபட வகைகள்',settings:'அமைப்புகள்',spread:'பெயர்கள் ஒன்றின்மேல் ஒன்று வருவதைத் தவிர்',ripl:'தொட்டால் சிவப்பு வளையங்களைக் காட்டு',howb:'❓ பயன்பாடு',howt:'GeoSketch ஐப் பயன்படுத்துவது எப்படி?',howok:'புரிந்தது, மூடு',hown:'மீண்டும் காட்ட வேண்டாம்',nnum:'அருகிலுள்ள இடங்களின் எண்ணிக்கை',rivs:'அருகிலுள்ள ஆறுகளையும் காட்டு',mvon:'✋ Move இயக்கத்தில்: பெயரை இழுத்துச் செல்லுங்கள் (வெற்றிடத்தை இழுத்து வரைபடத்தை நகர்த்துங்கள்)',mvrs:'நகர்த்திய பெயர்களை மீட்டமை',veil:'மென்மையான திரை',vstr:'திரையின் அடர்த்தி',vtone:'திரை நிறம்',fsz:'எழுத்து அளவு',
+ ta:{map:'வரைபடம்',letters:'எழுத்துகள் ▾',places:'📍 இடப்பெயர் பட்டியல்',types:'🗂 வரைபட வகைகள்',settings:'அமைப்புகள்',spread:'பெயர்கள் ஒன்றின்மேல் ஒன்று வருவதைத் தவிர்',ripl:'தொட்டால் சிவப்பு வளையங்களைக் காட்டு',howb:'❓ பயன்பாடு',howt:'GeoSketch ஐப் பயன்படுத்துவது எப்படி?',howok:'புரிந்தது, மூடு',hown:'மீண்டும் காட்ட வேண்டாம்',nnum:'அருகிலுள்ள இடங்களின் எண்ணிக்கை',rivs:'அருகிலுள்ள ஆறுகளையும் காட்டு',mvon:'✋ Move இயக்கத்தில்: பெயரை இழுத்துச் செல்லுங்கள் (வெற்றிடத்தை இழுத்து வரைபடத்தை நகர்த்துங்கள்)',mvrs:'நகர்த்திய பெயர்களை மீட்டமை',veil:'மென்மையான திரை',vstr:'திரையின் அடர்த்தி',vtone:'திரை நிறம்',fsz:'எழுத்து அளவு',exg:'JPG / PDF இல் கட்டங்களைச் சேர்',
   rmb:'🎲 சீரற்ற வரைபடம்',rmt:'Create a Random Map',rm1:'1. சேர்க்க வேண்டிய வகைகளைத் தேர்ந்தெடுங்கள்',rm2:'2. இடங்களின் எண்ணிக்கையைத் தேர்ந்தெடுங்கள்',rmgo:'🎲 வரைபடத்தை உருவாக்கு',rma:'அனைத்தையும் தேர்ந்தெடு',rmn:'அழி',rmneed:'குறைந்தது ஒரு வகையைத் தேர்ந்தெடுங்கள்',rmres:'சீரற்ற வரைபடம்',
   rmerr:(k,n)=>`தேர்ந்தெடுத்த வகைகள் ${k}. இடங்களின் எண்ணிக்கை (${n}) அதைவிடக் குறைவு. அனைத்து வகைகளையும் உள்ளடக்க குறைந்தது ${k} இடங்கள் தேவை.`,
   rmnone:'தேர்ந்தெடுத்த வகைகளில் இடங்கள் இல்லை',
   ph:'இடத்தைத் தேடுங்கள்...',none:'இடம் கிடைக்கவில்லை',hint:'இடத்தைத் தேடுங்கள், எழுத்தைத் தேர்ந்தெடுங்கள் அல்லது பட்டியலில் தேர்ந்தெடுங்கள். வரைபடத்தில் ஓர் இடத்தைத் தொட்டும் பார்க்கலாம்',near:'+ அருகிலுள்ள இடங்கள்',nodata:'இந்த வரைபடத்திற்குத் தரவு இல்லை',pickLetter:'எழுத்தைத் தேர்ந்தெடுங்கள்',loading:'ஏற்றுகிறது...',
   tones:['வெள்ளை','இளமஞ்சள்','இளநீலம்','இளம்பச்சை'],all:'வகையில் அனைத்தும்'},
- en:{map:'Map',letters:'Letters ▾',places:'📍 Place list',types:'🗂 Map types',settings:'Settings',spread:'Avoid overlapping names',ripl:'Show red ripples on tap',howb:'❓ How to use',howt:'How to use GeoSketch',howok:'Got it, close',hown:'Do not show again',nnum:'Number of nearby places',rivs:'Also show nearby rivers',mvon:'✋ Move on: drag a name (drag empty space to pan the map)',mvrs:'Reset moved names',veil:'Soft overlay',vstr:'Overlay strength',vtone:'Overlay tone',fsz:'Text size',
+ en:{map:'Map',letters:'Letters ▾',places:'📍 Place list',types:'🗂 Map types',settings:'Settings',spread:'Avoid overlapping names',ripl:'Show red ripples on tap',howb:'❓ How to use',howt:'How to use GeoSketch',howok:'Got it, close',hown:'Do not show again',nnum:'Number of nearby places',rivs:'Also show nearby rivers',mvon:'✋ Move on: drag a name (drag empty space to pan the map)',mvrs:'Reset moved names',veil:'Soft overlay',vstr:'Overlay strength',vtone:'Overlay tone',fsz:'Text size',exg:'Include grid in JPG / PDF',
   rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. Choose the types to include',rm2:'2. Choose the number of places',rmgo:'🎲 Create map',rma:'Select all',rmn:'Clear',rmneed:'Please choose at least one type',rmres:'Random map',
   rmerr:(k,n)=>`You chose ${k} types, but only ${n} places. At least ${k} places are needed to cover every type.`,
   rmnone:'No places found in the chosen types',
@@ -503,12 +506,13 @@ function spreadLabels(g,fs){
 }
 
 /* ---------- සිතියම ඇඳීම (මෘදු ආවරණය සහිතව) ---------- */
-function draw(){
- if(!img||!L)return;
- const g=render(cv,img,L,[],{grid:false});/* පසුබිම පමණි */
+function draw(){if(!img||!L)return;lastS=paint(cv);}
+/* c = ඇඳිය යුතු canvas (තිරය හෝ export සඳහා වෙනම canvas එකක්) */
+function paint(c,o={}){
+ const g=render(c,img,L,[],{grid:!!o.grid,title:o.title,footer:o.footer});/* පසුබිම පමණි */
  if($('vOn').checked){g.save();g.globalAlpha=+$('vA').value;g.fillStyle=TONES[+$('vC').value];g.fillRect(L.ix,L.iy,L.iw,L.ih);g.restore();}
  const arr=effItems(),fs=+$('fsz').value;
- const S=$('sOn').checked||manual.size?spreadLabels(g,fs):new Map();lastS=S;
+ const S=$('sOn').checked||manual.size?spreadLabels(g,fs):new Map();
  marked.forEach(i=>{if(!arr[i])return;
   const main=mainName&&arr[i].n==mainName;
   if(main){/* තෝරාගත් ස්ථානයේ නම රතු පැහැයෙන් */
@@ -518,7 +522,19 @@ function draw(){
    delete g.fillText;
   }else drawItem(g,L,S.get(i)||arr[i],fs,.15,.17,.14);
  });
+ return S;
 }
+
+/* ---------- JPG / PDF Export: තිරයේ පෙනෙන සිතියම A4 ප්‍රමාණයෙන් ---------- */
+function doExport(kind){
+ if(!img||!L)return;
+ const c=document.createElement('canvas');
+ paint(c,{grid:$('exg').checked,title:mainName||'',footer:footerText()});
+ const name='GeoSketch-'+cur.k;
+ if(kind=='pdf')exportPDF(c,name,L.land);else exportJPG(c,name);
+}
+$('exj').onclick=()=>doExport('jpg');
+$('exp').onclick=()=>doExport('pdf');
 
 /* ---------- තෝරාගත් ස්ථාන තිරයට ගැළපෙන සේ zoom කිරීම ---------- */
 function focusOn(idxs,main){
