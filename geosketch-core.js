@@ -261,7 +261,16 @@ function setupZoom(cv,box,getL,vp){
  box.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey))return;e.preventDefault();
   const b=box.getBoundingClientRect();set(z*(e.deltaY<0?1.12:1/1.12),e.clientX-b.left,e.clientY-b.top);},{passive:false});
  addEventListener('resize',apply);
- api={apply,reset,startPan};return api;
+ /* (x0,y0)-(x1,y1) = සිතියම මත 0..1 ඛණ්ඩාංක සහිත සෘජුකෝණාස්‍රය; එය තිරයට ගැළපෙන සේ zoom කර මැදට ගෙන එයි */
+ function focusRect(x0,y0,x1,y1){
+  const L=getL();if(!L)return;
+  const rw=Math.max(1,(x1-x0)*L.iw),rh=Math.max(1,(y1-y0)*L.ih),f0=fit();
+  z=Math.min(8,Math.max(.2,Math.min((box.clientWidth-12)/rw,(box.clientHeight-12)/rh)/f0));apply();
+  const r=cv.getBoundingClientRect(),b=box.getBoundingClientRect(),
+   tx=r.left+((L.ix+(x0+x1)/2*L.iw)/L.W)*r.width,ty=r.top+((L.iy+(y0+y1)/2*L.ih)/L.H)*r.height;
+  box.scrollLeft+=tx-(b.left+box.clientWidth/2);box.scrollTop+=ty-(b.top+box.clientHeight/2);
+ }
+ api={apply,reset,startPan,focusRect};return api;
 }
 
 
@@ -312,4 +321,112 @@ function catPicker(host,o){
  nok.onclick=addNew;ni.onkeydown=e=>{e.stopPropagation();if(e.key=='Enter'){e.preventDefault();addNew();}};
  render();
  return{get:()=>sel.slice(),set:a=>{sel=[...a];render();},refresh:render};
+}
+
+
+/* ===================== RANDOM MAP =====================
+   openRandomMap(L, items, onDone) : popup එක විවෘත කරයි. onDone(set, info) → set = තෝරාගත් අයිතමවල index (Set)
+   addRandomButton(parent, getL, getItems, onDone) : "🎲 Random Map" බොත්තම සාදා parent එකට එක් කරයි
+   භාවිතය (index/editor හි):
+     let rndSet=null;   // null = සියල්ල පෙන්වන්න
+     render(...,{show:i=>(!rndSet||rndSet.has(i))&&(ඔබේ දැනට ඇති කොන්දේසිය)});
+     addRandomButton(toolbar,()=>L,()=>items,set=>{rndSet=set;redraw();});
+     සාමාන්‍ය සිතියමට ආපසු යාමට: rndSet=null; redraw(); */
+const gOf=it=>(it.g&&it.g.length)?it.g:guessCats(it);
+
+/* අයිතමයක නියෝජන ලක්ෂ්‍යය (0..1) - ලක්ෂ්‍ය: තිත, ප්‍රදේශ: කේන්ද්‍රය, රේඛා: දිගේ මැද */
+function repPoint(it){
+ if(it.t=='p')return[it.x,it.y];
+ if(it.t=='a')return centroid(it.pts);
+ const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0,P=it.pts;
+ let tot=0;for(let i=1;i<P.length;i++)tot+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
+ let h=tot/2;
+ for(let i=1;i<P.length;i++){const l=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
+  if(h<=l||i==P.length-1){const f=l?Math.min(1,h/l):0;return[P[i-1][0]+(P[i][0]-P[i-1][0])*f+ox,P[i-1][1]+(P[i][1]-P[i-1][1])*f+oy];}
+  h-=l;}
+ return[P[0][0]+ox,P[0][1]+oy];
+}
+
+/* තේරීමේ ඇල්ගොරිතමය */
+function randomPick(items,L,cats,n){
+ if(!cats.length)return{err:'අවම වශයෙන් වර්ගයක් තෝරන්න.'};
+ if(n<cats.length)return{err:`තෝරාගත් වර්ග ගණන ${cats.length} කි. ස්ථාන ගණන (${n}) වර්ග ගණනට වඩා අඩුය. සියලු වර්ග ආවරණය කිරීමට අවම වශයෙන් ස්ථාන ${cats.length} ක් අවශ්‍යයි.`};
+ const pool={};cats.forEach(c=>pool[c]=[]);
+ const meta=items.map((it,i)=>{
+  const p=repPoint(it),g=gOf(it).filter(c=>cats.includes(c));
+  g.forEach(c=>pool[c].push(i));
+  return{p,g,cc:Math.min(L.cols-1,Math.max(0,Math.floor(p[0]*L.cols))),rr:Math.min(L.rows-1,Math.max(0,Math.floor(p[1]*L.rows)))};});
+ const empty=cats.filter(c=>!pool[c].length);
+ if(empty.length)return{err:'මෙම වර්ග වල ස්ථාන නැත: '+empty.join(', ')};
+ const total=new Set(cats.flatMap(c=>pool[c])).size;
+ let capped=false;if(n>total){n=total;capped=true;}
+ const chosen=[],has=new Set();let relaxed=0;
+ const cnt=c=>chosen.filter(i=>meta[i].g.includes(c)).length;
+ /* එකම වර්ගයේ ස්ථාන එකම කොටුවේ හෝ ආසන්න (8 දිශාවේ) කොටුවල නොවිය යුතුය */
+ const ok=i=>chosen.every(j=>!meta[i].g.some(c=>meta[j].g.includes(c))||Math.max(Math.abs(meta[i].cc-meta[j].cc),Math.abs(meta[i].rr-meta[j].rr))>=2);
+ const spread=i=>chosen.length?Math.min(...chosen.map(j=>Math.hypot((meta[i].p[0]-meta[j].p[0])*L.iw,(meta[i].p[1]-meta[j].p[1])*L.ih))):1e9;
+ /* සිතියම පුරා විසිරීම: දැනට ඇති ස්ථාන වලින් වඩාත්ම ඈත අපේක්ෂකයා (random බරක් සහිතව) */
+ function pick(cands){
+  cands=cands.filter(i=>!has.has(i));if(!cands.length)return false;
+  let g=cands.filter(ok);if(!g.length){g=cands;relaxed++;}
+  let best=-1,bs=-1;
+  g.forEach(i=>{const s=Math.min(spread(i),L.iw)*(.65+.7*Math.random());if(s>bs){bs=s;best=i;}});
+  chosen.push(best);has.add(best);return true;
+ }
+ /* 1) සියලු වර්ග ආවරණය (අඩුම ස්ථාන ඇති වර්ග මුලින්) */
+ [...cats].sort((a,b)=>pool[a].length-pool[b].length).forEach(c=>{if(!cnt(c))pick(pool[c]);});
+ /* 2) කෝටා: වැඩි ස්ථාන ඇති වර්ගයට වැඩි ගණනක් (D'Hondt ක්‍රමය) */
+ const quota={};cats.forEach(c=>quota[c]=1);
+ for(let r=n-cats.length;r>0;r--){
+  let b=null,bv=-1;cats.forEach(c=>{if(quota[c]<pool[c].length){const v=pool[c].length/(quota[c]+1);if(v>bv){bv=v;b=c;}}});
+  if(!b)break;quota[b]++;}
+ /* 3) කෝටා පිරවීම (වර්ග මාරුවෙන් මාරුවට, එවිට විසිරීම හොඳයි) */
+ while(chosen.length<n){
+  let prog=false;
+  [...cats].sort(()=>Math.random()-.5).forEach(c=>{
+   if(chosen.length<n&&cnt(c)<quota[c]&&pick(pool[c]))prog=true;});
+  if(!prog)break;}
+ while(chosen.length<n&&pick([...new Set(cats.flatMap(c=>pool[c]))]));
+ return{idx:new Set(chosen),relaxed,capped,n:chosen.length};
+}
+
+/* Popup */
+function openRandomMap(L,items,onDone){
+ const cnt={};items.forEach(it=>gOf(it).forEach(c=>cnt[c]=(cnt[c]||0)+1));
+ const cl=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
+ if(!cl.length){alert('දත්ත ගබඩාවේ වර්ග සහිත ස්ථාන නැත.');return;}
+ const bg=document.createElement('div');
+ bg.style.cssText='position:fixed;inset:0;background:#0007;z-index:9999;display:flex;align-items:center;justify-content:center;padding:10px';
+ const bx=document.createElement('div');
+ bx.style.cssText='background:#fff;border-radius:12px;padding:16px;max-width:460px;width:100%;max-height:90vh;overflow:auto;color:#0d2b45;font-family:'+FONT+';box-shadow:0 4px 24px #0006';
+ bx.innerHTML='<h3 style="margin:0 0 10px">🎲 Random Map</h3>'
+ +'<label>ඇතුළත් කළ යුතු ස්ථාන ගණන: <input type="number" min="1" value="20" id="rm_n" style="width:80px;padding:4px"></label>'
+ +'<div style="margin:12px 0 4px"><b>ආවරණය විය යුතු වර්ග:</b> <button type="button" id="rm_all">සියල්ල</button> <button type="button" id="rm_none">කිසිවක් නැත</button></div>'
+ +'<div id="rm_l" style="display:flex;flex-direction:column;gap:3px;max-height:40vh;overflow:auto;border:1px solid #9bb;border-radius:6px;padding:6px"></div>'
+ +'<div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button type="button" id="rm_x">අවලංගු</button><button type="button" id="rm_ok">සිතියම සාදන්න</button></div>';
+ bg.appendChild(bx);document.body.appendChild(bg);
+ const lst=bx.querySelector('#rm_l');
+ cl.forEach(c=>{const l=document.createElement('label');l.innerHTML='<input type="checkbox" value="" checked> ';
+  l.firstChild.value=c;l.append(`${c} (${cnt[c]})`);lst.appendChild(l);});
+ const boxes=()=>[...lst.querySelectorAll('input')];
+ bx.querySelector('#rm_all').onclick=()=>boxes().forEach(b=>b.checked=true);
+ bx.querySelector('#rm_none').onclick=()=>boxes().forEach(b=>b.checked=false);
+ bx.querySelector('#rm_x').onclick=()=>bg.remove();
+ bx.querySelector('#rm_ok').onclick=()=>{
+  const n=parseInt(bx.querySelector('#rm_n').value,10),cats=boxes().filter(b=>b.checked).map(b=>b.value);
+  if(!(n>0)){alert('ස්ථාන ගණන නිවැරදිව ඇතුළත් කරන්න.');return;}
+  const r=randomPick(items,L,cats,n);
+  if(r.err){alert('⚠ '+r.err);return;}
+  bg.remove();
+  let msg='';
+  if(r.capped)msg+=`තෝරාගත් වර්ග වල ඇත්තේ ස්ථාන ${r.n} ක් පමණි, එබැවින් ඒ සියල්ල ගත්තෙමි. `;
+  if(r.relaxed)msg+=`සමහර ස්ථාන ආසන්න වීමට ඉඩ ඇත (${r.relaxed}) - ඉඩ මදි නිසා.`;
+  if(msg)alert(msg);
+  onDone(r.idx,r);
+ };
+}
+function addRandomButton(parent,getL,getItems,onDone){
+ const b=document.createElement('button');b.type='button';b.textContent='🎲 Random Map';
+ b.onclick=()=>{const L=getL();if(!L){alert('මුලින් සිතියමක් තෝරන්න.');return;}openRandomMap(L,getItems(),onDone);};
+ parent.appendChild(b);return b;
 }
