@@ -105,7 +105,7 @@ aside{display:flex;flex-direction:column;gap:10px}
   <div class="box" id="qbox"><h3>📋 ස්ථාන රාශියක් එකවර (Queue)</h3>
    <small style="color:#678"><b style="color:#d6212b">රතු පාටින් පෙනෙන නම්</b> ශබ්දකෝෂයේ (DB) නැති ඒවායි; ඒවා පහළින් Copy කළ හැක.<br>එකම වර්ගයේ ස්ථාන කිහිපයක නම් මෙහි ලියන්න / paste කරන්න (එක් පේළියකට එක් නමක්). ඉහත "වර්ග" සහ "විභාග වර්ෂය" එක් වරක් තෝරන්න. ඉන්පසු මෙවලම තෝරා සිතියමේ click කරන්න; එතැනම නම් ලැයිස්තුව ඇරේ, අදාළ නම තෝරන්න. තෝරාගත් නම ලැයිස්තුවෙන් ඉවත් වේ.<br>විකල්ප: එක් පේළියක <b>නම | தமிழ் | English</b> ලෙසද ලිවිය හැක.</small>
    <div id="qw"><div id="qbk"></div><textarea id="qt" wrap="off" spellcheck="false" placeholder="උදා:&#10;අනුරාධපුරය&#10;පොළොන්නරුව&#10;මිහින්තලය"></textarea></div>
-   <div id="qm" style="display:none;margin-top:6px"><div id="qml" style="font-size:12px;line-height:1.5;color:#d6212b"></div><button class="alt" id="qmc" style="padding:3px 9px;font-size:12px;margin-top:4px">📋 Copy (සිංහල නම් පමණක්)</button></div>
+   <div id="qm" style="display:none;margin-top:6px"><div id="qml" style="font-size:12px;line-height:1.5;color:#d6212b"></div><div class="row" style="margin-top:4px"><button id="qmd" style="padding:3px 9px;font-size:12px" title="රතු පාටින් ඇති නම් ශබ්දකෝෂයට (වර්ගය: ස්ථාන නාම) කෙළින්ම ඇතුළත් කරයි">☁ DB එකට ඇතුළත් කරන්න (ස්ථාන නාම)</button><button class="alt" id="qmc" style="padding:3px 9px;font-size:12px">📋 Copy (සිංහල නම් පමණක්)</button></div></div>
    <div class="row" style="margin-top:6px"><label><input type="checkbox" id="qon" checked> Queue ක්‍රමය භාවිතා කරන්න</label><span id="qc" style="color:#1b7a3a;font-weight:700">ඉතිරි: 0</span><button class="alt" id="qclr" style="padding:3px 9px;font-size:12px;margin-left:auto">හිස් කරන්න</button></div>
   </div>
   <div class="box"><h3>ලකුණු කළ ස්ථාන</h3>
@@ -596,12 +596,13 @@ function openQP(xy,cb){
 function closeQP(redo=true){qcb=null;$('qp').style.display='none';const had=qpv;qpv=null;if(had&&redo&&L)redraw();}
 function qPick(i){const en=qlist[i];if(!en)return;const cb=qcb;closeQP(false);if(cb)cb(en);}
 /* ශබ්දකෝෂයේ (DB) නැති නම් රතු පාටින් දැක්වීම + Copy */
-function qMissing(){
+function qMissEntries(){
  if(!DICT.place.size)return null;/* ශබ්දකෝෂය load වී නැත */
  const seen=new Set(),o=[];
- qNames().forEach(e=>{const k=nk(e.n);if(!DICT.place.has(k)&&!seen.has(k)){seen.add(k);o.push(e.n);}});
+ qNames().forEach(e=>{const k=nk(e.n);if(!DICT.place.has(k)&&!seen.has(k)){seen.add(k);o.push(e);}});
  return o;
 }
+function qMissing(){const m=qMissEntries();return m?m.map(e=>e.n):null;}
 function qHL(){
  const bk=$('qbk'),ta=$('qt');if(!bk||!ta)return;
  const miss=qMissing(),ms=new Set((miss||[]).map(nk));
@@ -609,9 +610,9 @@ function qHL(){
   const n=t.split(/\s*[|\t]\s*/)[0].trim();return n&&ms.has(nk(n))?'<mark>'+esc(l)+'</mark>':esc(l);}).join('\n')+'\n';
  bk.scrollTop=ta.scrollTop;bk.scrollLeft=ta.scrollLeft;
  const box=$('qm'),lab=$('qml'),btn=$('qmc');
- if(miss===null){box.style.display=qNames().length?'block':'none';lab.style.color='#678';lab.textContent='ශබ්දකෝෂය load වී නැති නිසා DB එකේ ඇත්දැයි පරීක්ෂා කළ නොහැක.';btn.style.display='none';return;}
+ if(miss===null){box.style.display=qNames().length?'block':'none';lab.style.color='#678';lab.textContent='ශබ්දකෝෂය load වී නැති නිසා DB එකේ ඇත්දැයි පරීක්ෂා කළ නොහැක.';btn.style.display='none';$('qmd').style.display='none';return;}
  if(!miss.length){box.style.display='none';return;}
- box.style.display='block';lab.style.color='#d6212b';btn.style.display='';
+ box.style.display='block';lab.style.color='#d6212b';btn.style.display='';$('qmd').style.display='';
  lab.textContent='DB එකේ නැති නම් '+miss.length+'ක්: '+miss.join(' · ');
 }
 $('qt').onscroll=()=>{$('qbk').scrollTop=$('qt').scrollTop;$('qbk').scrollLeft=$('qt').scrollLeft;};
@@ -619,6 +620,26 @@ $('qmc').onclick=async()=>{
  const txt=(qMissing()||[]).join('/');if(!txt)return;
  try{await navigator.clipboard.writeText(txt);}catch(e){const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();}
  const b=$('qmc'),o=b.textContent;b.textContent='Copy වුණා ✓';setTimeout(()=>b.textContent=o,1500);
+};
+/* රතු පාටින් ඇති නම් කෙළින්ම ශබ්දකෝෂයට (kind = place) ඇතුළත් කිරීම; දෙමළ / English පසුව dictionary.html හි පුරවන්න */
+$('qmd').onclick=async()=>{
+ if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
+ const m=qMissEntries()||[];if(!m.length){alert('ඇතුළත් කිරීමට අලුත් නම් නැත');return;}
+ if(!confirm('DB එකේ නැති නම් '+m.length+'ක් "ස්ථාන නාම" ලෙස ශබ්දකෝෂයට ඇතුළත් කරන්නද?\n\n'+m.slice(0,15).map(e=>e.n).join(' · ')+(m.length>15?' …':'')+'\n\n(දෙමළ / English නම් පසුව ඇතුළත් කළ හැක)'))return;
+ if(!(await dbLogin()))return;
+ const b=$('qmd'),o=b.textContent;b.disabled=true;b.textContent='ඇතුළත් වෙමින්...';
+ try{
+  const recs=m.map(e=>({kind:'place',si:e.n,ta:e.nt||null,en:e.ne||null}));
+  const{error}=await sb.from('dictionary').insert(recs);
+  if(error)throw error;
+  alert('ස්ථාන නාම '+recs.length+'ක් ශබ්දකෝෂයට ඇතුළත් කළා ✓\nදෙමළ / English නම් පුරවන්න dictionary.html භාවිතා කරන්න.');
+  await loadDict();
+ }catch(err){
+  const msg=String((err&&err.message)||err);
+  if(/row-level security|permission denied|42501/i.test(msg+(err&&err.code||'')))alert('අසාර්ථකයි: මෙම ගිණුමට ශබ්දකෝෂයට ලිවීමට අවසර නැත.\n'+msg);
+  else if(/duplicate|unique|23505/i.test(msg+(err&&err.code||'')))alert('අසාර්ථකයි: එම නම් අතරින් සමහරක් ශබ්දකෝෂයේ දැනටමත් ඇත (අකුරු වෙනසක් නිසා හඳුනාගෙන නැති විය හැක).\n"🔄" ඔබා ශබ්දකෝෂය නැවත load කර බලන්න.\n'+msg);
+  else alert('අසාර්ථකයි: '+msg);
+ }finally{b.disabled=false;b.textContent=o;}
 };
 $('qt').oninput=qSave;
 $('qon').onchange=redraw;
