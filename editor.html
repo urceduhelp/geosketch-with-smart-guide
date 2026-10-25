@@ -75,6 +75,18 @@ aside{display:flex;flex-direction:column;gap:10px}
 #qsg div.db{background:#e6f6ea}
 #qsg div:hover,#qsg div.on{background:#e3f3fd}
 #qsg small{color:#678;margin-left:8px}
+/* ---- වර්ග අනුව පෙරදසුන ---- */
+.pvc{cursor:pointer;padding-right:9px}
+.pvc:hover{background:#cfe9d6}
+#pvm{position:fixed;inset:0;background:#0006;z-index:45;display:none;align-items:center;justify-content:center;padding:10px}
+#pvm .dlg{background:#fff;border-radius:10px;padding:14px;width:min(96vw,640px);max-height:92vh;display:flex;flex-direction:column;box-shadow:0 10px 30px #0006}
+#pvm h3{margin:0 0 6px}
+#pvList{margin:6px 0 0;padding:0;list-style:none;overflow:auto;flex:1;min-height:120px}
+#pvList li{display:flex;flex-wrap:wrap;gap:6px;padding:6px 0;border-bottom:1px solid #eef3f6;align-items:center}
+#pvList input{padding:0}
+#pvList small{color:#678}
+#pvList .pvg{flex-basis:100%;padding-left:24px}
+#pvList button{padding:2px 8px}
 </style>
 </head>
 <body>
@@ -124,7 +136,8 @@ aside{display:flex;flex-direction:column;gap:10px}
    <div id="qm" style="display:none;margin-top:6px"><div id="qml" style="font-size:12px;line-height:1.5;color:#d6212b"></div><div class="row" style="margin-top:4px"><button id="qmd" style="padding:3px 9px;font-size:12px" title="රතු පාටින් ඇති නම් ශබ්දකෝෂයට (වර්ගය: ස්ථාන නාම) කෙළින්ම ඇතුළත් කරයි">☁ DB එකට ඇතුළත් කරන්න (ස්ථාන නාම)</button><button class="alt" id="qmc" style="padding:3px 9px;font-size:12px">📋 Copy (සිංහල නම් පමණක්)</button></div></div>
    <div class="row" style="margin-top:6px"><label><input type="checkbox" id="qon" checked> Queue ක්‍රමය භාවිතා කරන්න</label><span id="qc" style="color:#1b7a3a;font-weight:700">ඉතිරි: 0</span><button class="alt" id="qclr" style="padding:3px 9px;font-size:12px;margin-left:auto">හිස් කරන්න</button></div>
   </div>
-  <div class="box"><h3>ලකුණු කළ ස්ථාන</h3>
+  <div class="box"><h3>ලකුණු කළ ස්ථාන <button class="alt" id="pvOpen" style="padding:2px 9px;font-size:12px;margin-left:6px">🔍 වර්ග අනුව පෙරදසුන</button></h3>
+   <div class="chips" id="pvchips" title="වර්ගයක් click කර පෙරදසුන විවෘත කරන්න"></div>
    <div class="row" id="bulk" style="margin-bottom:6px">
     <label><input type="checkbox" id="ball"> සියල්ල</label>
     <button id="bedit" title="ටික් කළ අයිතම කිහිපයක වර්ග / වර්ෂ එකවර වෙනස් කරන්න (Popup එකක්)">✎ ටික් කළ ඒවා සංස්කරණය</button>
@@ -196,6 +209,15 @@ aside{display:flex;flex-direction:column;gap:10px}
  <div class="row" style="margin-top:12px">
   <button id="bmOk">Apply</button><button class="alt" id="bmNo">අවලංගු</button>
  </div>
+</div></div>
+
+<!-- වර්ග අනුව පෙරදසුන popup -->
+<div id="pvm"><div class="dlg">
+ <h3>🔍 වර්ග අනුව පෙරදසුන (<span id="pvCnt">0</span>)</h3>
+ <div class="row"><select id="pvSel" style="flex:1;width:auto"></select><label><input type="checkbox" id="pvAll"> සියල්ල ටික්</label></div>
+ <small style="color:#678">වර්ගයක් තෝරා, එහි ස්ථාන බලන්න. 📍 = සිතියමේ පෙන්වන්න, ✎ = සංස්කරණය (Save කළ විට browser එකේ ස්වයංක්‍රීයව තැන්පත් වේ), × = මකන්න. කිහිපයක් ටික් කර එකවර සංස්කරණය කළ හැක. සියලු වෙනස්කම් ඉන්පසු "☁ DB එකට Save" ඔබා DB එකට යවන්න.</small>
+ <ul id="pvList"></ul>
+ <div class="row" style="margin-top:8px"><button id="pvBulk">✎ ටික් කළ ඒවා සංස්කරණය</button><button id="pvSave">☁ DB එකට Save</button><button class="alt" id="pvClose" style="margin-left:auto">වසන්න</button></div>
 </div></div>
 
 <div id="qp"><div id="qh"></div><input id="qs" placeholder="නම සොයන්න… (↑ ↓ Enter)" autocomplete="off"><div id="ql"></div><div class="row" style="margin-top:4px"><button class="alt" id="qx" style="padding:3px 10px;font-size:12px">අවලංගු</button></div></div>
@@ -383,6 +405,7 @@ function redraw(){
   gc.ondblclick=()=>openEdit(i);
   if(gc.childNodes.length)li.appendChild(gc);
   ul.appendChild(li);});
+ pvChips();if(pvOn)pvRender();
  refreshOut();
 }
 /* භාෂාවකට අදාළ අයිතමයක් සාදයි (නම + වර්ග පරිවර්තනය) */
@@ -991,6 +1014,64 @@ $('dbload').onclick=async()=>{
  if(!confirm('දැනට ඇති ලැයිස්තුව DB එකේ දත්ත මගින් ප්‍රතිස්ථාපනය කරන්නද?'))return;
  items=data.data;ck.clear();hideInfo();changed();
 };
+/* ---------- වර්ග අනුව පෙරදසුන (විවෘත කර, සංස්කරණය කර, Save කිරීම) ---------- */
+let pvOn=false,pvCat='';
+const PVNONE='__none__';
+function pvCounts(){const m=new Map();let none=0;
+ items.forEach(it=>{if(it.g&&it.g.length)it.g.forEach(c=>m.set(c,(m.get(c)||0)+1));else none++;});
+ return{m,none};}
+function pvChip(v,t){const s=document.createElement('span');s.className='chip pvc';s.textContent=t;s.title='පෙරදසුන විවෘත කරන්න';s.onclick=()=>pvOpen(v);return s;}
+function pvChips(){
+ const box=$('pvchips');if(!box)return;box.innerHTML='';
+ const{m,none}=pvCounts();
+ [...m.entries()].sort((a,b)=>b[1]-a[1]).forEach(([c,n])=>box.appendChild(pvChip(c,c+' ('+n+')')));
+ if(none)box.appendChild(pvChip(PVNONE,'වර්ගයක් නැත ('+none+')'));
+}
+function pvOpen(v){pvCat=v||'';pvOn=true;hideInfo();$('pvm').style.display='flex';pvRender();}
+function pvClose(){pvOn=false;$('pvm').style.display='none';}
+function pvRender(){
+ const{m,none}=pvCounts(),sel=$('pvSel');
+ if(pvCat&&pvCat!==PVNONE&&!m.has(pvCat))pvCat='';
+ sel.innerHTML='';sel.add(new Option('සියල්ල ('+items.length+')',''));
+ [...m.entries()].sort((a,b)=>b[1]-a[1]).forEach(([c,n])=>sel.add(new Option(c+' ('+n+')',c)));
+ if(none)sel.add(new Option('වර්ගයක් නැත ('+none+')',PVNONE));
+ sel.value=pvCat;
+ const idx=[];
+ items.forEach((it,i)=>{const has=it.g&&it.g.length;
+  if(pvCat===''||(pvCat===PVNONE?!has:(it.g||[]).includes(pvCat)))idx.push(i);});
+ $('pvCnt').textContent=idx.length;
+ const ul=$('pvList'),st=ul.scrollTop;ul.innerHTML='';
+ if(!idx.length)ul.innerHTML='<li style="color:#678">අයිතම නැත</li>';
+ idx.forEach(i=>{const it=items[i],li=document.createElement('li');
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=ck.has(i);
+  cb.onchange=()=>{cb.checked?ck.add(i):ck.delete(i);$('pvAll').checked=idx.every(j=>ck.has(j));};
+  li.appendChild(cb);
+  const nb=document.createElement('b');nb.textContent=(it.nd?'➜':IC[it.t])+' '+it.n;li.appendChild(nb);
+  const sm=document.createElement('small');
+  sm.textContent=[it.nt||it.ne?(it.nt||'–')+' | '+(it.ne||'–'):'',itemCells(L,it).slice(0,6).join(' ')].filter(Boolean).join(' · ');
+  li.appendChild(sm);
+  const bt=(txt,tt,bg,fn)=>{const b=document.createElement('button');b.textContent=txt;b.title=tt;if(bg)b.style.background=bg;b.onclick=fn;return b;};
+  const sp=document.createElement('span');sp.style.cssText='margin-left:auto;display:inline-flex;gap:4px';
+  sp.appendChild(bt('📍','සිතියමේ පෙන්වන්න','',()=>{pvClose();locate(i);}));
+  sp.appendChild(bt('✎','සංස්කරණය','#f59e0b',()=>openEdit(i)));
+  sp.appendChild(bt('×','මකන්න','var(--red)',()=>{if(!confirm('"'+it.n+'" මකන්නද?'))return;items.splice(i,1);ck.clear();hideInfo();changed();}));
+  li.appendChild(sp);
+  const g=document.createElement('div');g.className='pvg';
+  const ch=(t,cls)=>{const s=document.createElement('span');s.className='chip '+cls;s.style.paddingRight='9px';s.textContent=t;g.appendChild(s);};
+  (it.g||[]).forEach(c=>ch(c,''));(it.yr||[]).forEach(c=>ch('📅 '+c,'y'));(it.sig||[]).forEach(c=>ch('⭐ '+c,'s'));
+  if(g.childNodes.length)li.appendChild(g);
+  ul.appendChild(li);});
+ ul.scrollTop=st;
+ $('pvAll').checked=idx.length>0&&idx.every(i=>ck.has(i));
+ $('pvAll').onchange=ev=>{idx.forEach(i=>{ev.target.checked?ck.add(i):ck.delete(i);});pvRender();};
+}
+$('pvOpen').onclick=()=>pvOpen('');
+$('pvSel').onchange=()=>{pvCat=$('pvSel').value;pvRender();};
+$('pvClose').onclick=pvClose;
+$('pvBulk').onclick=openBulk;
+$('pvSave').onclick=()=>$('dbsave').click();
+$('pvm').addEventListener('keydown',e=>{e.stopPropagation();if(e.key=='Escape')pvClose();});
+$('pvm').addEventListener('mousedown',e=>{if(e.target.id=='pvm')pvClose();});
 $('dref').onclick=loadDict;
 $('warn').onclick=e=>{if(e.target.id=='pushm')pushMissing();};
 updAuth();
