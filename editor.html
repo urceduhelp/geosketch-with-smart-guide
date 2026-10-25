@@ -38,6 +38,7 @@ aside{display:flex;flex-direction:column;gap:10px}
 #sgw{position:relative}
 #sg{display:none;position:absolute;left:0;right:0;top:100%;z-index:30;background:#fff;border:1px solid #9bb;border-radius:6px;box-shadow:0 6px 18px #0003;max-height:220px;overflow:auto;margin-top:2px}
 #sg div{padding:6px 10px;cursor:pointer;border-bottom:1px solid #eef3f6}
+#sg div.db{background:#e6f6ea}
 #sg div:hover,#sg div.on{background:#e3f3fd}
 #sg small{color:#678;margin-left:8px}
 /* ---- popup (සංස්කරණය / bulk සංස්කරණය) ---- */
@@ -49,6 +50,8 @@ aside{display:flex;flex-direction:column;gap:10px}
 .chips{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
 .chip{background:#e6f4ea;color:#1b7a3a;border-radius:12px;padding:2px 4px 2px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px;margin:0 4px 2px 0}
 .chip.y{background:#e3f3fd;color:#0d2b45}
+.chip.s{background:#fff4d6;color:#7a5a00}
+#dbn{display:none;font-size:12px;background:#e6f6ea;color:#1b7a3a;border-radius:6px;padding:4px 8px;margin-top:4px;line-height:1.5}
 .chip b{cursor:pointer;background:#c62828;color:#fff;border-radius:50%;width:16px;height:16px;line-height:16px;text-align:center;font-size:11px}
 #bm .sec{border:1px solid #cfe0ea;border-radius:8px;padding:8px;margin-top:10px}
 #bm .sec h4{margin:0 0 4px;font-size:13px}
@@ -62,6 +65,7 @@ aside{display:flex;flex-direction:column;gap:10px}
 #qp #qs{width:100%}
 #ql{max-height:240px;overflow:auto;margin-top:4px}
 #ql div{padding:6px 8px;cursor:pointer;border-bottom:1px solid #eef3f6}
+#ql div.db{background:#e6f6ea}
 #ql div:hover,#ql div.on{background:#e3f3fd}
 #ql small{color:#678;margin-left:6px}
 #qh{font-size:11px;color:#678;margin:4px 0 0}
@@ -91,6 +95,7 @@ aside{display:flex;flex-direction:column;gap:10px}
   </div>
   <div class="box"><h3>නම</h3>
    <div id="sgw"><input id="name" placeholder="උදා: මහවැලි ගඟ" autocomplete="off"><div id="sg"></div></div>
+   <div id="dbn"></div>
    <div class="nms"><input id="nameT" placeholder="தமிழ் பெயர் (අවශ්‍ය නම්)"><input id="nameE" placeholder="English name (optional)"></div>
    <small style="color:#678">දෙමළ / English නම හිස්ව තැබුවහොත් ශබ්දකෝෂයෙන් (Supabase) ස්වයංක්‍රීයව ලබා ගනී; එහි නැත්නම් එම භාෂා කේතයේ සිංහල නම ම යෙදේ. වර්ග ද ශබ්දකෝෂයෙන් පරිවර්තනය වේ.</small>
    <div class="row" style="margin-top:6px"><span>වර්ණය</span><input id="col" type="color" value="#ff9800" style="padding:0;width:42px">
@@ -99,6 +104,9 @@ aside{display:flex;flex-direction:column;gap:10px}
    <span>අකුරු</span><input id="fsz" type="range" min="16" max="48" value="26" style="width:90px"></div>
    <div style="margin-top:8px"><b>වර්ග</b> <small style="color:#678">(සිංහලෙන් තෝරන්න; දෙමළ / English ස්වයංක්‍රීයව යෙදේ · එකකට වඩා තෝරා ගත හැක · ඊළඟ අයිතමවලටත් රඳා පවතී)</small><div id="cpk"></div></div>
    <div style="margin-top:8px"><b>විභාග වර්ෂය</b> <small style="color:#678">(ස්ථානය ලැබුණු විභාග වර්ෂ; කිහිපයක් තෝරා ගත හැක)</small><div id="ypk"></div></div>
+   <div style="margin-top:8px"><b>වැදගත්කම්</b> <small style="color:#678">(උපරිම 10ක්; ස්ථානය DB හි ඇත්නම් එහි වර්ග සහ වැදගත්කම් ස්වයංක්‍රීයව එක් වේ)</small>
+    <div class="chips" id="zc"></div><select id="zs" style="width:100%"></select>
+    <div class="row" style="margin-top:4px"><input id="zn" placeholder="අලුත් වැදගත්කමක් ටයිප් කරන්න" style="flex:1"><button class="alt" id="zb">＋</button></div></div>
    <div class="row" style="margin-top:6px"><button id="fin">අවසන් (Enter)</button><button class="alt" id="undo">Undo</button><button class="alt" id="cancel">අවලංගු</button></div>
    <div id="hint"></div>
   </div>
@@ -121,6 +129,8 @@ aside{display:flex;flex-direction:column;gap:10px}
     <button class="alt" data-f="yr" data-m="del" title="ටික් කළ අයිතමවලින්, තෝරා ඇති වර්ෂ ඉවත් කරයි">−</button>
     <button class="alt" data-f="yr" data-m="set" title="ටික් කළ අයිතමවල වර්ෂ, තෝරා ඇති ඒවාම පමණක් කරයි">＝</button>
     <button class="alt" id="bguess" title="වර්ගයක් නැති අයිතමවලට නම අනුව වර්ග යොදයි">නම අනුව අනුමාන</button>
+    <button class="alt" id="bfromdb" title="ටික් කළ (නැත්නම් සියලු) අයිතමවලට, ශබ්දකෝෂයේ (DB) ඇති වර්ග සහ වැදගත්කම් එක් කරයි">⬇ DB එකෙන් පුරවන්න</button>
+    <button class="alt" id="btodb" title="ටික් කළ (නැත්නම් සියලු සිතියම්වල) ස්ථානවල වර්ග සහ වැදගත්කම් ශබ්දකෝෂයට (DB) යවයි">⬆ DB එකට යවන්න</button>
    </div>
    <ul id="list"></ul></div>
   <div class="box"><h3>GeoSketch වෙත paste කිරීමට Code (භාෂා 3යි)</h3>
@@ -142,12 +152,16 @@ aside{display:flex;flex-direction:column;gap:10px}
  <label>වර්ග</label><div class="chips" id="emG"></div>
  <select id="emGs"></select>
  <div class="row" style="margin-top:4px"><input id="emGn" placeholder="අලුත් වර්ගයක් ටයිප් කරන්න" style="flex:1"><button class="alt" id="emGb">＋</button></div>
+ <label>වැදගත්කම් (උපරිම 10)</label><div class="chips" id="emS"></div>
+ <select id="emSs"></select>
+ <div class="row" style="margin-top:4px"><input id="emSn" placeholder="අලුත් වැදගත්කමක් ටයිප් කරන්න" style="flex:1"><button class="alt" id="emSb">＋</button></div>
  <label>විභාග වර්ෂ</label><div class="chips" id="emY"></div>
  <select id="emYs"></select>
  <div class="row" style="margin-top:4px"><input id="emYn" placeholder="වෙනත් වර්ෂයක් (උදා: 2022)" style="flex:1"><button class="alt" id="emYb">＋</button></div>
  <div class="row" style="margin-top:12px">
   <button id="emOk">Save</button><button class="alt" id="emNo">අවලංගු</button>
   <button class="alt" id="emClr">වර්ග සියල්ල ඉවත්</button>
+  <button class="alt" id="emDb" title="මෙම නම ශබ්දකෝෂයේ (DB) ඇත්නම් එහි වර්ග සහ වැදගත්කම් එක් කරයි">⬇ DB එකෙන් පුරවන්න</button>
   <button id="emDel" style="background:var(--red);margin-left:auto">ස්ථානය මකන්න</button>
  </div>
 </div></div>
@@ -182,7 +196,7 @@ aside{display:flex;flex-direction:column;gap:10px}
 <script>
 if(!isAdmin())location.replace('index.html');
 const $=id=>document.getElementById(id),cv=$('cv');
-let cur,img,L,items=[],tmp=[],pend=null,pendQ=null,qpv=null,lastXY=null,drag=null,insp=null,zt=0,lang='si';
+let cur,img,L,items=[],tmp=[],pend=null,pendQ=null,qpv=null,lastXY=null,curSig=[],drag=null,insp=null,zt=0,lang='si';
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const tool=()=>document.querySelector('[name=t]:checked').value;
@@ -241,7 +255,8 @@ const loadCM=()=>{try{return JSON.parse(localStorage.getItem('gs_catmap')||'{}')
 const SUPABASE_URL='https://jcijglwpkfluyzrltimk.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaWpnbHdwa2ZsdXl6cmx0aW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MzU3OTUsImV4cCI6MjA4MjQxMTc5NX0.dvT8OiyVEiYn_DhkMakmSq1Vvr4REDr0kYPnyqCtWHs';
 let sb=null;try{if(window.supabase)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);}catch(e){sb=null;}
-const DICT={category:new Map(),place:new Map(),other:new Map()};
+const DICT={category:new Map(),place:new Map(),significance:new Map(),other:new Map()};
+let DBCOLS=false;/* dictionary table හි cats / sig columns ඇත්දැයි */
 const dget=(kind,si)=>(DICT[kind]||new Map()).get(nk(si))||null;
 const dtr=(kind,si,l)=>{const r=dget(kind,si);return r&&r[l]?r[l]:null;};/* l = 'ta' | 'en' */
 async function loadDict(){
@@ -249,19 +264,20 @@ async function loadDict(){
  let all=[],src='online';
  try{
   if(!sb)throw new Error('no client');
-  for(let from=0;;from+=1000){
-   const{data,error}=await sb.from('dictionary').select('kind,si,ta,en').order('id').range(from,from+999);
-   if(error)throw error;all=all.concat(data);if(data.length<1000)break;
-  }
+  const pull=async cols=>{let a=[];for(let from=0;;from+=1000){
+   const{data,error}=await sb.from('dictionary').select(cols).order('id').range(from,from+999);
+   if(error)throw error;a=a.concat(data);if(data.length<1000)break;}return a;};
+  try{all=await pull('kind,si,ta,en,cats,sig');DBCOLS=true;}
+  catch(e1){DBCOLS=false;all=await pull('kind,si,ta,en');}/* columns තවම නැත්නම් පැරණි ක්‍රමයට */
   try{localStorage.setItem('gs_dict_cache',JSON.stringify(all));}catch(e){}
  }catch(e){
   try{all=JSON.parse(localStorage.getItem('gs_dict_cache')||'[]');}catch(_){all=[];}
   src=all.length?'cache':'none';
  }
  Object.values(DICT).forEach(m=>m.clear());
- all.forEach(r=>{if(DICT[r.kind])DICT[r.kind].set(nk(r.si),{ta:r.ta,en:r.en,si:r.si});});
- tx.textContent=src=='none'?'📚 ශබ්දකෝෂය ලබා ගත නොහැක (ගොනුවේ ඇති වර්ග පමණක් භාවිතා වේ)':`📚 ශබ්දකෝෂය: වචන ${all.length}ක්`+(src=='cache'?' (offline – පැරණි පිටපත)':'');
- if(cur)refreshOut();qHL();
+ all.forEach(r=>{if(DICT[r.kind])DICT[r.kind].set(nk(r.si),{ta:r.ta,en:r.en,si:r.si,cats:r.cats||[],sig:r.sig||[]});});
+ tx.textContent=src=='none'?'📚 ශබ්දකෝෂය ලබා ගත නොහැක (ගොනුවේ ඇති වර්ග පමණක් භාවිතා වේ)':`📚 ශබ්දකෝෂය: වචන ${all.length}ක්`+(src=='cache'?' (offline – පැරණි පිටපත)':'')+(src=='online'&&!DBCOLS?' ⚠ වර්ග/වැදගත්කම් columns තවම නැත (SQL ධාවනය කරන්න)':'');
+ if(cur)refreshOut();qHL();dbNote();zFill();
 }
 async function dictSession(){try{if(!sb)return null;const{data}=await sb.auth.getSession();return data.session;}catch(e){return null;}}
 async function dictAdd(kind,si,ta,en){/* Admin login වී ඇත්නම් පමණක්, ශබ්දකෝෂයට වචනයක් එක් කරයි */
@@ -303,7 +319,7 @@ const ypk=catPicker($('ypk'),{list:allYears,ph:'— Dropdown එකෙන් ව
 const G=()=>{const g=cp.get(),y=ypk.get();return Object.assign(g.length?{g}:{},y.length?{yr:y}:{});};
 /* දෙමළ / English නම් (nt / ne) */
 const TN=()=>{const o={},t=$('nameT').value.trim(),e=$('nameE').value.trim();if(t)o.nt=t;if(e)o.ne=e;return o;};
-const clearNames=()=>{$('name').value='';$('nameT').value='';$('nameE').value='';};
+const clearNames=()=>{$('name').value='';$('nameT').value='';$('nameE').value='';dbNote();};
 
 async function load(k){
  cur=MAPS.find(m=>m.k==k);await fontReady();
@@ -339,12 +355,13 @@ function redraw(){
   const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);ck.clear();hideInfo();changed();};li.appendChild(b);
   /* කොළ පාට වර්ග පේළිය – එක් එක් chip එකේ × ඔබා ඉවත් කළ හැක; double-click කළ විට popup */
   const gc=document.createElement('span');gc.className='gc';gc.title='Double-click = සංස්කරණය';
-  const qc=(f,c,cls)=>{const s=document.createElement('span');s.className='chip '+cls;s.textContent=(f=='yr'?'📅 ':'')+c;
+  const qc=(f,c,cls)=>{const s=document.createElement('span');s.className='chip '+cls;s.textContent=(f=='yr'?'📅 ':f=='sig'?'⭐ ':'')+c;
    const x=document.createElement('b');x.textContent='×';x.title='ඉවත් කරන්න';
    x.onclick=ev=>{ev.stopPropagation();it[f]=it[f].filter(v=>v!=c);if(!it[f].length)delete it[f];changed();};
    s.appendChild(x);return s;};
   (it.g||[]).forEach(c=>gc.appendChild(qc('g',c,'')));
   (it.yr||[]).forEach(c=>gc.appendChild(qc('yr',c,'y')));
+  (it.sig||[]).forEach(c=>gc.appendChild(qc('sig',c,'s')));
   if(it.nt||it.ne)gc.appendChild(document.createTextNode(' 🌐 '+(it.nt||'–')+' | '+(it.ne||'–')));
   gc.ondblclick=()=>openEdit(i);
   if(gc.childNodes.length)li.appendChild(gc);
@@ -358,6 +375,7 @@ function conv(it,l){
  const nn=(l=='ta'?it.nt:it.ne)||dtr('place',it.n,l);delete o.nt;delete o.ne;/* අතින් දුන් නම > ශබ්දකෝෂය > සිංහල නම */
  if(nn&&nn.trim())o.n=nn.trim();
  if(o.g)o.g=o.g.map(c=>trCat(c,l)||c);
+ if(o.sig)o.sig=o.sig.map(c=>dtr('significance',c,l)||c);
  return o;
 }
 function code(l=lang){
@@ -397,7 +415,7 @@ function hideInfo(){insp=null;$('info').style.display='none';}
 function redraw0(i,e){insp=i;redraw();showInfo(i,e.clientX,e.clientY);}
 function showInfo(i,cx,cy){
  insp=i;const it=items[i],d=$('info');
- const tags=[(it.g||[]).length?'🏷 '+it.g.map(esc).join(' · '):'',(it.yr||[]).length?'📅 '+it.yr.map(esc).join(', '):'',(it.nt||it.ne)?'🌐 '+esc(it.nt||'–')+' | '+esc(it.ne||'–'):''].filter(Boolean).join('<br>');
+ const tags=[(it.g||[]).length?'🏷 '+it.g.map(esc).join(' · '):'',(it.yr||[]).length?'📅 '+it.yr.map(esc).join(', '):'',(it.sig||[]).length?'⭐ '+it.sig.map(esc).join(' · '):'',(it.nt||it.ne)?'🌐 '+esc(it.nt||'–')+' | '+esc(it.ne||'–'):''].filter(Boolean).join('<br>');
  d.innerHTML=`<b>${esc(it.n)}</b><div style="color:#456">${TL[it.t]}${it.nd?' (ඊතලය පමණි)':''} · ${itemCells(L,it).slice(0,6).join(' ')}</div>${tags?'<div>'+tags+'</div>':''}`+
   '<div class="row"><button id="ied">සංස්කරණය</button><button class="alt" id="ix">වසන්න</button><button id="idl" style="background:var(--red)">ඉවත් කරන්න</button></div>';
  $('ied').onclick=()=>openEdit(i);
@@ -430,15 +448,15 @@ cv.onclick=e=>{
  const t=tool(),p=[r4(x),r4(y)];
  lastXY=[e.clientX,e.clientY];
  if(t=='p'){
-  if(qActive()){qpv=p;redraw();openQP(lastXY,en=>{items.push(Object.assign({n:en.n,t:'p',x:p[0],y:p[1]},qTN(en),G()));qRemove(en);changed();});return;}
-  const n=nm();if(!n)return;items.push(Object.assign({n,t:'p',x:p[0],y:p[1]},TN(),G()));clearNames();changed();}
+  if(qActive()){qpv=p;redraw();openQP(lastXY,en=>{addItem(Object.assign({n:en.n,t:'p',x:p[0],y:p[1]},qTN(en),G()));qRemove(en);changed();});return;}
+  const n=nm();if(!n)return;addItem(Object.assign({n,t:'p',x:p[0],y:p[1]},TN(),G()));clearNames();changed();}
  else if(t=='pa'||t=='na'){
   if(!pend){
    if(qActive()){qpv=p;redraw();openQP(lastXY,en=>{pend=p;pendQ=en;redraw();});return;}
    if(!nm())return;pend=p;redraw();}
   else{
    const q=pendQ,n=q?q.n:$('name').value.trim(),ex=q?qTN(q):TN();
-   items.push(Object.assign({n,t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{},ex,G()));
+   addItem(Object.assign({n,t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{},ex,G()));
    pend=null;pendQ=null;if(q)qRemove(q);else clearNames();changed();}
  }else{tmp.push(p);redraw();}
 };
@@ -494,17 +512,22 @@ function addNewVal(inp,arr,isCat,refill){const v=inp.value.trim();if(!v)return;
  inp.value='';refill();}
 
 function openEdit(i){const it=items[i];if(!it)return;
- em={i,g:(it.g||[]).slice(),yr:(it.yr||[]).slice()};
+ em={i,g:(it.g||[]).slice(),yr:(it.yr||[]).slice(),sig:(it.sig||[]).slice()};
  $('emN').value=it.n;$('emT').value=it.nt||'';$('emE').value=it.ne||'';
  emFill();hideInfo();$('em').style.display='flex';}
 function closeEdit(){em=null;$('em').style.display='none';}
 function emFill(){
- fillSel($('emGs'),allCats(),em.g);fillSel($('emYs'),allYears(),em.yr);
- drawChips($('emG'),em.g,'',emFill);drawChips($('emY'),em.yr,'y',emFill);}
+ fillSel($('emGs'),allCats(),em.g);fillSel($('emYs'),allYears(),em.yr);fillSel($('emSs'),allSigs(),em.sig);
+ drawChips($('emG'),em.g,'',emFill);drawChips($('emY'),em.yr,'y',emFill);drawChips($('emS'),em.sig,'s',emFill);}
 $('emGs').onchange=()=>{const v=$('emGs').value;if(v&&!em.g.includes(v))em.g.push(v);emFill();};
 $('emYs').onchange=()=>{const v=$('emYs').value;if(v&&!em.yr.includes(v))em.yr.push(v);emFill();};
 $('emGb').onclick=()=>addNewVal($('emGn'),em.g,true,emFill);
 $('emYb').onclick=()=>addNewVal($('emYn'),em.yr,false,emFill);
+$('emSs').onchange=()=>{const v=$('emSs').value;if(v)addSig(em.sig,v);emFill();};
+$('emSb').onclick=()=>addNewSig($('emSn'),em.sig,emFill);
+$('emDb').onclick=()=>{const d=dget('place',$('emN').value.trim());
+ if(!d||!((d.cats||[]).length||(d.sig||[]).length)){alert('මෙම නමට DB හි වර්ග / වැදගත්කම් නැත');return;}
+ (d.cats||[]).forEach(c=>{if(!em.g.includes(c))em.g.push(c);});(d.sig||[]).forEach(c=>addSig(em.sig,c));emFill();};
 $('emClr').onclick=()=>{em.g=[];emFill();};
 $('emNo').onclick=closeEdit;
 $('emOk').onclick=()=>{
@@ -513,6 +536,7 @@ $('emOk').onclick=()=>{
  if(t)it.nt=t;else delete it.nt;if(e)it.ne=e;else delete it.ne;
  if(em.g.length)it.g=em.g;else delete it.g;
  if(em.yr.length)it.yr=em.yr;else delete it.yr;
+ if(em.sig.length)it.sig=em.sig.slice(0,10);else delete it.sig;
  closeEdit();changed();};
 $('emDel').onclick=()=>{if(!confirm('"'+items[em.i].n+'" මකන්නද?'))return;
  items.splice(em.i,1);ck.clear();closeEdit();changed();};
@@ -521,6 +545,7 @@ $('em').addEventListener('keydown',e=>{e.stopPropagation();/* ප්‍රධා
  else if(e.key=='Enter'){e.preventDefault();
   if(e.target.id=='emGn')addNewVal($('emGn'),em.g,true,emFill);
   else if(e.target.id=='emYn')addNewVal($('emYn'),em.yr,false,emFill);
+  else if(e.target.id=='emSn')addNewSig($('emSn'),em.sig,emFill);
   else $('emOk').click();}});
 $('em').addEventListener('mousedown',e=>{if(e.target.id=='em')closeEdit();});
 
@@ -566,6 +591,77 @@ $('bm').addEventListener('keydown',e=>{e.stopPropagation();
 $('bm').addEventListener('mousedown',e=>{if(e.target.id=='bm')closeBulk();});
 $('bedit').onclick=openBulk;
 
+/* ---------- වැදගත්කම් (උපරිම 10) සහ DB වර්ග ---------- */
+const loadSigs=()=>{try{return JSON.parse(localStorage.getItem('gs_sigs')||'[]');}catch(e){return[];}};
+function allSigs(){const u=new Set();DICT.significance.forEach(r=>u.add(r.si));loadSigs().forEach(x=>u.add(x));items.forEach(it=>(it.sig||[]).forEach(x=>u.add(x)));return[...u];}
+function addSig(arr,v){if(arr.includes(v))return true;if(arr.length>=10){alert('වැදගත්කම් 10කට වඩා ඇතුළත් කළ නොහැක');return false;}arr.push(v);return true;}
+function addNewSig(inp,arr,refill){const v=inp.value.trim();if(!v)return;if(!addSig(arr,v))return;
+ if(!allSigs().includes(v)||!loadSigs().includes(v)){const a=loadSigs();if(!a.includes(v)){a.push(v);try{localStorage.setItem('gs_sigs',JSON.stringify(a));}catch(e){}}dictAdd('significance',v,'','');}
+ inp.value='';refill();}
+function zFill(){if(!$('zs'))return;fillSel($('zs'),allSigs(),curSig);drawChips($('zc'),curSig,'s',zFill);}
+$('zs').onchange=()=>{const v=$('zs').value;if(v)addSig(curSig,v);zFill();};
+$('zb').onclick=()=>addNewSig($('zn'),curSig,zFill);
+$('zn').addEventListener('keydown',e=>{if(e.key=='Enter'){e.preventDefault();e.stopPropagation();addNewSig($('zn'),curSig,zFill);}});
+/* ස්ථානයක් DB හි (වර්ග / වැදගත්කම් සහිතව) ඇත්දැයි */
+function dbHas(n){const d=dget('place',n);return!!(d&&((d.cats&&d.cats.length)||(d.sig&&d.sig.length)));}
+function dbNote(){
+ const box=$('dbn');if(!box)return;const n=$('name').value.trim(),d=n?dget('place',n):null;
+ if(!d||!(dbHas(n))){box.style.display='none';return;}
+ box.style.display='block';
+ box.textContent='✓ DB හි ඇත'+(d.cats.length?' – 🏷 '+d.cats.join(' · '):'')+(d.sig.length?' – ⭐ '+d.sig.join(' · '):'')+' (ස්ථානය ලකුණු කරන විට ස්වයංක්‍රීයව එක් වේ)';
+}
+/* අලුත් අයිතමයකට: DB හි වර්ග / වැදගත්කම් + දැන් තෝරා ඇති වැදගත්කම් එක් කරයි */
+function enrich(it){
+ const d=dget('place',it.n),un=(a,b)=>[...new Set([...(a||[]),...(b||[])])];
+ const g=un(it.g,d&&d.cats),sg=un(un(it.sig,curSig),d&&d.sig).slice(0,10);
+ if(g.length)it.g=g;if(sg.length)it.sig=sg;
+ curSig=[];zFill();return it;
+}
+function addItem(it){items.push(enrich(it));}
+/* ටික් කළ (නැත්නම් සියලු) අයිතමවලට DB එකෙන් පුරවයි */
+$('bfromdb').onclick=()=>{
+ const idx=ck.size?[...ck]:items.map((_,i)=>i);let n=0;
+ idx.forEach(i=>{const it=items[i];if(!it)return;const d=dget('place',it.n);if(!d)return;
+  const g=[...new Set([...(it.g||[]),...(d.cats||[])])],sg=[...new Set([...(it.sig||[]),...(d.sig||[])])].slice(0,10);
+  if(g.length!=(it.g||[]).length||sg.length!=(it.sig||[]).length){if(g.length)it.g=g;if(sg.length)it.sig=sg;n++;}});
+ alert(n?'අයිතම '+n+'ක් DB එකෙන් යාවත්කාලීන කළා':'DB එකෙන් එක් කිරීමට අලුත් වර්ග / වැදගත්කම් නැත');
+ if(n)changed();
+};
+/* වර්ග / වැදගත්කම් ශබ්දකෝෂයට (DB) යැවීම: DB හි ඇති දත්ත මත ලියන්නේ නැත, අලුත් ඒවා එකතු කරයි */
+$('btodb').onclick=async()=>{
+ if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
+ if(!DBCOLS){alert('පළමුව Supabase → SQL Editor හි, දී ඇති SQL (cats / sig columns) ධාවනය කර, 🔄 ඔබා ශබ්දකෝෂය නැවත load කරන්න.');return;}
+ let src=[];
+ if(ck.size)src=[...ck].map(i=>items[i]).filter(Boolean);
+ else MAPS.forEach(m=>{let a=[];try{a=cur&&m.k==cur.k?items:JSON.parse(localStorage.getItem('gs_'+m.k)||'[]');}catch(e){}src=src.concat(a);});
+ const by=new Map();
+ src.forEach(it=>{if(!it||!it.n)return;const k=nk(it.n);let r=by.get(k);if(!r){r={n:it.n,g:new Set(),sg:new Set(),nt:it.nt,ne:it.ne};by.set(k,r);}
+  (it.g||[]).forEach(c=>r.g.add(c));(it.sig||[]).forEach(c=>r.sg.add(c));if(!r.nt&&it.nt)r.nt=it.nt;if(!r.ne&&it.ne)r.ne=it.ne;});
+ const ins=[],upd=[];let capped=0;
+ by.forEach(r=>{const d=dget('place',r.n);
+  if(!d){const sg=[...r.sg];if(sg.length>10)capped++;ins.push({kind:'place',si:r.n,ta:r.nt||null,en:r.ne||null,cats:[...r.g],sig:sg.slice(0,10)});return;}
+  const g=[...new Set([...(d.cats||[]),...r.g])],sg0=[...new Set([...(d.sig||[]),...r.sg])];if(sg0.length>10)capped++;const sg=sg0.slice(0,10);
+  const pl={};if(g.length!=(d.cats||[]).length)pl.cats=g;if(sg.length!=(d.sig||[]).length)pl.sig=sg;
+  if(!d.ta&&r.nt)pl.ta=r.nt;if(!d.en&&r.ne)pl.en=r.ne;
+  if(Object.keys(pl).length)upd.push({si:d.si,pl});});
+ if(!ins.length&&!upd.length){alert('DB එකට යැවීමට අලුත් දත්ත නැත');return;}
+ if(!confirm((ck.size?'ටික් කළ අයිතම':'සියලු සිතියම්වල ස්ථාන')+' සඳහා:\n• ශබ්දකෝෂයට අලුතින් ඇතුළත් වන ස්ථාන: '+ins.length+'\n• දැනට ඇති ස්ථානවලට වර්ග / වැදගත්කම් එක් වන ඒවා: '+upd.length+(capped?'\n• වැදගත්කම් 10කට වඩා ඇති '+capped+'ක්, 10කට සීමා වේ':'')+'\n\n(DB හි දැනට ඇති වර්ග / වැදගත්කම් මැකෙන්නේ නැත)\nඉදිරියට යන්නද?'))return;
+ if(!(await dbLogin()))return;
+ const b=$('btodb'),o=b.textContent;b.disabled=true;let ok=0,noperm=0,fail=0;
+ try{
+  for(let i=0;i<ins.length;i+=200){b.textContent='ඇතුළත් වෙමින් '+Math.min(i+200,ins.length)+'/'+ins.length;
+   const{error}=await sb.from('dictionary').insert(ins.slice(i,i+200));if(error)throw error;ok+=Math.min(200,ins.length-i);}
+  for(let i=0;i<upd.length;i++){b.textContent='යාවත්කාලීන වෙමින් '+(i+1)+'/'+upd.length;
+   const u=await sb.from('dictionary').update(upd[i].pl).eq('kind','place').eq('si',upd[i].si).select('id');
+   if(u.error){fail++;if(fail==1)console.warn(u.error);}else if(!u.data||!u.data.length)noperm++;else ok++;}
+  alert('අවසන් ✓\nසාර්ථක: '+ok+(noperm?'\nයාවත්කාලීන කළ නොහැකි වූ (අවසර නැත): '+noperm+'\n→ Supabase හි dictionary table සඳහා UPDATE policy එකක් අවශ්‍යයි':'')+(fail?'\nඅසාර්ථක: '+fail:''));
+  await loadDict();
+ }catch(err){
+  const m=String((err&&err.message)||err);
+  alert(/row-level security|permission denied|42501/i.test(m+(err&&err.code||''))?'අසාර්ථකයි: මෙම ගිණුමට ශබ්දකෝෂයට ලිවීමට අවසර නැත.\n'+m:'අසාර්ථකයි: '+m);
+ }finally{b.disabled=false;b.textContent=o;}
+};
+
 /* ---------- Queue: ස්ථාන රාශියක් එකවර (click කළ තැනම නම් ලැයිස්තුව) ---------- */
 let qcb=null,qlist=[],qi=0;
 function qNames(){return $('qt').value.split('\n').map(x=>x.trim()).filter(Boolean).map(raw=>{
@@ -575,13 +671,13 @@ const qTN=en=>{const o={};if(en.nt)o.nt=en.nt;if(en.ne)o.ne=en.ne;return o;};
 function qActive(){return $('qon').checked&&tool()!='mv'&&qNames().length>0;}
 function qSave(){try{localStorage.setItem('gs_queue',$('qt').value);}catch(e){}$('qc').textContent='ඉතිරි: '+qNames().length;qHL();}
 function qRemove(en){const ls=$('qt').value.split('\n'),k=ls.findIndex(l=>l.trim()==en.raw);if(k>=0)ls.splice(k,1);$('qt').value=ls.join('\n');qSave();}
-function qMark(){const c=[...$('ql').children];c.forEach((d,i)=>d.className=(qlist.length&&i==qi)?'on':'');if(c[qi]&&qlist.length)c[qi].scrollIntoView({block:'nearest'});}
+function qMark(){const c=[...$('ql').children];c.forEach((d,i)=>d.className=(qlist.length&&i==qi)?'on':(qlist[i]&&dbHas(qlist[i].n)?'db':''));if(c[qi]&&qlist.length)c[qi].scrollIntoView({block:'nearest'});}
 function qFilter(){
  const q=nk($('qs').value).toLowerCase(),all=qNames();
  qlist=all.filter(e=>!q||nk(e.n).toLowerCase().includes(q)).slice(0,60);qi=0;
  const ul=$('ql');ul.innerHTML='';
  qlist.forEach((e,i)=>{const d=document.createElement('div');d.textContent=e.n;
-  const t=[e.nt,e.ne].filter(Boolean).join(' · ');if(t){const s=document.createElement('small');s.textContent=t;d.appendChild(s);}
+  const dd=dget('place',e.n),t=[e.nt,e.ne,(dd&&dd.cats&&dd.cats.length?'🏷 '+dd.cats.join(', '):'')].filter(Boolean).join(' · ');if(t){const s=document.createElement('small');s.textContent=t;d.appendChild(s);}
   d.onclick=()=>qPick(i);ul.appendChild(d);});
  if(!qlist.length)ul.innerHTML='<div style="color:#678;cursor:default">ගැළපෙන නමක් නැත</div>';
  $('qh').textContent='ඉතිරි නම් '+all.length+'ක් – එකක් තෝරන්න';qMark();
@@ -625,11 +721,12 @@ $('qmc').onclick=async()=>{
 $('qmd').onclick=async()=>{
  if(!sb){alert('Supabase සම්බන්ධ නැත');return;}
  const m=qMissEntries()||[];if(!m.length){alert('ඇතුළත් කිරීමට අලුත් නම් නැත');return;}
- if(!confirm('DB එකේ නැති නම් '+m.length+'ක් "ස්ථාන නාම" ලෙස ශබ්දකෝෂයට ඇතුළත් කරන්නද?\n\n'+m.slice(0,15).map(e=>e.n).join(' · ')+(m.length>15?' …':'')+'\n\n(දෙමළ / English නම් පසුව ඇතුළත් කළ හැක)'))return;
+ if(!confirm('DB එකේ නැති නම් '+m.length+'ක් "ස්ථාන නාම" ලෙස ශබ්දකෝෂයට ඇතුළත් කරන්නද?\n\n'+m.slice(0,15).map(e=>e.n).join(' · ')+(m.length>15?' …':'')+(DBCOLS&&cp.get().length?'\n\nවර්ග: '+cp.get().join(', ')+' (සියල්ලටම)':'')+'\n\n(දෙමළ / English නම් පසුව ඇතුළත් කළ හැක)'))return;
  if(!(await dbLogin()))return;
  const b=$('qmd'),o=b.textContent;b.disabled=true;b.textContent='ඇතුළත් වෙමින්...';
  try{
-  const recs=m.map(e=>({kind:'place',si:e.n,ta:e.nt||null,en:e.ne||null}));
+  const gc=cp.get();
+  const recs=m.map(e=>Object.assign({kind:'place',si:e.n,ta:e.nt||null,en:e.ne||null},DBCOLS&&gc.length?{cats:gc}:{},DBCOLS&&curSig.length?{sig:curSig.slice()}:{}));
   const{error}=await sb.from('dictionary').insert(recs);
   if(error)throw error;
   alert('ස්ථාන නාම '+recs.length+'ක් ශබ්දකෝෂයට ඇතුළත් කළා ✓\nදෙමළ / English නම් පුරවන්න dictionary.html භාවිතා කරන්න.');
@@ -658,7 +755,7 @@ try{$('qt').value=localStorage.getItem('gs_queue')||'';}catch(e){}qSave();
 function finish(){
  const t=tool();if(t!='a'&&t!='r'&&t!='d')return;
  if(tmp.length<(t=='a'?3:2)){alert(t=='a'?'ලක්ෂ්‍ය 3ක්වත් අවශ්‍යයි':'ලක්ෂ්‍ය 2ක්වත් අවශ්‍යයි');return;}
- const mk=(n,ex)=>{const pts=tmp;items.push(Object.assign(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts}:t=='d'?Object.assign({n,t:'d',pts},$('hl').checked?{hl:1}:{}):{n,t:'r',pts},ex,G()));tmp=[];changed();};
+ const mk=(n,ex)=>{const pts=tmp;addItem(Object.assign(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts}:t=='d'?Object.assign({n,t:'d',pts},$('hl').checked?{hl:1}:{}):{n,t:'r',pts},ex,G()));tmp=[];changed();};
  if(qActive()){if($('qp').style.display=='block')return;openQP(lastXY,en=>{mk(en.n,qTN(en));qRemove(en);});return;}
  const n=nm();if(!n)return;mk(n,TN());clearNames();
 }
@@ -702,8 +799,8 @@ $('bguess').onclick=()=>{
 /* ---------- නම ටයිප් කරන විට යෝජනා (ශබ්දකෝෂයේ si column එකෙන්) ---------- */
 const sg=$('sg');let sgI=-1,sgL=[];
 function sgHide(){sg.style.display='none';sgI=-1;sgL=[];}
-function sgPick(i){const r=sgL[i];if(!r)return;$('name').value=r.si;sgHide();$('name').focus();}
-function sgMark(){[...sg.children].forEach((d,i)=>d.className=i==sgI?'on':'');}
+function sgPick(i){const r=sgL[i];if(!r)return;$('name').value=r.si;sgHide();dbNote();$('name').focus();}
+function sgMark(){[...sg.children].forEach((d,i)=>d.className=i==sgI?'on':(sgL[i]&&dbHas(sgL[i].si)?'db':''));}
 function sgShow(){
  const q=nk($('name').value).toLowerCase();
  if(q.length<2){sgHide();return;}
@@ -713,8 +810,8 @@ function sgShow(){
  sgL=a.slice(0,8).map(x=>x.r);sgI=-1;sg.innerHTML='';
  if(!sgL.length){sg.style.display='none';return;}
  sgL.forEach((r,i)=>{
-  const d=document.createElement('div');d.textContent=r.si;
-  const t=[r.ta,r.en].filter(Boolean).join(' · ');
+  const d=document.createElement('div');d.textContent=r.si;if(dbHas(r.si))d.className='db';
+  const t=[r.ta,r.en,(r.cats&&r.cats.length?'🏷 '+r.cats.join(', '):'')].filter(Boolean).join(' · ');
   if(t){const s=document.createElement('small');s.textContent=t;d.appendChild(s);}
   d.onmousedown=e=>{e.preventDefault();sgPick(i);};
   sg.appendChild(d);
@@ -722,6 +819,7 @@ function sgShow(){
  sg.style.display='block';
 }
 $('name').addEventListener('input',sgShow);
+$('name').addEventListener('input',dbNote);
 $('name').addEventListener('blur',sgHide);
 $('name').addEventListener('keydown',e=>{
  if(sg.style.display!='block')return;
@@ -775,6 +873,7 @@ $('dbload').onclick=async()=>{
 $('dref').onclick=loadDict;
 $('warn').onclick=e=>{if(e.target.id=='pushm')pushMissing();};
 updAuth();
+zFill();
 loadDict();
 load(MAPS[0].k);
 </script>
