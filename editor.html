@@ -27,7 +27,7 @@ aside{display:flex;flex-direction:column;gap:10px}
 #name{width:100%}
 #list{max-height:230px;overflow:auto;margin:0;padding:0;list-style:none}
 #list li{display:flex;flex-wrap:wrap;gap:6px;padding:3px 0;border-bottom:1px solid #eef3f6;align-items:center}
-#list small{color:#678;margin-left:auto}#list input{padding:0}.gc{flex-basis:100%;font-size:11px;color:#1b7a3a;padding-left:24px}#bulk button{padding:3px 8px;font-size:12px}#bulk{font-size:12px}#list button{padding:1px 7px;background:var(--red)}
+#list small{color:#678;margin-left:auto}#list input{padding:0}.gc{flex-basis:100%;font-size:11px;color:#1b7a3a;padding-left:24px;cursor:pointer}#bulk button{padding:3px 8px;font-size:12px}#bulk{font-size:12px}#list button{padding:1px 7px;background:var(--red)}
 #out{width:100%;height:190px;font:12px/1.4 Consolas,monospace;white-space:pre}
 #hint{color:#456;min-height:34px}
 #info{position:fixed;z-index:9;display:none;max-width:min(88vw,300px);background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 20px #0004;padding:8px 10px;font-size:13px;line-height:1.5}#info b{font-size:15px}#info .row{margin-top:6px}#info button{padding:3px 10px;font-size:12px}
@@ -40,6 +40,18 @@ aside{display:flex;flex-direction:column;gap:10px}
 #sg div{padding:6px 10px;cursor:pointer;border-bottom:1px solid #eef3f6}
 #sg div:hover,#sg div.on{background:#e3f3fd}
 #sg small{color:#678;margin-left:8px}
+/* ---- popup (සංස්කරණය / bulk සංස්කරණය) ---- */
+#em,#bm{position:fixed;inset:0;background:#0006;z-index:50;display:none;align-items:center;justify-content:center;padding:10px}
+#em .dlg,#bm .dlg{background:#fff;border-radius:10px;padding:14px;width:min(94vw,440px);max-height:90vh;overflow:auto;box-shadow:0 10px 30px #0006}
+#em h3,#bm h3{margin:0 0 6px}
+#em label,#bm label{display:block;font-size:12px;color:#678;margin-top:8px}
+#em input,#em select,#bm input,#bm select{width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0}
+.chip{background:#e6f4ea;color:#1b7a3a;border-radius:12px;padding:2px 4px 2px 9px;font-size:12px;display:inline-flex;align-items:center;gap:4px;margin:0 4px 2px 0}
+.chip.y{background:#e3f3fd;color:#0d2b45}
+.chip b{cursor:pointer;background:#c62828;color:#fff;border-radius:50%;width:16px;height:16px;line-height:16px;text-align:center;font-size:11px}
+#bm .sec{border:1px solid #cfe0ea;border-radius:8px;padding:8px;margin-top:10px}
+#bm .sec h4{margin:0 0 4px;font-size:13px}
 </style>
 </head>
 <body>
@@ -80,6 +92,7 @@ aside{display:flex;flex-direction:column;gap:10px}
   <div class="box"><h3>ලකුණු කළ ස්ථාන</h3>
    <div class="row" id="bulk" style="margin-bottom:6px">
     <label><input type="checkbox" id="ball"> සියල්ල</label>
+    <button id="bedit" title="ටික් කළ අයිතම කිහිපයක වර්ග / වර්ෂ එකවර වෙනස් කරන්න (Popup එකක්)">✎ ටික් කළ ඒවා සංස්කරණය</button>
     <span>වර්ග:</span>
     <button class="alt" data-f="g" data-m="add" title="ටික් කළ අයිතමවලට, 'වර්ග' හි තෝරා ඇති වර්ග එක් කරයි">＋</button>
     <button class="alt" data-f="g" data-m="del" title="ටික් කළ අයිතමවලින්, 'වර්ග' හි තෝරා ඇති වර්ග ඉවත් කරයි">−</button>
@@ -101,6 +114,48 @@ aside{display:flex;flex-direction:column;gap:10px}
   </div>
  </aside>
 </div>
+
+<!-- ස්ථානයක් සංස්කරණය කරන popup -->
+<div id="em"><div class="dlg">
+ <h3>✎ සංස්කරණය</h3>
+ <label>නම</label><input id="emN">
+ <div class="nms"><input id="emT" placeholder="தமிழ் பெயர்"><input id="emE" placeholder="English name"></div>
+ <label>වර්ග</label><div class="chips" id="emG"></div>
+ <select id="emGs"></select>
+ <div class="row" style="margin-top:4px"><input id="emGn" placeholder="අලුත් වර්ගයක් ටයිප් කරන්න" style="flex:1"><button class="alt" id="emGb">＋</button></div>
+ <label>විභාග වර්ෂ</label><div class="chips" id="emY"></div>
+ <select id="emYs"></select>
+ <div class="row" style="margin-top:4px"><input id="emYn" placeholder="වෙනත් වර්ෂයක් (උදා: 2022)" style="flex:1"><button class="alt" id="emYb">＋</button></div>
+ <div class="row" style="margin-top:12px">
+  <button id="emOk">Save</button><button class="alt" id="emNo">අවලංගු</button>
+  <button class="alt" id="emClr">වර්ග සියල්ල ඉවත්</button>
+  <button id="emDel" style="background:var(--red);margin-left:auto">ස්ථානය මකන්න</button>
+ </div>
+</div></div>
+
+<!-- ටික් කළ අයිතම කිහිපයක් එකවර සංස්කරණය කරන popup -->
+<div id="bm"><div class="dlg">
+ <h3>✎ ටික් කළ අයිතම <span id="bmCnt">0</span>ක් සංස්කරණය</h3>
+ <small style="color:#678">පහත තෝරන වර්ග / වර්ෂ, ටික් කළ සියලු අයිතමවලට එකවර යෙදේ. "Apply" ඔබන තුරු කිසිවක් වෙනස් නොවේ.</small>
+ <div class="sec">
+  <h4>වර්ග</h4>
+  <select id="bmGm"><option value="add">එක් කරන්න (දැනට ඇති ඒවාට අමතරව)</option><option value="del">ඉවත් කරන්න (තෝරා ඇති ඒවා පමණක්)</option><option value="set">ආදේශ කරන්න (තෝරා ඇති ඒවාම පමණක් තබන්න)</option></select>
+  <div class="chips" id="bmG"></div>
+  <select id="bmGs"></select>
+  <div class="row" style="margin-top:4px"><input id="bmGn" placeholder="අලුත් වර්ගයක් ටයිප් කරන්න" style="flex:1"><button class="alt" id="bmGb">＋</button></div>
+ </div>
+ <div class="sec">
+  <h4>විභාග වර්ෂ</h4>
+  <select id="bmYm"><option value="add">එක් කරන්න (දැනට ඇති ඒවාට අමතරව)</option><option value="del">ඉවත් කරන්න (තෝරා ඇති ඒවා පමණක්)</option><option value="set">ආදේශ කරන්න (තෝරා ඇති ඒවාම පමණක් තබන්න)</option></select>
+  <div class="chips" id="bmY"></div>
+  <select id="bmYs"></select>
+  <div class="row" style="margin-top:4px"><input id="bmYn" placeholder="වෙනත් වර්ෂයක් (උදා: 2022)" style="flex:1"><button class="alt" id="bmYb">＋</button></div>
+ </div>
+ <div class="row" style="margin-top:12px">
+  <button id="bmOk">Apply</button><button class="alt" id="bmNo">අවලංගු</button>
+ </div>
+</div></div>
+
 <div id="info"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="geosketch-core.js"></script>
@@ -258,9 +313,20 @@ function redraw(){
    const e=prompt('English name (blank = Sinhala name):',it.ne||'');if(e===null)return;
    if(t.trim())it.nt=t.trim();else delete it.nt;if(e.trim())it.ne=e.trim();else delete it.ne;changed();};
   li.appendChild(tb);
+  /* ✎ සංස්කරණය (popup) */
+  const eb=document.createElement('button');eb.textContent='✎';eb.title='වර්ග / නම සංස්කරණය කරන්න';eb.style.background='#f59e0b';eb.onclick=()=>openEdit(i);li.appendChild(eb);
   const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);ck.clear();hideInfo();changed();};li.appendChild(b);
-  const meta=[it.g&&it.g.length?'🏷 '+it.g.map(esc).join(' · '):'',it.yr&&it.yr.length?'📅 '+it.yr.map(esc).join(', '):'',(it.nt||it.ne)?'🌐 '+esc(it.nt||'–')+' | '+esc(it.ne||'–'):''].filter(Boolean).join('  ');
-  if(meta)li.insertAdjacentHTML('beforeend',`<span class="gc">${meta}</span>`);
+  /* කොළ පාට වර්ග පේළිය – එක් එක් chip එකේ × ඔබා ඉවත් කළ හැක; double-click කළ විට popup */
+  const gc=document.createElement('span');gc.className='gc';gc.title='Double-click = සංස්කරණය';
+  const qc=(f,c,cls)=>{const s=document.createElement('span');s.className='chip '+cls;s.textContent=(f=='yr'?'📅 ':'')+c;
+   const x=document.createElement('b');x.textContent='×';x.title='ඉවත් කරන්න';
+   x.onclick=ev=>{ev.stopPropagation();it[f]=it[f].filter(v=>v!=c);if(!it[f].length)delete it[f];changed();};
+   s.appendChild(x);return s;};
+  (it.g||[]).forEach(c=>gc.appendChild(qc('g',c,'')));
+  (it.yr||[]).forEach(c=>gc.appendChild(qc('yr',c,'y')));
+  if(it.nt||it.ne)gc.appendChild(document.createTextNode(' 🌐 '+(it.nt||'–')+' | '+(it.ne||'–')));
+  gc.ondblclick=()=>openEdit(i);
+  if(gc.childNodes.length)li.appendChild(gc);
   ul.appendChild(li);});
  refreshOut();
 }
@@ -312,7 +378,8 @@ function showInfo(i,cx,cy){
  insp=i;const it=items[i],d=$('info');
  const tags=[(it.g||[]).length?'🏷 '+it.g.map(esc).join(' · '):'',(it.yr||[]).length?'📅 '+it.yr.map(esc).join(', '):'',(it.nt||it.ne)?'🌐 '+esc(it.nt||'–')+' | '+esc(it.ne||'–'):''].filter(Boolean).join('<br>');
  d.innerHTML=`<b>${esc(it.n)}</b><div style="color:#456">${TL[it.t]}${it.nd?' (ඊතලය පමණි)':''} · ${itemCells(L,it).slice(0,6).join(' ')}</div>${tags?'<div>'+tags+'</div>':''}`+
-  '<div class="row"><button class="alt" id="ix">වසන්න</button><button id="idl" style="background:var(--red)">ඉවත් කරන්න</button></div>';
+  '<div class="row"><button id="ied">සංස්කරණය</button><button class="alt" id="ix">වසන්න</button><button id="idl" style="background:var(--red)">ඉවත් කරන්න</button></div>';
+ $('ied').onclick=()=>openEdit(i);
  $('ix').onclick=()=>{hideInfo();redraw();};
  $('idl').onclick=()=>{items.splice(i,1);ck.clear();hideInfo();hideInfo();changed();};
  d.style.display='block';
@@ -379,6 +446,97 @@ cv.onpointermove=e=>{
 };
 cv.onpointerup=cv.onpointercancel=()=>{if(drag){drag=null;changed();}};
 
+/* ---------- ස්ථානයක් සංස්කරණය (popup) ---------- */
+let em=null;
+/* chip පේළියක් ඇඳීම; × ඔබන විට onChange ක්‍රියාත්මක වේ */
+function drawChips(box,arr,cls,onChange){box.innerHTML='';
+ if(!arr.length){box.innerHTML='<small style="color:#678">කිසිවක් නැත</small>';return;}
+ arr.forEach((c,k)=>{const s=document.createElement('span');s.className='chip '+cls;s.textContent=c;
+  const x=document.createElement('b');x.textContent='×';x.onclick=()=>{arr.splice(k,1);onChange();};
+  s.appendChild(x);box.appendChild(s);});}
+/* Dropdown එකක් පුරවයි (දැනටමත් තෝරා ඇති ඒවා හැර) */
+function fillSel(sel,all,have){sel.innerHTML='';sel.add(new Option('— Dropdown එකෙන් තෝරන්න —',''));
+ all.filter(c=>!have.includes(c)).forEach(c=>sel.add(new Option(c,c)));}
+/* අලුත් වර්ගයක් / වර්ෂයක් ටයිප් කර එක් කිරීම (පසුව dropdown වලටත් එකතු වේ) */
+function addNewVal(inp,arr,isCat,refill){const v=inp.value.trim();if(!v)return;
+ if(!arr.includes(v))arr.push(v);
+ const key=isCat?'gs_cats':'gs_years';let a=[];try{a=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+ if(!a.includes(v)){a.push(v);try{localStorage.setItem(key,JSON.stringify(a));}catch(e){}if(isCat)askTr(v);}
+ inp.value='';refill();}
+
+function openEdit(i){const it=items[i];if(!it)return;
+ em={i,g:(it.g||[]).slice(),yr:(it.yr||[]).slice()};
+ $('emN').value=it.n;$('emT').value=it.nt||'';$('emE').value=it.ne||'';
+ emFill();hideInfo();$('em').style.display='flex';}
+function closeEdit(){em=null;$('em').style.display='none';}
+function emFill(){
+ fillSel($('emGs'),allCats(),em.g);fillSel($('emYs'),allYears(),em.yr);
+ drawChips($('emG'),em.g,'',emFill);drawChips($('emY'),em.yr,'y',emFill);}
+$('emGs').onchange=()=>{const v=$('emGs').value;if(v&&!em.g.includes(v))em.g.push(v);emFill();};
+$('emYs').onchange=()=>{const v=$('emYs').value;if(v&&!em.yr.includes(v))em.yr.push(v);emFill();};
+$('emGb').onclick=()=>addNewVal($('emGn'),em.g,true,emFill);
+$('emYb').onclick=()=>addNewVal($('emYn'),em.yr,false,emFill);
+$('emClr').onclick=()=>{em.g=[];emFill();};
+$('emNo').onclick=closeEdit;
+$('emOk').onclick=()=>{
+ const it=items[em.i],n=$('emN').value.trim();if(!n){alert('නම හිස් විය නොහැක');return;}
+ it.n=n;const t=$('emT').value.trim(),e=$('emE').value.trim();
+ if(t)it.nt=t;else delete it.nt;if(e)it.ne=e;else delete it.ne;
+ if(em.g.length)it.g=em.g;else delete it.g;
+ if(em.yr.length)it.yr=em.yr;else delete it.yr;
+ closeEdit();changed();};
+$('emDel').onclick=()=>{if(!confirm('"'+items[em.i].n+'" මකන්නද?'))return;
+ items.splice(em.i,1);ck.clear();closeEdit();changed();};
+$('em').addEventListener('keydown',e=>{e.stopPropagation();/* ප්‍රධාන Enter/Esc handler වලින් වළක්වයි */
+ if(e.key=='Escape')closeEdit();
+ else if(e.key=='Enter'){e.preventDefault();
+  if(e.target.id=='emGn')addNewVal($('emGn'),em.g,true,emFill);
+  else if(e.target.id=='emYn')addNewVal($('emYn'),em.yr,false,emFill);
+  else $('emOk').click();}});
+$('em').addEventListener('mousedown',e=>{if(e.target.id=='em')closeEdit();});
+
+/* ---------- ටික් කළ අයිතම කිහිපයක් එකවර සංස්කරණය (popup) ---------- */
+let bm=null;
+function openBulk(){
+ if(!ck.size){alert('පළමුව ලැයිස්තුවේ අයිතම ටික් කරන්න (හෝ "සියල්ල" ටික් කරන්න)');return;}
+ bm={g:[],yr:[]};
+ $('bmCnt').textContent=ck.size;$('bmGm').value='add';$('bmYm').value='add';
+ bmFill();hideInfo();$('bm').style.display='flex';}
+function closeBulk(){bm=null;$('bm').style.display='none';}
+function bmFill(){
+ const sel=[...ck].map(i=>items[i]).filter(Boolean);
+ /* "ඉවත් කරන්න" ක්‍රමයේදී, ටික් කළ අයිතමවල ඇති ඒවා පමණක් Dropdown එකේ පෙන්වයි */
+ const pool=(f,all,mode)=>{if(mode!='del')return all;const u=[];sel.forEach(it=>(it[f]||[]).forEach(c=>{if(!u.includes(c))u.push(c);}));return u;};
+ fillSel($('bmGs'),pool('g',allCats(),$('bmGm').value),bm.g);
+ fillSel($('bmYs'),pool('yr',allYears(),$('bmYm').value),bm.yr);
+ drawChips($('bmG'),bm.g,'',bmFill);drawChips($('bmY'),bm.yr,'y',bmFill);}
+$('bmGm').onchange=bmFill;$('bmYm').onchange=bmFill;
+$('bmGs').onchange=()=>{const v=$('bmGs').value;if(v&&!bm.g.includes(v))bm.g.push(v);bmFill();};
+$('bmYs').onchange=()=>{const v=$('bmYs').value;if(v&&!bm.yr.includes(v))bm.yr.push(v);bmFill();};
+$('bmGb').onclick=()=>addNewVal($('bmGn'),bm.g,true,bmFill);
+$('bmYb').onclick=()=>addNewVal($('bmYn'),bm.yr,false,bmFill);
+$('bmNo').onclick=closeBulk;
+$('bmOk').onclick=()=>{
+ const jobs=[['g',bm.g,$('bmGm').value,'වර්ග'],['yr',bm.yr,$('bmYm').value,'වර්ෂ']].filter(j=>j[1].length||j[2]=='set');
+ /* "ආදේශ" ක්‍රමයේ තෝරා ඇත්තේ කිසිවක් නැත්නම්, සියල්ල ඉවත් වන බව තහවුරු කරගනී */
+ const clr=jobs.filter(j=>j[2]=='set'&&!j[1].length);
+ if(clr.length&&!confirm('ටික් කළ අයිතමවල '+clr.map(j=>j[3]).join(' සහ ')+' සියල්ල ඉවත් කරන්නද?'))return;
+ const real=jobs.filter(j=>j[1].length||j[2]=='set');
+ if(!real.length){alert('වර්ග හෝ වර්ෂ තෝරා නැත');return;}
+ ck.forEach(i=>{const it=items[i];if(!it)return;
+  real.forEach(([f,v,mode])=>{const o=it[f]||[];
+   it[f]=mode=='add'?[...new Set([...o,...v])]:mode=='del'?o.filter(c=>!v.includes(c)):v.slice();
+   if(!it[f].length)delete it[f];});});
+ closeBulk();changed();};
+$('bm').addEventListener('keydown',e=>{e.stopPropagation();
+ if(e.key=='Escape')closeBulk();
+ else if(e.key=='Enter'){e.preventDefault();
+  if(e.target.id=='bmGn')addNewVal($('bmGn'),bm.g,true,bmFill);
+  else if(e.target.id=='bmYn')addNewVal($('bmYn'),bm.yr,false,bmFill);
+  else $('bmOk').click();}});
+$('bm').addEventListener('mousedown',e=>{if(e.target.id=='bm')closeBulk();});
+$('bedit').onclick=openBulk;
+
 /* ---------- අනෙකුත් බොත්තම් ---------- */
 function finish(){
  const t=tool();if(t!='a'&&t!='r'&&t!='d')return;
@@ -404,7 +562,7 @@ $('loadc').onclick=()=>{
  try{const m=$('out').value.match(/=\s*(\[[\s\S]*\])/);items=new Function('return '+m[1])();ck.clear();hideInfo();changed();}catch(e){alert('Code එක කියවිය නොහැක');}};
 $('reset').onclick=()=>{if(confirm('මෙම සිතියමේ සියල්ල මකන්නද?')){items=[];ck.clear();hideInfo();changed();}};
 $('lo').onclick=async()=>{sessionStorage.removeItem('gs_admin');try{if(sb)await sb.auth.signOut();}catch(e){}location.href='index.html';};
-/* ---------- වර්ග: ටික් කළ අයිතමවලට bulk ක්‍රියා ---------- */
+/* ---------- වර්ග: ටික් කළ අයිතමවලට bulk ක්‍රියා (ඉහළ "වර්ග" කොටුවෙන් තෝරා ගෙන) ---------- */
 function bulkOp(fl,mode){
  if(!ck.size){alert('පළමුව ලැයිස්තුවේ අයිතම ටික් කරන්න');return;}
  const P=fl=='g'?cp:ypk,nm=fl=='g'?'වර්ග':'වර්ෂ',v=P.get();
