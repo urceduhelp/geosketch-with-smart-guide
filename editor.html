@@ -653,7 +653,11 @@ $('btodb').onclick=async()=>{
    const{error}=await sb.from('dictionary').insert(ins.slice(i,i+200));if(error)throw error;ok+=Math.min(200,ins.length-i);}
   for(let i=0;i<upd.length;i++){b.textContent='යාවත්කාලීන වෙමින් '+(i+1)+'/'+upd.length;
    const u=await sb.from('dictionary').update(upd[i].pl).eq('kind','place').eq('si',upd[i].si).select('id');
-   if(u.error){fail++;if(fail==1)console.warn(u.error);}else if(!u.data||!u.data.length)noperm++;else ok++;}
+   if(u.error){fail++;if(fail==1)console.warn(u.error);}
+   else if(!u.data||!u.data.length){/* කෙළින් UPDATE කිරීමට අවසර නැත්නම්, SQL හි ඇති dict_set_meta_auth function එක හරහා උත්සාහ කරයි */
+    const d0=dget('place',upd[i].si),r2=await sb.rpc('dict_set_meta_auth',{p_si:upd[i].si,p_cats:upd[i].pl.cats||(d0&&d0.cats)||[],p_sig:upd[i].pl.sig||(d0&&d0.sig)||[]});
+    if(r2.error)noperm++;else ok++;}
+   else ok++;}
   alert('අවසන් ✓\nසාර්ථක: '+ok+(noperm?'\nයාවත්කාලීන කළ නොහැකි වූ (අවසර නැත): '+noperm+'\n→ Supabase හි dictionary table සඳහා UPDATE policy එකක් අවශ්‍යයි':'')+(fail?'\nඅසාර්ථක: '+fail:''));
   await loadDict();
  }catch(err){
