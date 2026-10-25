@@ -52,6 +52,15 @@ aside{display:flex;flex-direction:column;gap:10px}
 .chip b{cursor:pointer;background:#c62828;color:#fff;border-radius:50%;width:16px;height:16px;line-height:16px;text-align:center;font-size:11px}
 #bm .sec{border:1px solid #cfe0ea;border-radius:8px;padding:8px;margin-top:10px}
 #bm .sec h4{margin:0 0 4px;font-size:13px}
+/* ---- Queue (ස්ථාන රාශියක් එකවර) ---- */
+#qt{width:100%;height:130px;margin-top:4px}
+#qp{position:fixed;z-index:60;display:none;width:min(92vw,300px);background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 8px 24px #0005;padding:6px}
+#qp #qs{width:100%}
+#ql{max-height:240px;overflow:auto;margin-top:4px}
+#ql div{padding:6px 8px;cursor:pointer;border-bottom:1px solid #eef3f6}
+#ql div:hover,#ql div.on{background:#e3f3fd}
+#ql small{color:#678;margin-left:6px}
+#qh{font-size:11px;color:#678;margin:4px 0 0}
 </style>
 </head>
 <body>
@@ -88,6 +97,11 @@ aside{display:flex;flex-direction:column;gap:10px}
    <div style="margin-top:8px"><b>විභාග වර්ෂය</b> <small style="color:#678">(ස්ථානය ලැබුණු විභාග වර්ෂ; කිහිපයක් තෝරා ගත හැක)</small><div id="ypk"></div></div>
    <div class="row" style="margin-top:6px"><button id="fin">අවසන් (Enter)</button><button class="alt" id="undo">Undo</button><button class="alt" id="cancel">අවලංගු</button></div>
    <div id="hint"></div>
+  </div>
+  <div class="box" id="qbox"><h3>📋 ස්ථාන රාශියක් එකවර (Queue)</h3>
+   <small style="color:#678">එකම වර්ගයේ ස්ථාන කිහිපයක නම් මෙහි ලියන්න / paste කරන්න (එක් පේළියකට එක් නමක්). ඉහත "වර්ග" සහ "විභාග වර්ෂය" එක් වරක් තෝරන්න. ඉන්පසු මෙවලම තෝරා සිතියමේ click කරන්න; එතැනම නම් ලැයිස්තුව ඇරේ, අදාළ නම තෝරන්න. තෝරාගත් නම ලැයිස්තුවෙන් ඉවත් වේ.<br>විකල්ප: එක් පේළියක <b>නම | தமிழ் | English</b> ලෙසද ලිවිය හැක.</small>
+   <textarea id="qt" spellcheck="false" placeholder="උදා:&#10;අනුරාධපුරය&#10;පොළොන්නරුව&#10;මිහින්තලය"></textarea>
+   <div class="row" style="margin-top:6px"><label><input type="checkbox" id="qon" checked> Queue ක්‍රමය භාවිතා කරන්න</label><span id="qc" style="color:#1b7a3a;font-weight:700">ඉතිරි: 0</span><button class="alt" id="qclr" style="padding:3px 9px;font-size:12px;margin-left:auto">හිස් කරන්න</button></div>
   </div>
   <div class="box"><h3>ලකුණු කළ ස්ථාන</h3>
    <div class="row" id="bulk" style="margin-bottom:6px">
@@ -156,13 +170,14 @@ aside{display:flex;flex-direction:column;gap:10px}
  </div>
 </div></div>
 
+<div id="qp"><div id="qh"></div><input id="qs" placeholder="නම සොයන්න… (↑ ↓ Enter)" autocomplete="off"><div id="ql"></div><div class="row" style="margin-top:4px"><button class="alt" id="qx" style="padding:3px 10px;font-size:12px">අවලංගු</button></div></div>
 <div id="info"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="geosketch-core.js"></script>
 <script>
 if(!isAdmin())location.replace('index.html');
 const $=id=>document.getElementById(id),cv=$('cv');
-let cur,img,L,items=[],tmp=[],pend=null,drag=null,insp=null,zt=0,lang='si';
+let cur,img,L,items=[],tmp=[],pend=null,pendQ=null,qpv=null,lastXY=null,drag=null,insp=null,zt=0,lang='si';
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
 const tool=()=>document.querySelector('[name=t]:checked').value;
@@ -288,7 +303,7 @@ const clearNames=()=>{$('name').value='';$('nameT').value='';$('nameE').value=''
 async function load(k){
  cur=MAPS.find(m=>m.k==k);await fontReady();
  try{img=await loadImg(cur.url);}catch(e){alert('රූපය load වුණේ නැත');return;}
- L=layout(img);tmp=[];pend=null;Z.reset();
+ L=layout(img);tmp=[];pend=null;pendQ=null;Z.reset();
  try{items=JSON.parse(localStorage.getItem('gs_'+k)||'[]');}catch(e){items=[];}
  ck.clear();hideInfo();cp.refresh();ypk.refresh();redraw();
 }
@@ -298,11 +313,12 @@ function redraw(){
  const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
  g.strokeStyle=g.fillStyle='#ff6f00';g.lineWidth=3;
  if(pend){g.beginPath();g.arc(X(pend[0]),Y(pend[1]),3,0,7);g.fill();}
+ if(qpv){g.beginPath();g.arc(X(qpv[0]),Y(qpv[1]),7,0,7);g.fill();}
  if(tmp.length){g.beginPath();tmp.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.stroke();}
  if(compact()){const r=Math.max(5,7/sc());
   items.forEach(it=>{const[ax,ay]=anchor(it);g.beginPath();g.arc(X(ax),Y(ay),r,0,7);g.fillStyle=MC[it.t]||'#d6212b';g.fill();g.lineWidth=Math.max(2,r*.3);g.strokeStyle='#fff';g.stroke();});
   if(insp!=null&&items[insp]){const[ax,ay]=anchor(items[insp]);g.beginPath();g.arc(X(ax),Y(ay),r*2.2,0,7);g.lineWidth=Math.max(3,r*.45);g.strokeStyle='#ff6f00';g.stroke();}}
- $('hint').textContent=hints[tool()]+(compact()?' (සරල පෙනුම: තිතක් click කර නම බලන්න)':tool()=='mv'?' (Move අතරතුර සියල්ල විස්තර සහිතව පෙන්වයි)':'');
+ $('hint').textContent=(qActive()?'📋 Queue: සිතියමේ click කර, එන ලැයිස්තුවෙන් නම තෝරන්න. ':'')+hints[tool()]+(compact()?' (සරල පෙනුම: තිතක් click කර නම බලන්න)':tool()=='mv'?' (Move අතරතුර සියල්ල විස්තර සහිතව පෙන්වයි)':'');
  const ul=$('list');ul.innerHTML='';
  items.forEach((it,i)=>{const li=document.createElement('li');
   const cb=document.createElement('input');cb.type='checkbox';cb.checked=ck.has(i);cb.onchange=()=>{cb.checked?ck.add(i):ck.delete(i);};li.appendChild(cb);
@@ -400,17 +416,25 @@ Z.onzoom=()=>{if(L&&compact()){clearTimeout(zt);zt=setTimeout(redraw,60);}};
 /* ---------- Click කර ලකුණු කිරීම ---------- */
 cv.onclick=e=>{
  if(tool()=='mv')return;
- if(compact()&&!tmp.length&&!pend){/* තිතක් click කළ විට නම පෙන්වයි; වෙනත් තැනක් click කළ විට විස්තරය පමණක් වැසේ */
+ if(compact()&&!tmp.length&&!pend&&!qActive()){/* තිතක් click කළ විට නම පෙන්වයි; වෙනත් තැනක් click කළ විට විස්තරය පමණක් වැසේ */
   const h=markerAt(e);
   if(h!=null){redraw0(h,e);return;}
   if(insp!=null){hideInfo();redraw();return;}
  }
  const[x,y]=pointer(cv,L,e);if(x<0||y<0||x>1||y>1)return;
  const t=tool(),p=[r4(x),r4(y)];
- if(t=='p'){const n=nm();if(!n)return;items.push(Object.assign({n,t:'p',x:p[0],y:p[1]},TN(),G()));clearNames();changed();}
+ lastXY=[e.clientX,e.clientY];
+ if(t=='p'){
+  if(qActive()){qpv=p;redraw();openQP(lastXY,en=>{items.push(Object.assign({n:en.n,t:'p',x:p[0],y:p[1]},qTN(en),G()));qRemove(en);changed();});return;}
+  const n=nm();if(!n)return;items.push(Object.assign({n,t:'p',x:p[0],y:p[1]},TN(),G()));clearNames();changed();}
  else if(t=='pa'||t=='na'){
-  if(!pend){if(!nm())return;pend=p;redraw();}
-  else{items.push(Object.assign({n:$('name').value.trim(),t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{},TN(),G()));pend=null;clearNames();changed();}
+  if(!pend){
+   if(qActive()){qpv=p;redraw();openQP(lastXY,en=>{pend=p;pendQ=en;redraw();});return;}
+   if(!nm())return;pend=p;redraw();}
+  else{
+   const q=pendQ,n=q?q.n:$('name').value.trim(),ex=q?qTN(q):TN();
+   items.push(Object.assign({n,t:'p',x:pend[0],y:pend[1],lx:p[0],ly:p[1]},t=='na'?{nd:1}:{},ex,G()));
+   pend=null;pendQ=null;if(q)qRemove(q);else clearNames();changed();}
  }else{tmp.push(p);redraw();}
 };
 
@@ -537,18 +561,61 @@ $('bm').addEventListener('keydown',e=>{e.stopPropagation();
 $('bm').addEventListener('mousedown',e=>{if(e.target.id=='bm')closeBulk();});
 $('bedit').onclick=openBulk;
 
+/* ---------- Queue: ස්ථාන රාශියක් එකවර (click කළ තැනම නම් ලැයිස්තුව) ---------- */
+let qcb=null,qlist=[],qi=0;
+function qNames(){return $('qt').value.split('\n').map(x=>x.trim()).filter(Boolean).map(raw=>{
+ const p=raw.split(/\s*[|\t]\s*/),o={raw,n:(p[0]||'').trim()};
+ if(p[1]&&p[1].trim())o.nt=p[1].trim();if(p[2]&&p[2].trim())o.ne=p[2].trim();return o;}).filter(o=>o.n);}
+const qTN=en=>{const o={};if(en.nt)o.nt=en.nt;if(en.ne)o.ne=en.ne;return o;};
+function qActive(){return $('qon').checked&&tool()!='mv'&&qNames().length>0;}
+function qSave(){try{localStorage.setItem('gs_queue',$('qt').value);}catch(e){}$('qc').textContent='ඉතිරි: '+qNames().length;}
+function qRemove(en){const ls=$('qt').value.split('\n'),k=ls.findIndex(l=>l.trim()==en.raw);if(k>=0)ls.splice(k,1);$('qt').value=ls.join('\n');qSave();}
+function qMark(){const c=[...$('ql').children];c.forEach((d,i)=>d.className=(qlist.length&&i==qi)?'on':'');if(c[qi]&&qlist.length)c[qi].scrollIntoView({block:'nearest'});}
+function qFilter(){
+ const q=nk($('qs').value).toLowerCase(),all=qNames();
+ qlist=all.filter(e=>!q||nk(e.n).toLowerCase().includes(q)).slice(0,60);qi=0;
+ const ul=$('ql');ul.innerHTML='';
+ qlist.forEach((e,i)=>{const d=document.createElement('div');d.textContent=e.n;
+  const t=[e.nt,e.ne].filter(Boolean).join(' · ');if(t){const s=document.createElement('small');s.textContent=t;d.appendChild(s);}
+  d.onclick=()=>qPick(i);ul.appendChild(d);});
+ if(!qlist.length)ul.innerHTML='<div style="color:#678;cursor:default">ගැළපෙන නමක් නැත</div>';
+ $('qh').textContent='ඉතිරි නම් '+all.length+'ක් – එකක් තෝරන්න';qMark();
+}
+function openQP(xy,cb){
+ qcb=cb;const d=$('qp');d.style.display='block';$('qs').value='';qFilter();
+ const cx=xy?xy[0]:innerWidth/2,cy=xy?xy[1]:innerHeight/2;
+ d.style.left=Math.max(4,Math.min(cx+12,innerWidth-d.offsetWidth-4))+'px';
+ d.style.top=Math.max(4,Math.min(cy+12,innerHeight-d.offsetHeight-4))+'px';
+ if(!matchMedia('(pointer:coarse)').matches)$('qs').focus();
+}
+function closeQP(redo=true){qcb=null;$('qp').style.display='none';const had=qpv;qpv=null;if(had&&redo&&L)redraw();}
+function qPick(i){const en=qlist[i];if(!en)return;const cb=qcb;closeQP(false);if(cb)cb(en);}
+$('qt').oninput=qSave;
+$('qon').onchange=redraw;
+$('qclr').onclick=()=>{if(!$('qt').value.trim()||confirm('Queue එකේ සියල්ල මකන්නද?')){$('qt').value='';qSave();redraw();}};
+$('qs').oninput=qFilter;
+$('qx').onclick=()=>closeQP();
+$('qp').addEventListener('keydown',e=>{e.stopPropagation();
+ if(e.key=='Escape')closeQP();
+ else if(e.key=='ArrowDown'){e.preventDefault();if(qlist.length){qi=(qi+1)%qlist.length;qMark();}}
+ else if(e.key=='ArrowUp'){e.preventDefault();if(qlist.length){qi=(qi-1+qlist.length)%qlist.length;qMark();}}
+ else if(e.key=='Enter'){e.preventDefault();qPick(qi);}});
+document.addEventListener('mousedown',e=>{if($('qp').style.display=='block'&&!$('qp').contains(e.target))closeQP();},true);
+try{$('qt').value=localStorage.getItem('gs_queue')||'';}catch(e){}qSave();
+
 /* ---------- අනෙකුත් බොත්තම් ---------- */
 function finish(){
  const t=tool();if(t!='a'&&t!='r'&&t!='d')return;
  if(tmp.length<(t=='a'?3:2)){alert(t=='a'?'ලක්ෂ්‍ය 3ක්වත් අවශ්‍යයි':'ලක්ෂ්‍ය 2ක්වත් අවශ්‍යයි');return;}
- const n=nm();if(!n)return;
- items.push(Object.assign(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts:tmp}:t=='d'?Object.assign({n,t:'d',pts:tmp},$('hl').checked?{hl:1}:{}):{n,t:'r',pts:tmp},TN(),G()));tmp=[];clearNames();changed();
+ const mk=(n,ex)=>{const pts=tmp;items.push(Object.assign(t=='a'?{n,t:'a',c:$('col').value,pt:$('pat').value,pts}:t=='d'?Object.assign({n,t:'d',pts},$('hl').checked?{hl:1}:{}):{n,t:'r',pts},ex,G()));tmp=[];changed();};
+ if(qActive()){if($('qp').style.display=='block')return;openQP(lastXY,en=>{mk(en.n,qTN(en));qRemove(en);});return;}
+ const n=nm();if(!n)return;mk(n,TN());clearNames();
 }
 $('fin').onclick=finish;
-$('undo').onclick=()=>{if(pend)pend=null;else if(tmp.length)tmp.pop();else{items.pop();ck.clear();hideInfo();}changed();};
-$('cancel').onclick=()=>{tmp=[];pend=null;redraw();};
-document.addEventListener('keydown',e=>{if(e.key=='Enter'&&document.activeElement.id!='out')finish();if(e.key=='Escape'){tmp=[];pend=null;hideInfo();redraw();}});
-document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=null;hideInfo();
+$('undo').onclick=()=>{if(pend){pend=null;pendQ=null;}else if(tmp.length)tmp.pop();else{items.pop();ck.clear();hideInfo();}changed();};
+$('cancel').onclick=()=>{tmp=[];pend=null;pendQ=null;redraw();};
+document.addEventListener('keydown',e=>{const ai=document.activeElement.id;if(e.key=='Enter'&&ai!='out'&&ai!='qt'&&ai!='qs')finish();if(e.key=='Escape'){tmp=[];pend=null;pendQ=null;hideInfo();redraw();}});
+document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=null;pendQ=null;closeQP();hideInfo();
  cv.style.cursor=tool()=='mv'?'default':'crosshair';
  cv.style.touchAction=tool()=='mv'?'none':'manipulation';redraw();});
 $('fsz').oninput=redraw;
