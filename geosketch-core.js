@@ -60,6 +60,42 @@ function drawArrow(g,fs,lx,ly,x,y,r,w){
  g.beginPath();g.moveTo(e[0],e[1]);g.lineTo(e[0]-ux*h-uy*k,e[1]-uy*h+ux*k);g.lineTo(e[0]-ux*h+uy*k,e[1]-uy*h-ux*k);g.closePath();g.fill();
 }
 
+/* ---------- ප්‍රදේශයක වර්ණය / රටාව: මායිම මෘදු ලෙස බොඳ වී යයි, සීමා රේඛාවක් (outline) නැත ----------
+   වර්ණය / රටාව වෙනම තට්ටුවක ඇඳ, බොඳ කළ ප්‍රදේශ හැඩය "mask" එකක් ලෙස යොදයි. එක් වරක් ගණනය කර (cache) නැවත භාවිතා කරයි.
+   බොඳ ප්‍රමාණය වෙනස් කිරීමට පහත  AREA_SOFT  අගය (1 = සාමාන්‍ය, 2 = තවත් බොඳ, 0.5 = අඩු බොඳ) වෙනස් කරන්න. */
+const AREA_SOFT=1;
+const AREA_CACHE=new WeakMap();
+function areaLayer(L,it){
+ const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,col=it.c||'#ff9800',pt=it.pt||'s',
+  xs=it.pts.map(p=>X(p[0])),ys=it.pts.map(p=>Y(p[1])),
+  x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),
+  bw=x1-x0,bh=y1-y0,bl=Math.max(8,Math.min(34,Math.min(bw,bh)*.08))*AREA_SOFT,m=Math.ceil(bl*2+4);
+ const key=[col,pt,AREA_SOFT,L.W,L.ix,L.iy,L.iw,L.ih,it.pts.join(';')].join('|');
+ const hit=AREA_CACHE.get(it);if(hit&&hit.key==key)return hit;
+ const ow=Math.max(1,Math.ceil(bw+2*m)),oh=Math.max(1,Math.ceil(bh+2*m)),
+  mk=()=>{const k=document.createElement('canvas');k.width=ow;k.height=oh;return k;},
+  lay=mk(),a=lay.getContext('2d'),msk=mk(),b=msk.getContext('2d');
+ /* 1) බොඳ වූ හැඩය (mask): හැඩය තිරයෙන් පිටත ඇඳ, එහි සෙවණැල්ල (shadow) පමණක් ඇතුළට ගෙන එයි */
+ const OFF=ow+200;
+ b.shadowColor='rgba(0,0,0,1)';b.shadowBlur=bl;b.shadowOffsetX=-OFF;b.shadowOffsetY=0;b.fillStyle='#000';
+ b.beginPath();xs.forEach((x,i)=>{const px=x-x0+m+OFF,py=ys[i]-y0+m;i?b.lineTo(px,py):b.moveTo(px,py);});b.closePath();b.fill();
+ /* 2) වර්ණය / රටාව ඇඳීම */
+ a.translate(m-x0,m-y0);
+ if(pt=='s'){a.fillStyle=col;a.fillRect(x0-m,y0-m,ow,oh);}
+ else{/* pattern: h=තිරස් v=සිරස් d1=/ d2=\ g=කොටු x=ඇල කොටු o=තිත් */
+  a.strokeStyle=a.fillStyle=col;a.lineWidth=3;
+  const S=16,H=bh,W=bw,ln=(p,q,r,s)=>{a.beginPath();a.moveTo(p,q);a.lineTo(r,s);a.stroke();};
+  if(pt=='h'||pt=='g')for(let y=y0;y<=y1;y+=S)ln(x0,y,x1,y);
+  if(pt=='v'||pt=='g')for(let x=x0;x<=x1;x+=S)ln(x,y0,x,y1);
+  if(pt=='d1'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y1,x0+k+H,y0);
+  if(pt=='d2'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y0,x0+k+H,y1);
+  if(pt=='o')for(let y=y0;y<=y1;y+=S)for(let x=x0;x<=x1;x+=S){a.beginPath();a.arc(x,y,3,0,7);a.fill();}
+ }
+ /* 3) බොඳ වූ හැඩයෙන් කපා ගැනීම */
+ a.setTransform(1,0,0,1,0,0);a.globalCompositeOperation='destination-in';a.drawImage(msk,0,0);
+ const r={key,cv:lay,x:x0-m,y:y0-m};AREA_CACHE.set(it,r);return r;
+}
+
 function drawItem(g,L,it,fs,sp=.15,gp=.17,dr=.14){
  const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
  g.font=`${fs}px ${FONT}`;g.textBaseline='middle';g.lineJoin='round';
@@ -73,20 +109,9 @@ function drawItem(g,L,it,fs,sp=.15,gp=.17,dr=.14){
   }else halo(it.n,x+r+6,y-fs*.45,'left');
   if(!it.nd){g.fillStyle='#d6212b';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();}
  }else if(it.t=='a'){
-  const col=it.c||'#ff9800',pt=it.pt||'s',pp=()=>{g.beginPath();it.pts.forEach((p,i)=>i?g.lineTo(X(p[0]),Y(p[1])):g.moveTo(X(p[0]),Y(p[1])));g.closePath();};
-  pp();
-  if(pt=='s'){g.globalAlpha=.45;g.fillStyle=col;g.fill();g.globalAlpha=1;}
-  else{/* pattern: h=තිරස් v=සිරස් d1=/ d2=\ g=කොටු x=ඇල කොටු o=තිත් */
-   g.save();g.clip();g.strokeStyle=g.fillStyle=col;g.lineWidth=3;
-   const xs=it.pts.map(p=>X(p[0])),ys=it.pts.map(p=>Y(p[1])),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),S=16,H=y1-y0,W=x1-x0;
-   const ln=(a,b,c,d)=>{g.beginPath();g.moveTo(a,b);g.lineTo(c,d);g.stroke();};
-   if(pt=='h'||pt=='g')for(let y=y0;y<=y1;y+=S)ln(x0,y,x1,y);
-   if(pt=='v'||pt=='g')for(let x=x0;x<=x1;x+=S)ln(x,y0,x,y1);
-   if(pt=='d1'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y1,x0+k+H,y0);
-   if(pt=='d2'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y0,x0+k+H,y1);
-   if(pt=='o')for(let y=y0;y<=y1;y+=S)for(let x=x0;x<=x1;x+=S){g.beginPath();g.arc(x,y,3,0,7);g.fill();}
-   g.restore();}
-  pp();g.strokeStyle=col;g.lineWidth=3;g.stroke();
+  if(it.pts&&it.pts.length>=3){/* වර්ණය / රටාව: මායිම බොඳ වී යයි, සීමා රේඛාවක් නැත */
+   const lay=areaLayer(L,it);
+   g.save();g.globalAlpha=(it.pt||'s')=='s'?.45:1;g.drawImage(lay.cv,lay.x,lay.y);g.restore();}
   /* නම: Move කර ඇත්නම් (lx,ly) එතැන, නැත්නම් මැද */
   const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);halo(it.n,X(c[0]),Y(c[1]),'center');
  }else if(it.t=='d'){/* අමුණ / ඇළ: ආසන්න සමාන්තර රේඛා ද්විත්වයක් (ඉර පමණි). නම වෙනම තබයි (lx,ly) */
