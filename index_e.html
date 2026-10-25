@@ -1,692 +1,777 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="si">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GeoSketch</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{--ink:#0d2b45;--grid:#1aa7ec;--paper:#f4f8fb;--red:#d6212b}
 *{box-sizing:border-box}
-body{margin:0;font:15px 'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--paper);color:var(--ink)}
-header{background:var(--ink);color:#fff;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
-h1{margin:0;font-size:22px;letter-spacing:.5px}h1 i{font-style:normal;color:var(--grid)}
-header label{display:flex;gap:6px;align-items:center;font-size:13px}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;height:100vh;height:100dvh;display:flex;flex-direction:column;font:15px 'Noto Sans Sinhala','Iskoola Pota',sans-serif;background:var(--paper);color:var(--ink)}
+header{flex:none;background:var(--ink);color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;position:relative;z-index:30}
+h1{margin:0;font-size:21px;letter-spacing:.5px}h1 i{font-style:normal;color:var(--grid)}
 select,button,input{font:inherit}
 select,button{padding:6px 10px;border-radius:6px;border:1px solid #9bb;background:#fff;color:var(--ink)}
 button{cursor:pointer;background:var(--grid);color:#fff;border:0;font-weight:700}
-button.alt{background:#fff;color:var(--ink);border:1px solid #9bb;font-weight:400}
-body{height:100vh;height:100dvh;display:flex;flex-direction:column}
-header{flex:none}
-main{flex:1;min-height:0;padding:10px}
+header label.mapl{display:flex;gap:6px;align-items:center;font-size:13px}
+header select{max-width:260px}
+#lang{display:flex;gap:4px}
+#lang button{background:transparent;border:1px solid #ffffff66;border-radius:14px;padding:4px 11px;font-size:13px;font-weight:400}
+#lang button.on{background:var(--grid);border-color:var(--grid);font-weight:700}
+/* search + letter bar */
+.sw{position:relative;flex:1 1 300px;min-width:240px;max-width:560px}
+#q{width:100%;height:40px;padding:0 112px 0 12px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
+#lbb{position:absolute;right:5px;top:5px;height:30px;padding:0 10px;font-size:13px}
+#lbb.on{background:var(--ink)}
+#mvb{font-size:17px;padding:4px 10px}
+#mvb.on{background:var(--red);box-shadow:0 0 0 2px #fff8}
+#rmb{background:#7b4bd6}
+.drop{position:absolute;left:0;right:0;top:46px;display:none;background:#fff;color:var(--ink);border:2px solid var(--grid);border-radius:8px;box-shadow:0 8px 26px #0005;max-height:min(60vh,460px);overflow:auto;z-index:40}
+.drop.open{display:block}
+.row{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #e3edf3;cursor:pointer}
+.row:hover,.row.act{background:#e8f5fd}
+.row .gl{display:block;font-size:11px;color:#1b7a3a}
+.row small{margin-left:auto;color:#678;font-size:11px}
+.none{padding:12px;color:#789}
+/* horizontal letter board */
+#lbp{padding:10px}
+.lbl{display:flex;flex-wrap:wrap;gap:6px}
+.lbl button{min-width:40px;height:40px;padding:0 8px;background:#e8f5fd;color:var(--ink);border:1px solid #9bd;font-size:18px;font-weight:700}
+.lbl button:hover{background:var(--grid);color:#fff}
+.lbl button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.lbr{margin-top:8px;border-top:1px dashed #9bb;max-height:260px;overflow:auto}
+.lbh{font-size:12px;color:#678;margin:8px 0 0}
+/* fixed panels */
+.pop{position:fixed;z-index:35;display:none;width:min(94vw,380px);max-height:72vh;flex-direction:column;background:#fff;color:var(--ink);border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 24px #0005}
+.pop .ph{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--grid);color:#fff;font-weight:700}
+.pop .pb{overflow:auto;flex:1;min-height:60px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;padding:10px}
+.chip{background:#fff;color:var(--ink);border:1px solid #9bb;border-radius:16px;padding:4px 12px;font-weight:400;font-size:14px}
+.chip i{font-style:normal;color:#678;margin-left:5px;font-size:12px}
+.chip:hover{background:#e8f5fd}
+.chip.on{background:var(--grid);color:#fff;border-color:var(--grid)}.chip.on i{color:#fff}
+.set{padding:10px 12px;display:flex;flex-direction:column;gap:12px;font-size:14px}
+.set label{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.set input[type=range]{flex:1;max-width:190px}
+.rmh{padding:10px 12px 0;font-weight:700;font-size:14px}
+#rmp .set input[type=range]{max-width:none}
+#st{font-size:13px;opacity:.9;flex:1 1 100%}
+main{flex:1;min-height:0;padding:8px}
 #vp{position:relative;height:100%}
 #box{height:100%;overflow:auto;display:flex;background:#dbe5ec;border:1px solid #c3d5e0;border-radius:6px}
-canvas{background:#fff;box-shadow:0 2px 14px #0003;cursor:pointer;touch-action:manipulation}
-#menu{position:fixed;z-index:9;display:none;min-width:200px;max-width:80vw;max-height:55vh;overflow:auto;background:#fff;border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 20px #0004;color:var(--ink)}
-#menu b{display:block;padding:6px 10px;background:var(--grid);color:#fff}
-#menu div{padding:8px 10px;cursor:pointer;display:flex;gap:8px;border-bottom:1px solid #e3edf3}
-#menu div:hover{background:#e8f5fd}#menu div.on{font-weight:700}#menu span{margin-left:auto;color:var(--red)}
-#menu em{display:block;padding:10px;color:#789}
-#st{font-size:13px;opacity:.85}
-#adm{position:fixed;right:10px;bottom:8px;font-size:12px;color:#5b7a90;cursor:pointer;background:#fffd;padding:3px 8px;border-radius:5px}
-#dlg{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:20}
-#dlg>div{background:#fff;padding:18px;border-radius:10px;width:min(92vw,380px);display:flex;flex-direction:column;gap:9px}
-#dlg input{padding:8px;border:1px solid #9bb;border-radius:6px;font:inherit}
-#dlg textarea{height:70px;font:11px monospace;word-break:break-all}
-#dlg p{margin:0;font-size:13px}
-/* Place directory */
-#plb span{background:#fff;color:var(--ink);border-radius:10px;padding:0 8px;margin-left:4px;font-size:13px}
-#pl{position:fixed;z-index:10;display:none;width:min(94vw,360px);max-height:72vh;flex-direction:column;background:#fff;color:var(--ink);border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 24px #0005}
-#pl .ph{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--grid);color:#fff}
-#pl .ph span b{background:#fff;color:var(--ink);border-radius:10px;padding:0 8px;margin-left:4px}
-#ps{margin:8px;padding:7px 9px;border:1px solid #9bb;border-radius:6px;color:var(--ink)}
-#pi{overflow:auto;flex:1;min-height:80px;border-top:1px solid #e3edf3}
-#pi label{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid #eef3f6;cursor:pointer;font-size:14px}
-#pi label:hover{background:#e8f5fd}
-#pi label small{margin-left:auto;color:#678;font-size:11px;white-space:nowrap}
-#pi input{width:18px;height:18px;flex:none}
-#pi em{display:block;padding:12px;color:#789}
-#pl .pf{display:flex;gap:6px;flex-wrap:wrap;padding:8px;border-top:1px solid #e3edf3}
-#pl .pf button{padding:6px 10px;font-size:13px}
-#padd{margin:8px 8px 0;background:#2e7d32;font-size:14px}
-/* Adding a new name */
-#cdlg{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;z-index:12}
-#cdlg>div{background:#fff;padding:16px 18px;border-radius:10px;width:min(94vw,440px);max-height:92vh;overflow:auto;display:flex;flex-direction:column;gap:9px}
-#cdlg input[type=text]{padding:8px;border:1px solid #9bb;border-radius:6px;font:inherit;width:100%}
-#cdlg .tp label{display:block;padding:4px 0;cursor:pointer}
-#cdlg .note{font-size:12px;color:#678;margin:0}
-#cdlg .ci{background:#e8f5fd;border-left:4px solid var(--grid);padding:8px 10px;border-radius:4px;font-size:13px;line-height:1.55}
-#cdlg .opt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
-#cdlg h4{margin:4px 0 0;font-size:13px}
-#cl div{display:flex;gap:6px;align-items:center;padding:3px 0;border-bottom:1px solid #eef3f6;font-size:13px}
-#cl button{margin-left:auto;padding:1px 8px;background:var(--red)}
-#ab{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:11;display:none;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:94vw;background:#fff;border:2px solid #2e7d32;border-radius:10px;box-shadow:0 6px 24px #0005;padding:8px 12px;font-size:13px}
-#ab button{padding:5px 10px;font-size:13px}
-/* Category filter */
-#cf{margin:6px 8px 0;font-size:12px}
-#cf .cfh{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;color:#456;gap:8px}
-#cf .cfh a{color:#0b78b8;cursor:pointer;white-space:nowrap}
-#cf .cfc{display:flex;flex-wrap:wrap;gap:5px;max-height:100px;overflow:auto}
-#cf .fc{border:1px solid #9bb;border-radius:12px;padding:1px 9px;cursor:pointer;background:#fff;user-select:none}
-#cf .fc i{font-style:normal;color:#678;margin-left:3px}
-#cf .fc.on{background:var(--grid);color:#fff;border-color:var(--grid)}#cf .fc.on i{color:#fff}
-#pi .gl{display:block;font-size:11px;color:#1b7a3a}
-/* ===== Mobile / narrow screens ===== */
-html,body{max-width:100%;overflow-x:hidden}
-select{max-width:100%;min-width:0}
-#optb{display:none}
-#opts{display:contents}
+canvas{background:#fff;box-shadow:0 2px 14px #0003}
+/* තට්ටු කළ විට රතු වළලු (සිතියම මත පාරදෘශ්‍ය තට්ටුවක්; mouse / touch වලට බාධා නොකරයි) */
+#vp canvas#rip{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:6;background:transparent;box-shadow:none}
+/* How to use */
+#hwo{background:#f5a623}
+.hw{position:fixed;inset:0;z-index:60;display:none;background:#0d2b45cc;align-items:flex-start;justify-content:center;padding:3vh 10px;overflow:auto}
+.hw.open{display:flex}
+.hwc{background:#fff;color:var(--ink);border-radius:12px;max-width:660px;width:100%;box-shadow:0 10px 40px #0007;display:flex;flex-direction:column;max-height:94vh}
+.hwh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;background:var(--grid);color:#fff;border-radius:10px 10px 0 0;font-weight:700;font-size:17px}
+.hwh .r{display:flex;gap:6px;align-items:center}
+.hwlb{background:#ffffff33;font-weight:400;font-size:13px;padding:3px 10px;border-radius:14px}
+.hwlb.on{background:#fff;color:var(--ink);font-weight:700}
+#hwx{background:#ffffff33;font-size:18px;padding:2px 10px}
+.hwb{padding:16px;overflow:auto;line-height:1.7;font-size:15px}
+.hwb .st{display:flex;gap:12px;margin:0 0 16px}
+.hwb .n{flex:none;width:32px;height:32px;border-radius:50%;background:var(--grid);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.hwb h4{margin:0 0 2px;font-size:16px}
+.hwb p{margin:0;color:#345}
+.hwb .tip{background:#fff7e0;border:1px solid #f0d58a;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:14px;color:#5a4a10}
+.hwf{padding:10px 16px;border-top:1px solid #e3edf3;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
+.hwf label{display:flex;gap:6px;align-items:center;cursor:pointer}
 @media(max-width:760px){
  body{font-size:14px}
- header{padding:6px 8px;gap:6px 8px}
+ header{padding:6px 8px}
  h1{font-size:18px;margin-right:auto}
- #st{order:1;font-size:11px;width:100%}
- header .mapl{flex:1 1 100%;font-size:13px}
- header .mapl select{flex:1;width:100%;padding:5px 8px}
- header button,header .mvl{font-size:13px}
- header button{padding:5px 9px}
- #plb{flex:1 1 auto}
- #optb{display:inline-block}
- #opts{display:none;order:0;width:100%;grid-template-columns:1fr 1fr;gap:8px 12px;background:#12385a;border-radius:8px;padding:8px}
- #opts.on{display:grid}
- #opts label{flex-direction:column;align-items:flex-start;gap:2px;font-size:12px}
- #opts label.cb{flex-direction:row;align-items:center;gap:6px}
- #opts label.ol{grid-column:1/-1}
- #opts input[type=range],#opts input#ttl{width:100%!important}
- #opts input#ttl{padding:6px 8px;border-radius:6px;border:1px solid #9bb}
- #opts button{padding:6px 8px}
+ header label.mapl{flex:1 1 100%}
+ header select{flex:1;max-width:none}
+ .sw{flex:1 1 100%;max-width:none}
  main{padding:4px}
- #adm{bottom:2px;right:4px;font-size:11px;padding:1px 6px;opacity:.75}
- #ab{bottom:22px;font-size:12px;padding:6px 8px;gap:6px}
- #ab button{padding:4px 8px;font-size:12px}
 }
-/* Language switch buttons */
-#lang{display:flex;gap:4px;align-items:center}
-#lang a{color:#fff;text-decoration:none;font-size:13px;padding:4px 10px;border-radius:14px;border:1px solid #ffffff55;white-space:nowrap}
-#lang a:hover{background:#ffffff22}
-#lang a.on{background:var(--grid);border-color:var(--grid);font-weight:700;pointer-events:none}
-@media(max-width:760px){#lang a{font-size:12px;padding:3px 8px}}
 </style>
 </head>
 <body>
 <header>
  <h1>Geo<i>Sketch</i></h1>
- <nav id="lang">
-  <a href="index.html" lang="si">සිංහල</a>
-  <a href="index_t.html" lang="ta">தமிழ்</a>
-  <a class="on" href="index_e.html">English</a>
- </nav>
- <label class="mapl">Map <select id="map"></select></label>
- <button id="plb">📍 Place Directory <span id="bc">0</span></button>
- <label class="mvl"><input id="mvt" type="checkbox"> ✋ Move names</label>
- <button id="pdf">PDF</button><button id="jpg">JPG</button>
- <button class="alt" id="optb">⚙ Settings</button>
- <div id="opts">
-  <label class="ol">Title <input id="ttl" placeholder="Map title" size="26"></label>
-  <label>Font size <input id="fsz" type="range" min="16" max="48" value="26"></label>
-  <label>River name spacing <input id="sp" type="range" min="0" max="0.6" step="0.02" value="0.15" style="width:90px"></label>
-  <label>Weir line spacing <input id="gp" type="range" min="0.04" max="0.4" step="0.01" value="0.17" style="width:90px"></label>
-  <label>Dot size <input id="dr" type="range" min="0.05" max="0.4" step="0.01" value="0.14" style="width:90px"></label>
-  <label class="cb"><input id="grd" type="checkbox" checked> Grid (display only)</label>
-  <button class="alt" id="clr">Clear all</button>
-  <button class="alt" id="rst" title="Return moved names to their original positions">Reset names</button>
+ <div id="lang">
+  <button data-l="si">සිංහල</button>
+  <button data-l="ta">தமிழ்</button>
+  <button data-l="en">English</button>
  </div>
+ <label class="mapl"><span data-t="map"></span><select id="map"></select></label>
+ <div class="sw" id="sw">
+  <input id="q" autocomplete="off">
+  <button id="lbb" type="button" data-t="letters"></button>
+  <div id="sug" class="drop"></div>
+  <div id="lbp" class="drop"></div>
+ </div>
+ <button id="plb" data-t="places"></button>
+ <button id="tyb" data-t="types"></button>
+ <button id="rmb" type="button" data-t="rmb"></button>
+ <button id="hwo" type="button" data-t="howb"></button>
+ <button id="exj" type="button">⬇ JPG</button>
+ <button id="exp" type="button">⬇ PDF</button>
+ <button id="mvb" type="button" title="Move: නම ඇදගෙන යන්න">✋</button>
+ <button id="stb">⚙</button>
  <span id="st"></span>
 </header>
-<main><div id="vp"><div id="box"><canvas id="cv"></canvas></div></div></main>
-<div id="menu"></div>
+<main><div id="vp"><div id="box"><canvas id="cv"></canvas></div><canvas id="rip"></canvas></div></main>
 
-<div id="pl">
- <div class="ph"><b>Place Directory</b><span>Selected: <b id="pc">0</b></span></div>
- <button id="padd">➕ Add a name not listed here</button>
- <div id="cf"></div>
- <input id="ps" placeholder="Search...">
- <div id="pi"></div>
- <div class="pf">
-  <button id="pok">OK</button>
-  <button id="pvis" title="Selects everything currently visible in the list (according to the category filter) and adds it to the map">Add all visible to map ▶</button>
-  <button class="alt" id="pall">Select all visible</button>
-  <button class="alt" id="pclr">Clear all</button>
-  <button class="alt" id="pcl">Close</button>
- </div>
-</div>
-
-<div id="cdlg"><div>
- <b>➕ Add a name not listed here</b>
- <p class="note">Names you add are stored in temporary memory only. They remain until you Export (PDF/JPG), and are lost when you Reload / Close &amp; Open the page.</p>
- <div><b>1. Enter the place name</b>
-  <input type="text" id="cn" placeholder="e.g. Mahaweli River"></div>
- <div class="tp"><b>2. Choose the type</b>
-  <label><input type="radio" name="ck" value="p" checked> ● A place</label>
-  <label><input type="radio" name="ck" value="r"> ≈ A river</label>
-  <label><input type="radio" name="ck" value="c"> ‖ A canal</label>
-  <label><input type="radio" name="ck" value="w"> ‖ A weir</label>
-  <label><input type="radio" name="ck" value="a"> ▭ An area</label>
- </div>
- <div id="cx"></div>
- <div><b>3. Categories (optional)</b> <small style="color:#678">You can select more than one</small><div id="cpk"></div></div>
- <div><b>4. Exam year (optional)</b> <small style="color:#678">Years the place appeared; you can select several</small><div id="ypk"></div></div>
- <div class="ci" id="cinfo"></div>
- <div style="display:flex;gap:8px"><button id="cgo">Start ▶</button><button class="alt" id="cno">Close</button></div>
- <h4 id="clh">Names you added (on this map)</h4>
- <div id="cl"></div>
+<div class="pop" id="plp"><div class="ph"><span data-t="places"></span><span id="plc"></span></div><div class="pb" id="pli"></div></div>
+<div class="pop" id="typ"><div class="ph"><span data-t="types"></span></div><div class="pb"><div class="chips" id="tyc"></div></div></div>
+<div class="pop" id="rmp"><div class="ph"><span data-t="rmt"></span></div><div class="pb">
+ <div class="rmh" data-t="rm1"></div>
+ <div class="chips" style="padding-bottom:0"><button type="button" class="chip" id="rma" data-t="rma"></button><button type="button" class="chip" id="rmn" data-t="rmn"></button></div>
+ <div class="chips" id="rmc"></div>
+ <div class="rmh" data-t="rm2"></div>
+ <div class="set"><label><input id="rmN" type="range" min="1" max="100" step="1" value="20"><b id="rmNv" style="min-width:30px;text-align:right">20</b></label></div>
+ <div style="padding:0 12px 12px"><button id="rmgo" type="button" data-t="rmgo" style="width:100%;padding:10px;background:#7b4bd6"></button></div>
 </div></div>
+<div class="pop" id="stp"><div class="ph"><span data-t="settings"></span></div>
+ <div class="set">
+  <label><span data-t="nnum"></span><span style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end"><input id="nN" type="range" min="0" max="15" step="1" value="3"><b id="nNv" style="min-width:20px;text-align:right">3</b></span></label>
+  <label><span data-t="rivs"></span><input id="rOn" type="checkbox"></label>
+  <label><span data-t="ripl"></span><input id="ripOn" type="checkbox" checked></label>
+  <label><span data-t="spread"></span><input id="sOn" type="checkbox" checked></label>
+  <label><span data-t="veil"></span><input id="vOn" type="checkbox" checked></label>
+  <label><span data-t="vstr"></span><input id="vA" type="range" min="0.1" max="0.8" step="0.05" value="0.3"></label>
+  <label><span data-t="vtone"></span><select id="vC"></select></label>
+  <label><span data-t="fsz"></span><input id="fsz" type="range" min="18" max="44" value="26"></label>
+  <label><span data-t="exg"></span><input id="exg" type="checkbox" checked></label>
+  <label><button id="mrs" type="button" data-t="mvrs"></button></label>
+ </div></div>
 
-<div id="ab">
- <span id="at"></span>
- <button id="afin">Finish (Enter)</button>
- <button class="alt" id="aun">Undo</button>
- <button class="alt" id="acn">Cancel</button>
- <button id="anew">➕ Add another</button>
- <button class="alt" id="adone">Done ✓</button>
-</div>
-
-<a id="adm">Admin</a>
-<div id="dlg"><div>
- <b id="dt">Admin Login</b>
- <p id="dp"></p>
- <input id="pw" type="password" placeholder="Password">
- <textarea id="hs" readonly style="display:none"></textarea>
- <div style="display:flex;gap:8px"><button id="ok">Log in</button><button class="alt" id="no">Close</button></div>
+<div class="hw" id="hw"><div class="hwc">
+ <div class="hwh"><span data-t="howt"></span>
+  <span class="r"><button class="hwlb" data-l="si">සිංහල</button><button class="hwlb" data-l="ta">தமிழ்</button><button class="hwlb" data-l="en">English</button><button id="hwx" type="button">✕</button></span></div>
+ <div class="hwb" id="hwb"></div>
+ <div class="hwf"><label><input type="checkbox" id="hwn" checked><span data-t="hown"></span></label><button id="hwk" type="button" data-t="howok"></button></div>
 </div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="geosketch-e-core.js"></script>
+<script src="geosketch-core.js"></script>
 <script>
-/* =====================================================================
-   ██  DATA (Backup)  ██
-   Data is now loaded automatically from the Supabase DB.
-   This section is used only when the Internet / DB is unavailable.
-   ===================================================================== */
-const DATA={};
+/* ---------- භාෂා / Language texts ---------- */
+const T={
+ si:{map:'සිතියම',letters:'අකුරු ▾',places:'📍 ස්ථාන නාමාවලිය',types:'🗂 සිතියම් වර්ග',settings:'සැකසුම්',spread:'නම් එකිනෙක මත යෑම වළක්වන්න',ripl:'තට්ටු කළ විට රතු වළලු පෙන්වන්න',howb:'❓ භාවිතය',howt:'GeoSketch භාවිතා කරන්නේ කෙසේද?',howok:'තේරුණා, වසන්න',hown:'නැවත පෙන්වන්න එපා',nnum:'ආසන්න ස්ථාන ගණන',rivs:'ආසන්න ගංගා ද පෙන්වන්න',mvon:'✋ Move සක්‍රියයි: නමක් ඇදගෙන යන්න (හිස් තැනක් අදිමින් සිතියම ගෙන යන්න)',mvrs:'Move කළ නම් යළි මුල් තැනට',veil:'මෘදු ආවරණය',vstr:'ආවරණ තීව්‍රතාව',vtone:'ආවරණ වර්ණය',fsz:'අකුරු ප්‍රමාණය',exg:'JPG / PDF වලට කොටු දැල ඇතුළත් කරන්න',
+  rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. ඇතුළත් කළ යුතු වර්ග තෝරන්න',rm2:'2. ස්ථාන ගණන තෝරන්න',rmgo:'🎲 සිතියම සාදන්න',rma:'සියල්ල තෝරන්න',rmn:'හිස් කරන්න',rmneed:'අවම වශයෙන් වර්ගයක් තෝරන්න',rmres:'Random සිතියම',
+  rmerr:(k,n)=>`තෝරාගත් වර්ග ගණන ${k} කි. ස්ථාන ගණන (${n}) එයට වඩා අඩුය. සියලු වර්ග ආවරණය කිරීමට අවම වශයෙන් ස්ථාන ${k} ක් අවශ්‍යයි.`,
+  rmnone:'තෝරාගත් වර්ගවලින් ස්ථාන හමු නොවීය',
+  ph:'ස්ථානයක් සොයන්න...',none:'ස්ථානයක් හමු නොවීය',hint:'ස්ථානයක් සොයන්න, අකුරක් තෝරන්න, නැතිනම් නාමාවලියෙන් තෝරන්න. සිතියමේ ස්ථානයක් ක්ලික් කළ ද හැක',near:'+ ආසන්න ස්ථාන',nodata:'මෙම සිතියමට දත්ත නැත',pickLetter:'අකුරක් තෝරන්න',loading:'load වෙමින්...',
+  tones:['සුදු','ළා කහ','ළා නිල්','ළා කොළ'],all:'වර්ගයේ සියල්ල'},
+ ta:{map:'வரைபடம்',letters:'எழுத்துகள் ▾',places:'📍 இடப்பெயர் பட்டியல்',types:'🗂 வரைபட வகைகள்',settings:'அமைப்புகள்',spread:'பெயர்கள் ஒன்றின்மேல் ஒன்று வருவதைத் தவிர்',ripl:'தொட்டால் சிவப்பு வளையங்களைக் காட்டு',howb:'❓ பயன்பாடு',howt:'GeoSketch ஐப் பயன்படுத்துவது எப்படி?',howok:'புரிந்தது, மூடு',hown:'மீண்டும் காட்ட வேண்டாம்',nnum:'அருகிலுள்ள இடங்களின் எண்ணிக்கை',rivs:'அருகிலுள்ள ஆறுகளையும் காட்டு',mvon:'✋ Move இயக்கத்தில்: பெயரை இழுத்துச் செல்லுங்கள் (வெற்றிடத்தை இழுத்து வரைபடத்தை நகர்த்துங்கள்)',mvrs:'நகர்த்திய பெயர்களை மீட்டமை',veil:'மென்மையான திரை',vstr:'திரையின் அடர்த்தி',vtone:'திரை நிறம்',fsz:'எழுத்து அளவு',exg:'JPG / PDF இல் கட்டங்களைச் சேர்',
+  rmb:'🎲 சீரற்ற வரைபடம்',rmt:'Create a Random Map',rm1:'1. சேர்க்க வேண்டிய வகைகளைத் தேர்ந்தெடுங்கள்',rm2:'2. இடங்களின் எண்ணிக்கையைத் தேர்ந்தெடுங்கள்',rmgo:'🎲 வரைபடத்தை உருவாக்கு',rma:'அனைத்தையும் தேர்ந்தெடு',rmn:'அழி',rmneed:'குறைந்தது ஒரு வகையைத் தேர்ந்தெடுங்கள்',rmres:'சீரற்ற வரைபடம்',
+  rmerr:(k,n)=>`தேர்ந்தெடுத்த வகைகள் ${k}. இடங்களின் எண்ணிக்கை (${n}) அதைவிடக் குறைவு. அனைத்து வகைகளையும் உள்ளடக்க குறைந்தது ${k} இடங்கள் தேவை.`,
+  rmnone:'தேர்ந்தெடுத்த வகைகளில் இடங்கள் இல்லை',
+  ph:'இடத்தைத் தேடுங்கள்...',none:'இடம் கிடைக்கவில்லை',hint:'இடத்தைத் தேடுங்கள், எழுத்தைத் தேர்ந்தெடுங்கள் அல்லது பட்டியலில் தேர்ந்தெடுங்கள். வரைபடத்தில் ஓர் இடத்தைத் தொட்டும் பார்க்கலாம்',near:'+ அருகிலுள்ள இடங்கள்',nodata:'இந்த வரைபடத்திற்குத் தரவு இல்லை',pickLetter:'எழுத்தைத் தேர்ந்தெடுங்கள்',loading:'ஏற்றுகிறது...',
+  tones:['வெள்ளை','இளமஞ்சள்','இளநீலம்','இளம்பச்சை'],all:'வகையில் அனைத்தும்'},
+ en:{map:'Map',letters:'Letters ▾',places:'📍 Place list',types:'🗂 Map types',settings:'Settings',spread:'Avoid overlapping names',ripl:'Show red ripples on tap',howb:'❓ How to use',howt:'How to use GeoSketch',howok:'Got it, close',hown:'Do not show again',nnum:'Number of nearby places',rivs:'Also show nearby rivers',mvon:'✋ Move on: drag a name (drag empty space to pan the map)',mvrs:'Reset moved names',veil:'Soft overlay',vstr:'Overlay strength',vtone:'Overlay tone',fsz:'Text size',exg:'Include grid in JPG / PDF',
+  rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. Choose the types to include',rm2:'2. Choose the number of places',rmgo:'🎲 Create map',rma:'Select all',rmn:'Clear',rmneed:'Please choose at least one type',rmres:'Random map',
+  rmerr:(k,n)=>`You chose ${k} types, but only ${n} places. At least ${k} places are needed to cover every type.`,
+  rmnone:'No places found in the chosen types',
+  ph:'Search a place...',none:'No place found',hint:'Search a place, pick a letter, choose from the list, or tap a place on the map',near:'+ nearby places',nodata:'No data for this map',pickLetter:'Pick a letter',loading:'Loading...',
+  tones:['White','Cream','Blue','Green'],all:'All in this type'}
+};
+const MN={
+ si:{ol_lanka:'සාමාන්‍ය පෙළ ලංකා සිතියම',ol_eurasia:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',ol_world:'සම්පූර්ණ ලෝක සිතියම',al_europe1:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',al_europe2:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',al_lanka:'උසස් පෙළ ලංකා සිතියම',al_india:'උසස් පෙළ ඉන්දියා සිතියම'},
+ ta:{ol_lanka:'சாதாரண தர இலங்கை வரைபடம்',ol_eurasia:'சாதாரண தர யூரேசியா வரைபடம்',ol_world:'முழு உலக வரைபடம்',al_europe1:'உயர்தர ஐரோப்பா வரைபடம் (கருங்கடல் வரை)',al_europe2:'உயர்தர ஐரோப்பா வரைபடம் (கஸ்பியன் கடல் வரை)',al_lanka:'உயர்தர இலங்கை வரைபடம்',al_india:'உயர்தர இந்தியா வரைபடம்'},
+ en:{ol_lanka:'O/L Sri Lanka map',ol_eurasia:'O/L Eurasia map',ol_world:'Full world map',al_europe1:'A/L Europe map (to the Black Sea)',al_europe2:'A/L Europe map (to the Caspian Sea)',al_lanka:'A/L Sri Lanka map',al_india:'A/L India map'}
+};
+/* ---------- How to use (පියවරෙන් පියවර) : [මාතෘකාව, විස්තරය, උපදෙස (අවශ්‍ය නම්)] ---------- */
+const HOW={
+ si:[
+  ['සිතියමක් තෝරන්න','ඉහළ තීරුවේ "සිතියම" ලැයිස්තුවෙන් ඔබට අවශ්‍ය සිතියම (ලංකා, ලෝක, යුරෝපා ආදිය) තෝරන්න. භාෂාව වෙනස් කිරීමට <b>සිංහල / தமிழ் / English</b> බොත්තම් භාවිතා කරන්න.'],
+  ['ස්ථානයක් සොයන්න','ඉහළ ඇති <b>සෙවුම් පෙට්ටියේ</b> ස්ථානයේ නමේ මුල් අකුරු කිහිපයක් ටයිප් කරන්න (උදා: <b>යාප</b>). පහළින් නම් ලැයිස්තුවක් පෙනේ. ඔබට අවශ්‍ය නම මත ක්ලික් කරන්න.','නම හරියට මතක නැද්ද? <b>අකුරු ▾</b> බොත්තම ඔබා මුල් අකුරක් තෝරන්න, නැතිනම් <b>📍 ස්ථාන නාමාවලිය</b> බොත්තමෙන් සම්පූර්ණ ලැයිස්තුව බලන්න.'],
+  ['ප්‍රතිඵලය බලන්න','සිතියම ස්වයංක්‍රීයව විශාල වී, ඔබ තෝරාගත් ස්ථානයේ <b style="color:#d6212b">නම රතු පැහැයෙන්</b> පෙනේ. ඒ සමගම අවට ඇති ස්ථාන කිහිපයක් (මුලින් 10ක්) කළු පැහැති නම් සහ ඊතල සහිතව පෙන්වයි. මෙයින් ස්ථාන එකිනෙකට සාපේක්ෂව පිහිටා ඇති ආකාරය පහසුවෙන් ඉගෙන ගත හැක. නම් එකිනෙක මත නොයන සේ ස්වයංක්‍රීයව සකසයි.'],
+  ['සිතියම මත ක්ලික් / ස්පර්ශ කරන්න','සිතියමේ ඕනෑම ස්ථානයක් (තිතක්, ප්‍රදේශයක්, ගංගාවක්) මත <b>ක්ලික් කරන්න / ඇඟිල්ලෙන් තට්ටු කරන්න</b>. එවිට එම ස්ථානය රතු පැහැයෙන් ද, ඒ අවට ඇති ආසන්නතම ස්ථාන 3 කළු පැහැයෙන් ද පෙන්වයි.','සිතියම අදිමින් ගෙන යන විට මෙය ක්‍රියා නොකරයි.'],
+  ['තට්ටු කළ තැන රතු වළලු (ගුරුවරුන්ට)','සිතියමේ ස්ථානයක් <b>එක් වරක් ක්ලික් කළ / තනි ඇඟිල්ලකින් තට්ටු කළ</b> විට, ඒ ස්ථානය වටා රතු පැහැති වළලු 5ක් ක්‍රමයෙන් විශාල වෙමින් මැකී යමින් අඛණ්ඩව ස්පන්දනය වේ (භූමිකම්පාවක කේන්ද්‍රයක් පෙන්වන ආකාරයටයි). දරුවන්ට ස්ථානය පෙන්වීමට මෙය පහසුය.','නවත්වන්න: එම ස්ථානයම නැවත තට්ටු කරන්න, නැතිනම් <b>Esc</b> ඔබන්න. සිතියම අදින විට හෝ ඇඟිලි දෙකකින් විශාල කරන විට මෙය ක්‍රියා නොකරයි. අවශ්‍ය නම් ⚙ තුළින් අක්‍රිය කළ හැක.'],
+  ['සිතියම ගෙනයාම සහ විශාල කිරීම','සිතියම <b>ඇඟිල්ලෙන් / mouse එකෙන් අදින්න</b>. ඉහළ දකුණේ ඇති <b>+</b> සහ <b>−</b> බොත්තමින් විශාල / කුඩා කරන්න. <b>ගැලපෙන</b> බොත්තම ඔබන විට සම්පූර්ණ සිතියම නැවත පෙනේ. පරිගණකයේ <b>Ctrl</b> ඔබාගෙන mouse wheel එක කරකවා ද විශාල කළ හැක.'],
+  ['අවට ස්ථාන ගණන වෙනස් කරන්න','<b>⚙</b> බොත්තම ඔබා "ආසන්න ස්ථාන ගණන" ලිස්සුම් තීරුව (0 සිට 15 දක්වා) වෙනස් කරන්න. ආසන්න <b>ගංගා</b> ද බැලීමට "ආසන්න ගංගා ද පෙන්වන්න" ටික් කරන්න.'],
+  ['වර්ගයක් අනුව බලන්න','<b>🗂 සිතියම් වර්ග</b> බොත්තම ඔබා (ගංගාව, වැව, වරාය ආදී) එක් වර්ගයක් තෝරන්න. එවිට එම වර්ගයේ සියලු ස්ථාන එකවර සිතියමේ පෙනේ.'],
+  ['Random සිතියමක් සාදන්න','<b>🎲 Random Map</b> බොත්තම ඔබන්න. පළමුව ඇතුළත් කළ යුතු <b>වර්ග</b> (ගංගා, ඓතිහාසික ස්ථාන ආදී) තෝරන්න, ඉන්පසු <b>ස්ථාන ගණන</b> තෝරා "සිතියම සාදන්න" ඔබන්න. DB එකේ වැඩිපුර ඇති වර්ගවලින් වැඩි ස්ථාන ගණනක් ද, අඩුවෙන් ඇති වර්ගවලින් අඩු ගණනක් ද ස්වයංක්‍රීයව තෝරයි. සිතියම පුරා විහිදුණු ස්ථාන තෝරන අතර, එකම වර්ගයේ ස්ථාන දෙකක් එකම කොටුවක හෝ ආසන්න කොටුවක නොපෙනේ. ස්ථාන ගණන වර්ග ගණනට වඩා අඩු නම් දෝෂ පණිවිඩයක් පෙන්වයි.','නැවත ඔබන සෑම වාරයකම වෙනස් සිතියමක් සැදේ.'],
+  ['නමක් වෙනත් තැනකට ගෙනයන්න','නම් එකිනෙක ළං වී පැහැදිලි නැතිනම් <b>✋</b> බොත්තම ඔබන්න (රතු පැහැ වේ). දැන් ඕනෑම නමක් <b>ඇදගෙන ගොස්</b> අවශ්‍ය තැන දමන්න. ඊතලයේ හිස ස්ථානයේම රැඳෙන අතර, ඊතලය 90° නැවී නම සමග ගමන් කරයි. අවසන් වූ පසු නැවත ✋ ඔබන්න.','මුල් තැනට ගෙන ඒමට: ⚙ → "Move කළ නම් යළි මුල් තැනට".'],
+  ['ඉගෙනීම පහසු කරගන්න','<b>⚙</b> තුළ "අකුරු ප්‍රමාණය" වෙනස් කළ හැක. "මෘදු ආවරණය" මගින් සිතියමේ පසුබිම ළා පැහැයකින් මැකී, නම් වඩා පැහැදිලිව පෙනේ.']
+ ],
+ ta:[
+  ['வரைபடத்தைத் தேர்ந்தெடுங்கள்','மேலே உள்ள "வரைபடம்" பட்டியலில் இருந்து தேவையான வரைபடத்தை (இலங்கை, உலகம், ஐரோப்பா போன்றவை) தேர்ந்தெடுங்கள். மொழியை மாற்ற <b>සිංහල / தமிழ் / English</b> பொத்தான்களைப் பயன்படுத்துங்கள்.'],
+  ['இடத்தைத் தேடுங்கள்','மேலே உள்ள <b>தேடல் பெட்டியில்</b> இடத்தின் பெயரின் முதல் சில எழுத்துகளைத் தட்டச்சு செய்யுங்கள். கீழே தோன்றும் பட்டியலில் தேவையான பெயரைத் தேர்ந்தெடுங்கள்.','பெயர் சரியாக நினைவில் இல்லையா? <b>எழுத்துகள் ▾</b> பொத்தானை அழுத்தி முதல் எழுத்தைத் தேர்ந்தெடுங்கள், அல்லது <b>📍 இடப்பெயர் பட்டியல்</b> மூலம் முழுப் பட்டியலைப் பாருங்கள்.'],
+  ['முடிவைப் பாருங்கள்','வரைபடம் தானாகப் பெரிதாகி, தேர்ந்தெடுத்த இடத்தின் <b style="color:#d6212b">பெயர் சிவப்பு நிறத்தில்</b> தெரியும். அதனுடன் அருகிலுள்ள சில இடங்களும் (முதலில் 10) கருப்புப் பெயர்களுடனும் அம்புகளுடனும் காட்டப்படும். இதனால் இடங்கள் ஒன்றுக்கொன்று எங்கே அமைந்துள்ளன என்பதை எளிதாகக் கற்கலாம். பெயர்கள் ஒன்றின்மேல் ஒன்று விழாதபடி தானாக அமைக்கப்படும்.'],
+  ['வரைபடத்தில் கிளிக் / தொடுதல்','வரைபடத்தில் எந்த இடத்தையும் (புள்ளி, பகுதி, ஆறு) <b>கிளிக் செய்யுங்கள் / விரலால் தொடுங்கள்</b>. அந்த இடம் சிவப்பு நிறத்திலும், அதன் அருகிலுள்ள 3 இடங்கள் கருப்பு நிறத்திலும் காட்டப்படும்.','வரைபடத்தை இழுக்கும்போது இது செயல்படாது.'],
+  ['தொட்ட இடத்தில் சிவப்பு வளையங்கள் (ஆசிரியர்களுக்கு)','வரைபடத்தில் ஓர் இடத்தை <b>ஒருமுறை கிளிக் செய்தால் / ஒரு விரலால் தொட்டால்</b>, அந்த இடத்தைச் சுற்றி 5 சிவப்பு வளையங்கள் படிப்படியாகப் பெரிதாகி மறைந்து தொடர்ந்து துடிக்கும் (நிலநடுக்க மையத்தைக் காட்டுவது போல). மாணவர்களுக்கு இடத்தைச் சுட்டிக்காட்ட இது உதவும்.','நிறுத்த: அதே இடத்தை மீண்டும் தொடுங்கள் அல்லது <b>Esc</b> அழுத்துங்கள். வரைபடத்தை இழுக்கும்போதோ இரு விரல்களால் பெரிதாக்கும்போதோ இது தோன்றாது. தேவைப்பட்டால் ⚙ இல் அணைக்கலாம்.'],
+  ['வரைபடத்தை நகர்த்தவும் பெரிதாக்கவும்','வரைபடத்தை <b>விரலால் / மவுசால் இழுத்து</b> நகர்த்துங்கள். மேல் வலதுபுறத்தில் உள்ள <b>+</b> மற்றும் <b>−</b> பொத்தான்களால் பெரிதாக்கவும் சிறிதாக்கவும் செய்யலாம். <b>ගැලපෙන</b> பொத்தானை அழுத்தினால் முழு வரைபடமும் மீண்டும் தெரியும். கணினியில் <b>Ctrl</b> அழுத்தியபடி மவுஸ் சக்கரத்தைச் சுழற்றியும் பெரிதாக்கலாம்.'],
+  ['அருகிலுள்ள இடங்களின் எண்ணிக்கை','<b>⚙</b> பொத்தானை அழுத்தி "அருகிலுள்ள இடங்களின் எண்ணிக்கை" ஸ்லைடரை (0 முதல் 15 வரை) மாற்றுங்கள். அருகிலுள்ள <b>ஆறுகளையும்</b> காண "அருகிலுள்ள ஆறுகளையும் காட்டு" என்பதைத் தேர்வு செய்யுங்கள்.'],
+  ['வகையின்படி பாருங்கள்','<b>🗂 வரைபட வகைகள்</b> பொத்தானை அழுத்தி (ஆறு, குளம், துறைமுகம் போன்ற) ஒரு வகையைத் தேர்ந்தெடுங்கள். அந்த வகையின் எல்லா இடங்களும் ஒரே நேரத்தில் வரைபடத்தில் தெரியும்.'],
+  ['சீரற்ற வரைபடத்தை உருவாக்குங்கள்','<b>🎲 சீரற்ற வரைபடம்</b> பொத்தானை அழுத்துங்கள். முதலில் சேர்க்க வேண்டிய <b>வகைகளை</b> (ஆறுகள், வரலாற்றுத் தலங்கள் போன்றவை) தேர்ந்தெடுங்கள்; பின்னர் <b>இடங்களின் எண்ணிக்கையைத்</b> தேர்ந்தெடுத்து "வரைபடத்தை உருவாக்கு" என்பதை அழுத்துங்கள். தரவுத்தளத்தில் அதிகமாக உள்ள வகைகளிலிருந்து அதிக இடங்களும், குறைவாக உள்ள வகைகளிலிருந்து குறைந்த இடங்களும் தானாகத் தேர்ந்தெடுக்கப்படும். இடங்கள் வரைபடம் முழுவதும் பரவலாக இருக்கும்; ஒரே வகையின் இரண்டு இடங்கள் ஒரே கட்டத்திலோ அருகிலுள்ள கட்டத்திலோ வராது. இடங்களின் எண்ணிக்கை வகைகளின் எண்ணிக்கையைவிடக் குறைவாக இருந்தால் பிழைச் செய்தி காட்டப்படும்.','ஒவ்வொரு முறை அழுத்தும்போதும் வேறு வரைபடம் உருவாகும்.'],
+  ['பெயரை வேறு இடத்துக்கு நகர்த்துங்கள்','பெயர்கள் நெருக்கமாக இருந்து தெளிவாகத் தெரியவில்லை என்றால் <b>✋</b> பொத்தானை அழுத்துங்கள் (சிவப்பாக மாறும்). பின்னர் எந்தப் பெயரையும் <b>இழுத்துச் சென்று</b> விரும்பிய இடத்தில் விடுங்கள். அம்புக்குறியின் முனை இடத்திலேயே இருக்கும்; அம்பு 90° வளைந்து பெயருடன் நகரும். முடிந்ததும் மீண்டும் ✋ ஐ அழுத்துங்கள்.','முதல் இடத்துக்குத் திரும்ப: ⚙ → "நகர்த்திய பெயர்களை மீட்டமை".'],
+  ['கற்றலை எளிதாக்குங்கள்','<b>⚙</b> இல் "எழுத்து அளவை" மாற்றலாம். "மென்மையான திரை" வரைபடத்தின் பின்னணியை மங்கச் செய்து பெயர்களைத் தெளிவாகக் காட்டும்.']
+ ],
+ en:[
+  ['Choose a map','Pick the map you need (Sri Lanka, World, Europe, etc.) from the "Map" list at the top. Use the <b>සිංහල / தமிழ் / English</b> buttons to change the language.'],
+  ['Search for a place','Type the first few letters of a place name in the <b>search box</b> at the top (for example <b>Jaff</b>). A list of names appears below. Click the one you want.','Do not remember the exact name? Press <b>Letters ▾</b> and pick the first letter, or open <b>📍 Place list</b> to see everything.'],
+  ['Read the result','The map zooms in automatically and shows the <b style="color:#d6212b">name of your place in red</b>. A few nearby places (10 at first) are shown too, with black names and arrows. This helps you learn how places are located relative to each other. Names are arranged automatically so they do not cover each other.'],
+  ['Click or tap the map','<b>Click or tap</b> any place on the map (a dot, an area or a river). That place is shown in red together with the 3 nearest places in black.','This does not trigger while you are dragging the map.'],
+  ['Red ripples where you tap (for teachers)','<b>Click once or tap with one finger</b> on the map and 5 red rings spread out from that spot, fading as they grow and pulsing continuously, like the epicentre of an earthquake on a quake map. It is a handy way to point out a place to students.','To stop: tap the same spot again, or press <b>Esc</b>. It does not appear while you drag the map or pinch to zoom. You can switch it off in ⚙.'],
+  ['Move and zoom the map','<b>Drag the map</b> with your finger or mouse. Use <b>+</b> and <b>−</b> at the top right to zoom, and press the fit button (<b>ගැලපෙන</b>) to see the whole map again. On a computer you can also hold <b>Ctrl</b> and turn the mouse wheel.'],
+  ['Change how many nearby places','Press <b>⚙</b> and move the "Number of nearby places" slider (0 to 15). Tick "Also show nearby rivers" to include rivers.'],
+  ['Browse by type','Press <b>🗂 Map types</b> and choose a type (River, Tank, Port, etc.). All places of that type appear on the map together.'],
+  ['Create a random map','Press <b>🎲 Random Map</b>. First choose the <b>types</b> to include (rivers, historical places, etc.), then choose the <b>number of places</b> and press "Create map". Types that are more common in the database get more places, and rarer types get fewer. Places are spread across the whole map, and two places of the same type never share a cell or sit in neighbouring cells. If you ask for fewer places than types, an error message is shown.','Press the button again for a different map each time.'],
+  ['Move a name somewhere else','If names are too close to read, press <b>✋</b> (it turns red). Now <b>drag any name</b> and drop it where you want. The arrow tip stays on the place, and the arrow bends at 90° and follows the name. Press ✋ again when you are done.','To put names back: ⚙ → "Reset moved names".'],
+  ['Make studying easier','In <b>⚙</b> you can change the "Text size". "Soft overlay" fades the map background so names stand out more.']
+ ]
+};
+const TONES=['#ffffff','#fff1c2','#dcecff','#e2f2dc'];
+const IC={p:'●',a:'▭',r:'≈',d:'‖'};
 
-// >>> MAP:ol_lanka
-DATA['ol_lanka']=[
-  {"n":"Nallur","t":"p","x":0.3185,"y":0.1375,"lx":0.1931,"ly":0.0724,"g":["City","Sacred City","Historical Place"],"yr":["2016","2020"]},
-  {"n":"Jaffna","t":"p","x":0.3115,"y":0.1437,"lx":0.1871,"ly":0.2059,"yr":["2025"],"g":["City","Historical Place","Kingdom"]},
-  {"n":"Seukaradittha","t":"p","x":0.272,"y":0.14,"lx":0.1674,"ly":0.1697,"g":["Port"]},
-  {"n":"Elephant Pass","t":"p","x":0.4134,"y":0.1673,"lx":0.5145,"ly":0.1247,"g":["Prehistoric site","Historical Place"]},
-  {"n":"Vallipuram","t":"p","x":0.3721,"y":0.1132,"lx":0.5136,"ly":0.0753,"g":["Historical Place"]},
-  {"n":"Iranamadu","t":"p","x":0.4117,"y":0.2239,"lx":0.1812,"ly":0.2219,"g":["Prehistoric site"]},
-  {"n":"Iranamadu Tank","t":"p","x":0.431,"y":0.2201,"lx":0.6904,"ly":0.1946,"g":["Tank"]},
-  {"n":"Kanagarayan Aru","t":"r","pts":[[0.4486,0.199],[0.4486,0.2201],[0.4504,0.2406],[0.4609,0.2649],[0.4741,0.2879],[0.482,0.3059],[0.482,0.3233]],"g":["River"]},
-  {"n":"Malwathu Oya","t":"r","pts":[[0.3282,0.3171],[0.3809,0.3475],[0.4214,0.4016]],"g":["River"]},
-  {"n":"Jambukolapatana","t":"p","x":0.2956,"y":0.11,"lx":0.1573,"ly":0.0919,"g":["Port","Sacred City"]},
-  {"n":"Kantarodai","t":"p","x":0.3,"y":0.1237,"lx":0.159,"ly":0.1185,"g":["Sacred City","Historical Place"]},
-  {"n":"Hammenhiel","t":"p","x":0.2604,"y":0.1305,"lx":0.1602,"ly":0.1377,"g":["Fort"]},
-  {"n":"Kayts Island","t":"p","x":0.2788,"y":0.1454,"lx":0.161,"ly":0.1883,"nd":1,"g":["Historical Place","Region"]},
-  {"n":"Nagadeepa","t":"a","c":"#2a2722","pt":"d1","pts":[[0.2918,0.1121],[0.2826,0.1154],[0.2734,0.1201],[0.2749,0.123],[0.28,0.1248],[0.2833,0.1331],[0.2877,0.137],[0.2929,0.137],[0.2951,0.1346],[0.2987,0.1346],[0.3035,0.1396],[0.3072,0.1435],[0.3171,0.1474],[0.3281,0.1515],[0.3325,0.1525],[0.3549,0.1575],[0.3589,0.1507],[0.3552,0.1502],[0.3563,0.1435],[0.3644,0.15],[0.3717,0.1502],[0.3794,0.1538],[0.3897,0.157],[0.3974,0.1634],[0.4084,0.1694],[0.4114,0.1723],[0.4224,0.172],[0.4326,0.1728],[0.433,0.1673],[0.4374,0.1707],[0.4451,0.1699],[0.4455,0.1754],[0.4612,0.1803],[0.4693,0.1852],[0.4715,0.1878],[0.4778,0.1868],[0.4715,0.1772],[0.4587,0.1751],[0.4491,0.166],[0.4334,0.1577],[0.4231,0.151],[0.415,0.1445],[0.4077,0.1372],[0.3934,0.1313],[0.3893,0.1269],[0.3827,0.1152],[0.3794,0.1095],[0.3754,0.1071],[0.3673,0.1074],[0.3607,0.1074],[0.3527,0.1095],[0.3446,0.1105],[0.3339,0.1087],[0.3237,0.11],[0.3134,0.109],[0.3035,0.1097],[0.291,0.1116]],"g":["Region","Ancient Administrative Unit"]},
-  {"n":"Madu","t":"p","x":0.3659,"y":0.3173,"lx":0.3662,"ly":0.2945,"g":["Sacred City"]},
-  {"n":"Tantirimale","t":"p","x":0.3769,"y":0.3715,"lx":0.1641,"ly":0.35,"g":["Sacred City","Historical Place"]},
-  {"n":"Thiruketheeswaram","t":"p","x":0.2888,"y":0.2932,"lx":0.1448,"ly":0.2483,"g":["Sacred City"]},
-  {"n":"Mannar","t":"p","x":0.2675,"y":0.281,"lx":0.1794,"ly":0.2792,"g":["Region","City"]},
-  {"n":"Mantai","t":"p","x":0.2807,"y":0.2927,"lx":0.1867,"ly":0.3062,"g":["Port","City","Historical Place"]},
-  {"n":"Maha Oya","t":"p","x":0.5295,"y":0.294,"lx":0.6629,"ly":0.2643,"nd":1,"g":["River"]},
-  {"n":"Yan Oya","t":"p","x":0.5702,"y":0.3189,"lx":0.8199,"ly":0.317,"nd":1,"g":["River"]},
-  {"n":"Mahaweli Ganga","t":"p","x":0.6219,"y":0.4678,"lx":0.841,"ly":0.4368,"nd":1,"g":["River"]},
-  {"n":"Maduru Oya","t":"p","x":0.6564,"y":0.5425,"lx":0.8998,"ly":0.5415,"nd":1,"g":["River"]},
-  {"n":"Gal Oya","t":"p","x":0.7944,"y":0.6372,"lx":0.8905,"ly":0.6224,"nd":1,"g":["River"]},
-  {"n":"Kumbukkan Oya","t":"p","x":0.7467,"y":0.7742,"lx":0.9203,"ly":0.7519,"nd":1,"g":["River"]},
-  {"n":"Menik Ganga","t":"p","x":0.7225,"y":0.8152,"lx":0.9081,"ly":0.8005,"nd":1,"g":["River"]},
-  {"n":"Kirindi Oya","t":"p","x":0.6579,"y":0.8422,"lx":0.822,"ly":0.8435,"nd":1,"g":["River"]},
-  {"n":"Malala Oya","t":"p","x":0.6267,"y":0.8513,"lx":0.8229,"ly":0.8786,"nd":1,"g":["River"]},
-  {"n":"Walawe Ganga","t":"p","x":0.5706,"y":0.8575,"lx":0.5975,"ly":0.9376,"nd":1,"g":["River"]},
-  {"n":"Nilwala Ganga","t":"p","x":0.4477,"y":0.9034,"lx":0.4477,"ly":0.939,"nd":1,"g":["River"]},
-  {"n":"Gin Ganga","t":"p","x":0.3394,"y":0.872,"lx":0.1591,"ly":0.872,"nd":1,"g":["River"]},
-  {"n":"Kalu Ganga","t":"p","x":0.2851,"y":0.767,"lx":0.1574,"ly":0.7636,"nd":1,"g":["River"]},
-  {"n":"Kelani Ganga","t":"p","x":0.2767,"y":0.7,"lx":0.1462,"ly":0.6799,"nd":1,"g":["River"]},
-  {"n":"Maha Oya","t":"p","x":0.2624,"y":0.6344,"lx":0.1744,"ly":0.6128,"nd":1,"g":["River"]},
-  {"n":"Deduru Oya","t":"p","x":0.2551,"y":0.5604,"lx":0.1587,"ly":0.5394,"nd":1,"g":["River"]},
-  {"n":"Kala Oya","t":"p","x":0.2785,"y":0.4258,"lx":0.1466,"ly":0.4593,"nd":1,"g":["River"]},
-  {"n":"Modaragam Aru","t":"p","x":0.3182,"y":0.3804,"lx":0.1587,"ly":0.3734,"nd":1,"g":["River"]},
-  {"n":"Thonigala","t":"p","x":0.4605,"y":0.3277,"lx":0.5108,"ly":0.3682,"g":["Historical Place"]},
-  {"n":"Yodha Wewa","t":"p","x":0.3149,"y":0.308,"lx":0.1724,"ly":0.3263,"g":["Tank"]},
-  {"n":"Anuradhapura","t":"p","x":0.4094,"y":0.41,"lx":0.5241,"ly":0.3832,"g":["Historical Place","Kingdom","Sacred City"]},
-  {"n":"Mahavilachchiya Wewa","t":"p","x":0.3557,"y":0.3877,"lx":0.141,"ly":0.3933,"g":["Tank"]},
-  {"n":"Pomparippu","t":"p","x":0.259,"y":0.4166,"lx":0.1651,"ly":0.4105,"g":["Protohistoric site"]},
-  {"n":"Tissa Wewa","t":"p","x":0.4023,"y":0.4186,"lx":0.3664,"ly":0.4465,"g":["Tank"]},
-  {"n":"Kalpitiya","t":"p","x":0.2217,"y":0.4414,"lx":0.148,"ly":0.4403,"g":["Port"]},
-  {"n":"Nachchaduwa Wewa","t":"p","x":0.4402,"y":0.4343,"lx":0.1242,"ly":0.4982,"g":["Tank"]},
-  {"n":"Puttalam","t":"p","x":0.2382,"y":0.4708,"lx":0.1472,"ly":0.4759,"g":["Port"]},
-  {"n":"Yoda Ela","t":"d","pts":[[0.4498,0.4785],[0.4183,0.4465],[0.4034,0.4206]],"g":["Canal"]},
-  {"n":"Yoda Ela","t":"p","x":0.4298,"y":0.453,"lx":0.1415,"ly":0.5186,"nd":1,"g":["Canal"]},
-  {"n":"Kala Wewa","t":"p","x":0.4556,"y":0.4842,"lx":0.1546,"ly":0.5604,"g":["Tank"]},
-  {"n":"Yapahuwa","t":"p","x":0.3851,"y":0.5361,"lx":0.1145,"ly":0.5823,"g":["Kingdom","Sub-administrative Center"]},
-  {"n":"Panduwasnuwara","t":"p","x":0.2991,"y":0.577,"lx":0.315,"ly":0.5366,"g":["Sub-administrative Center","City","Historical Place"]},
-  {"n":"Salawathota","t":"p","x":0.2372,"y":0.5702,"lx":0.0813,"ly":0.5714,"g":["Port"]},
-  {"n":"Munneswaram Temple","t":"p","x":0.2446,"y":0.5726,"lx":0.0922,"ly":0.5997,"g":["Sacred City"]},
-  {"n":"Lunuwila","t":"p","x":0.2406,"y":0.5941,"lx":0.1128,"ly":0.631,"g":["Research Institute"]},
-  {"n":"Victoria Reservoir","t":"p","x":0.5158,"y":0.6318,"lx":0.7825,"ly":0.6101,"g":["Reservoir"]},
-  {"n":"Negombo","t":"p","x":0.2464,"y":0.6484,"lx":0.1672,"ly":0.6512,"g":["Port","Historical Place"]},
-  {"n":"Muthurajawela","t":"p","x":0.2538,"y":0.6711,"lx":0.1369,"ly":0.6674,"g":["Historical Place","Agricultural land","Marshland"]},
-  {"n":"Peradeniya","t":"p","x":0.4676,"y":0.6561,"lx":0.3409,"ly":0.6758,"g":["Historical Place","Botanical garden"]},
-  {"n":"Colombo","t":"p","x":0.2458,"y":0.6991,"lx":0.1741,"ly":0.6954,"g":["Port","Historical Place","City","Fort"]},
-  {"n":"Kelaniya","t":"p","x":0.2613,"y":0.6962,"lx":0.1409,"ly":0.7157,"g":["City","Sacred City","Historical Place"]},
-  {"n":"Kotte","t":"p","x":0.2561,"y":0.706,"lx":0.0612,"ly":0.706,"g":["City","Historical Place","Fort","Kingdom"]},
-  {"n":"Mulleriyawa","t":"p","x":0.2602,"y":0.7043,"lx":0.129,"ly":0.7332,"g":["City","Historical Place","Battlefield"]},
-  {"n":"Kotmale Reservoir","t":"p","x":0.4786,"y":0.6823,"lx":0.4389,"ly":0.7566,"g":["Reservoir"]},
-  {"n":"Kalatittha","t":"p","x":0.2766,"y":0.7751,"lx":0.1971,"ly":0.777,"g":["Port","Historical Place","Sacred City","Fort","City"]},
-  {"n":"Fa Hien Cave","t":"p","x":0.3482,"y":0.7645,"lx":0.1722,"ly":0.794,"g":["Prehistoric site"]},
-  {"n":"Beruwala","t":"p","x":0.286,"y":0.8,"lx":0.1842,"ly":0.81,"g":["Port"]},
-  {"n":"Bentota","t":"p","x":0.2901,"y":0.8058,"lx":0.2,"ly":0.8235,"g":["Port"]},
-  {"n":"Samanalawewa Reservoir","t":"p","x":0.5173,"y":0.7662,"lx":0.5235,"ly":0.9285,"g":["Reservoir"]},
-  {"n":"Chandrika Wewa","t":"p","x":0.5411,"y":0.8359,"lx":0.2655,"ly":0.9075,"g":["Reservoir"]},
-  {"n":"Thotalu Thota","t":"p","x":0.6781,"y":0.8552,"lx":0.6831,"ly":0.8947,"g":["Port"]},
-  {"n":"Thotagamuwa","t":"p","x":0.3186,"y":0.8668,"lx":0.2593,"ly":0.8554,"g":["Port"]},
-  {"n":"Galle","t":"p","x":0.3606,"y":0.8893,"lx":0.3527,"ly":0.9378,"g":["Port","Fort","City","Historical Place"]},
-  {"n":"Matara","t":"p","x":0.4424,"y":0.9057,"lx":0.4378,"ly":0.9615,"g":["Port","Fort","City","Historical Place"]},
-  {"n":"Padaviya Wewa","t":"p","x":0.5235,"y":0.3229,"lx":0.7289,"ly":0.3355,"g":["Tank"]},
-  {"n":"Thiriyaya","t":"p","x":0.6045,"y":0.3129,"lx":0.6758,"ly":0.3073,"g":["Historical Place","Sacred City"]},
-  {"n":"Aligala","t":"p","x":0.5209,"y":0.4828,"lx":0.7876,"ly":0.4841,"g":["Prehistoric site"]},
-  {"n":"Pidurangala","t":"p","x":0.5227,"y":0.4859,"lx":0.9073,"ly":0.5003,"g":["Prehistoric site"]},
-  {"n":"Mapagala","t":"p","x":0.5104,"y":0.4849,"lx":0.5298,"ly":0.4457,"g":["Prehistoric site"]},
-  {"n":"Pothana","t":"p","x":0.5137,"y":0.4891,"lx":0.5163,"ly":0.5197,"g":["Prehistoric site"]},
-  {"n":"Sigiriya","t":"p","x":0.5192,"y":0.4896,"lx":0.5926,"ly":0.4917,"g":["Kingdom","Sub-administrative Center","Fort","City","Historical Place","Residual hill","Rock"]},
-  {"n":"Mahakanadarawa Wewa","t":"p","x":0.4554,"y":0.4058,"lx":0.7965,"ly":0.4016,"g":["Tank"]},
-  {"n":"Gokanna","t":"p","x":0.6494,"y":0.3744,"lx":0.7485,"ly":0.3563,"g":["Port"]},
-  {"n":"Trincomalee","t":"p","x":0.6498,"y":0.3749,"lx":0.7371,"ly":0.3739,"g":["Port"]},
-  {"n":"Lankapatana","t":"p","x":0.6971,"y":0.4156,"lx":0.8288,"ly":0.4177,"g":["Port"]},
-  {"n":"Kottiyarama","t":"p","x":0.6806,"y":0.385,"lx":0.8142,"ly":0.3878,"g":["Port"]},
-  {"n":"Batticaloa","t":"p","x":0.7896,"y":0.5513,"lx":0.8802,"ly":0.5713,"g":["Port"]},
-  {"n":"Fort Frederick","t":"p","x":0.659,"y":0.3697,"lx":0.8886,"ly":0.3705,"g":["Fort"]},
-  {"n":"Gokanna Viharaya","t":"p","x":0.659,"y":0.3695,"lx":0.8604,"ly":0.3557,"g":["Sacred City"]},
-  {"n":"Thirukoneswaram","t":"p","x":0.6594,"y":0.3695,"lx":0.8013,"ly":0.3801,"g":["Sacred City"]},
-  {"n":"Kantale Wewa","t":"p","x":0.5856,"y":0.4125,"lx":0.7456,"ly":0.4102,"g":["Tank"]},
-  {"n":"Parakrama Samudraya","t":"p","x":0.5812,"y":0.5062,"lx":0.7878,"ly":0.5059,"g":["Tank"]},
-  {"n":"Minneriya Wewa","t":"p","x":0.5555,"y":0.4784,"lx":0.8648,"ly":0.4826,"g":["Tank"]},
-  {"n":"Kaudulla Wewa","t":"p","x":0.5658,"y":0.4582,"lx":0.7558,"ly":0.4548,"g":["Tank"]},
-  {"n":"Hurulu Wewa","t":"p","x":0.5093,"y":0.4465,"lx":0.8424,"ly":0.454,"g":["Tank"]},
-  {"n":"Sorabora Wewa","t":"p","x":0.5929,"y":0.6198,"lx":0.7792,"ly":0.6382,"g":["Tank"]},
-  {"n":"Maduru Oya Reservoir","t":"p","x":0.6432,"y":0.5713,"lx":0.7445,"ly":0.5729,"g":["Reservoir"]},
-  {"n":"Gal Oya Reservoir","t":"p","x":0.7346,"y":0.6556,"lx":0.8699,"ly":0.653,"g":["Reservoir"]},
-  {"n":"Senanayake Samudraya","t":"p","x":0.7342,"y":0.6562,"lx":0.9235,"ly":0.6629,"g":["Reservoir"]},
-  {"n":"Randenigala Reservoir","t":"p","x":0.5453,"y":0.6533,"lx":0.6476,"ly":0.6934,"g":["Reservoir"]},
-  {"n":"Rantambe Reservoir","t":"p","x":0.5625,"y":0.6546,"lx":0.6971,"ly":0.6229,"g":["Reservoir"]},
-  {"n":"Lunugamvehera Reservoir","t":"p","x":0.6414,"y":0.8186,"lx":0.849,"ly":0.8549,"g":["Reservoir"]},
-  {"n":"Udawalawe Reservoir","t":"p","x":0.5343,"y":0.802,"lx":0.4994,"ly":0.8658,"g":["Reservoir"]},
-  {"n":"Ulhitiya Reservoir","t":"p","x":0.6062,"y":0.5996,"lx":0.7085,"ly":0.6004,"g":["Reservoir"]},
-  {"n":"Dastota","t":"p","x":0.6073,"y":0.5161,"lx":0.6887,"ly":0.5314,"g":["Inland Pier"]},
-  {"n":"Kasathota","t":"p","x":0.6098,"y":0.5093,"lx":0.6861,"ly":0.5142,"g":["Inland Pier"]},
-  {"n":"Angammedilla","t":"d","pts":[[0.5629,0.5145],[0.5662,0.5225]],"g":["Weir"]},
-  {"n":"Elahera Amuna","t":"d","pts":[[0.5324,0.5363],[0.532,0.542]],"g":["Weir"]},
-  {"n":"Elahera Amuna","t":"p","x":0.532,"y":0.542,"lx":0.6604,"ly":0.5617,"nd":1,"g":["Weir"]},
-  {"n":"Angammedilla Amuna","t":"p","x":0.5658,"y":0.5205,"lx":0.7423,"ly":0.5495,"nd":1,"g":["Weir"]},
-  {"n":"Minipe Amuna","t":"d","pts":[[0.5808,0.6479],[0.5827,0.6554]],"g":["Weir"]},
-  {"n":"Minipe Amuna","t":"p","x":0.5823,"y":0.6562,"lx":0.6175,"ly":0.6858,"nd":1,"g":["Weir"]},
-  {"n":"Minipe Ela","t":"d","pts":[[0.5786,0.6447],[0.5735,0.6274],[0.5691,0.6071],[0.5665,0.5851],[0.5687,0.5749]],"g":["Canal"]},
-  {"n":"Minipe Ela","t":"p","x":0.5724,"y":0.6108,"lx":0.6553,"ly":0.6115,"nd":1,"g":["Canal"]},
-  {"n":"Elahera Canal","t":"d","pts":[[0.5309,0.5316],[0.5383,0.5109],[0.5489,0.4844],[0.5599,0.4592],[0.5691,0.4377],[0.5805,0.4201]],"g":["Canal"]},
-  {"n":"Elahera Canal","t":"p","x":0.5581,"y":0.4693,"lx":0.6619,"ly":0.4696,"nd":1,"g":["Canal"]},
-  {"n":"Dighagama","t":"p","x":0.8123,"y":0.6419,"lx":0.9022,"ly":0.644,"g":["Historical Place","Sub-administrative Center"]},
-  {"n":"Govinda Malai","t":"p","x":0.772,"y":0.6756,"lx":0.8758,"ly":0.694,"g":["Historical Place","Sub-administrative Center","Residual hill","Rock"]},
-  {"n":"Randeniwela","t":"p","x":0.6436,"y":0.701,"lx":0.7709,"ly":0.7034,"g":["Historical Place","Battlefield"]},
-  {"n":"Talawakelle","t":"p","x":0.4851,"y":0.7151,"lx":0.4833,"ly":0.7426,"g":["Research Institute"]},
-  {"n":"Horton Plains","t":"p","x":0.521,"y":0.7402,"lx":0.4852,"ly":0.7703,"g":["Prehistoric site","Plain"]},
-  {"n":"Minihagalkanda","t":"p","x":0.7052,"y":0.8362,"lx":0.707,"ly":0.8689,"g":["Prehistoric site"]},
-  {"n":"Bundala","t":"p","x":0.6638,"y":0.8557,"lx":0.6641,"ly":0.9117,"g":["Prehistoric site"]},
-  {"n":"Pathirajawela","t":"p","x":0.6638,"y":0.8549,"lx":0.7195,"ly":0.9058,"g":["Prehistoric site"]},
-  {"n":"Kataragama","t":"p","x":0.6773,"y":0.8043,"lx":0.7929,"ly":0.8079,"g":["Sacred City","Historical Place"]},
-  {"n":"Sithulpawwa","t":"p","x":0.6803,"y":0.8168,"lx":0.78,"ly":0.8207,"g":["Sacred City","Historical Place"]},
-  {"n":"Dondra","t":"p","x":0.4598,"y":0.9094,"lx":0.4605,"ly":0.9857,"g":["Sacred City","Historical Place","City","Port"]},
-  {"n":"Sri Pada","t":"p","x":0.455,"y":0.734,"lx":0.4565,"ly":0.7719,"g":["Sacred City","Historical Place"]},
-  {"n":"Nuwara Wewa","t":"p","x":0.4257,"y":0.4146,"lx":0.5012,"ly":0.4164,"g":["Tank"]},
-  {"n":"Mihintale","t":"p","x":0.4268,"y":0.4252,"lx":0.506,"ly":0.4273,"g":["Sacred City","Residual hill","Rock"]},
-  {"n":"Ritigala","t":"p","x":0.4807,"y":0.4504,"lx":0.5354,"ly":0.4509,"g":["Sacred City","Residual hill","Rock"]},
-  {"n":"Dambulla","t":"p","x":0.4877,"y":0.515,"lx":0.3557,"ly":0.5001,"g":["Sacred City","Residual hill","Rock"]},
-  {"n":"Ibbankatuwa","t":"p","x":0.48,"y":0.5363,"lx":0.3416,"ly":0.5197,"g":["Protohistoric site"]},
-  {"n":"Belilena","t":"p","x":0.4282,"y":0.6899,"lx":0.4977,"ly":0.6559,"g":["Prehistoric site"]},
-  {"n":"Batadombalena","t":"p","x":0.4271,"y":0.7394,"lx":0.4024,"ly":0.7737,"g":["Prehistoric site"]},
-  {"n":"Gannoruwa","t":"p","x":0.4697,"y":0.6232,"lx":0.3978,"ly":0.6314,"g":["Battlefield"]},
-  {"n":"Danthure","t":"p","x":0.4652,"y":0.6273,"lx":0.3977,"ly":0.6553,"g":["Battlefield"]},
-  {"n":"Balana","t":"p","x":0.4549,"y":0.6318,"lx":0.3683,"ly":0.5773,"g":["Battlefield"]},
-  {"n":"Kurunegala","t":"p","x":0.4158,"y":0.596,"lx":0.3439,"ly":0.5919,"g":["Kingdom"]},
-  {"n":"Dambadeniya","t":"p","x":0.3432,"y":0.6028,"lx":0.27,"ly":0.5932,"g":["Kingdom"]},
-  {"n":"Sitawaka","t":"p","x":0.3535,"y":0.7049,"lx":0.3477,"ly":0.7317,"g":["Kingdom","Sub-administrative Center"]},
-  {"n":"Raigama","t":"p","x":0.2963,"y":0.7535,"lx":0.1891,"ly":0.7503,"g":["Kingdom","Sub-administrative Center"]},
-  {"n":"Malwana","t":"p","x":0.2983,"y":0.6995,"lx":0.2996,"ly":0.6514,"g":["Sub-administrative Center","City","Historical Place"]},
-  {"n":"Ekala","t":"p","x":0.2719,"y":0.67,"lx":0.2854,"ly":0.6368,"g":["City","Economic Center"]},
-  {"n":"Agalawatta","t":"p","x":0.3483,"y":0.8021,"lx":0.1776,"ly":0.8389,"g":["City","Economic Center"]},
-  {"n":"Ranchamadama","t":"p","x":0.5101,"y":0.8198,"lx":0.4658,"ly":0.7998,"g":["Protohistoric site"]},
-  {"n":"Uda Ranchamadama","t":"p","x":0.5101,"y":0.8212,"lx":0.4286,"ly":0.8203,"g":["Protohistoric site"]},
-  {"n":"Godawaya","t":"p","x":0.5949,"y":0.8734,"lx":0.5962,"ly":0.9079,"g":["Port"]},
-  {"n":"Buttala","t":"p","x":0.6475,"y":0.7313,"lx":0.8626,"ly":0.7217,"g":["City","Historical Place"]},
-  {"n":"Badulla","t":"p","x":0.6013,"y":0.7018,"lx":0.6007,"ly":0.7299,"g":["City","Historical Place"]},
-  {"n":"Gampola","t":"p","x":0.4536,"y":0.6663,"lx":0.3297,"ly":0.66,"g":["City","Historical Place","Kingdom"]},
-  {"n":"Kandy","t":"p","x":0.4793,"y":0.6337,"lx":0.4973,"ly":0.6718,"g":["City","Historical Place","Kingdom"]},
-  {"n":"Beligala","t":"p","x":0.3541,"y":0.6178,"lx":0.3663,"ly":0.5996,"g":["Historical Place","Sacred City"]},
-  {"n":"Dedigama","t":"p","x":0.3458,"y":0.6241,"lx":0.3458,"ly":0.645,"g":["Sub-administrative Center","Historical Place"]},
-  {"n":"Matale","t":"p","x":0.4755,"y":0.5882,"lx":0.5403,"ly":0.6014,"g":["Historical Place","Fort","Battlefield","Sacred City"]},
-  {"n":"Polgolla Amuna","t":"d","pts":[[0.4819,0.6196],[0.48,0.6296]],"g":["Weir","Reservoir"]},
-  {"n":"Polgolla Amuna","t":"p","x":0.4806,"y":0.62,"lx":0.478,"ly":0.5683,"nd":1,"g":["Weir","Reservoir"]},
-  {"n":"Mahiyangana","t":"p","x":0.5923,"y":0.6296,"lx":0.6713,"ly":0.6527,"g":["Battlefield","Historical Place","Sacred City"]},
-  {"n":"Bellanwetiya Pelassa","t":"p","x":0.5288,"y":0.7915,"lx":0.3755,"ly":0.7796,"g":["Prehistoric site"]},
-  {"n":"Galsohon Kanatta","t":"p","x":0.3852,"y":0.54,"lx":0.3497,"ly":0.5131,"g":["Protohistoric site"]},
-  {"n":"Polonnaruwa","t":"p","x":0.5963,"y":0.5064,"lx":0.6818,"ly":0.4708,"g":["Kingdom"]}
-];
-// <<< MAP:ol_lanka
-
-// >>> MAP:ol_eurasia
-DATA['ol_eurasia']=[];
-// <<< MAP:ol_eurasia
-
-// >>> MAP:ol_world
-DATA['ol_world']=[];
-// <<< MAP:ol_world
-
-// >>> MAP:al_europe1
-DATA['al_europe1']=[];
-// <<< MAP:al_europe1
-
-// >>> MAP:al_europe2
-DATA['al_europe2']=[];
-// <<< MAP:al_europe2
-
-// >>> MAP:al_lanka
-DATA['al_lanka']=[];
-// <<< MAP:al_lanka
-
-// >>> MAP:al_india
-DATA['al_india']=[];
-// <<< MAP:al_india
-/* ██  END OF DATA (Backup)  ██ */
-
-/* ---------- Load data from the Supabase DB ---------- */
-const DB_LANG='en';/* si = index.html · ta = index_t.html · en = index_e.html */
+/* ---------- Supabase දත්ත (සියලු භාෂා එකවර) ---------- */
 const SUPABASE_URL='https://jcijglwpkfluyzrltimk.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaWpnbHdwa2ZsdXl6cmx0aW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MzU3OTUsImV4cCI6MjA4MjQxMTc5NX0.dvT8OiyVEiYn_DhkMakmSq1Vvr4REDr0kYPnyqCtWHs';
-async function loadFromDB(){
- const ck='gs_mapdata_'+DB_LANG;let rows=null,src='db';
+const DATA={si:{},ta:{},en:{}};
+async function loadAll(){
+ const ck='gs_viewer_all';let rows=null;
  try{
   if(!window.supabase)throw new Error('no lib');
   const sbx=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  const{data,error}=await sbx.from('map_data').select('map_key,data').eq('lang',DB_LANG);
+  const{data,error}=await sbx.from('map_data').select('map_key,lang,data');
   if(error)throw error;
   rows=data;try{localStorage.setItem(ck,JSON.stringify(rows));}catch(e){}
- }catch(e){
-  try{rows=JSON.parse(localStorage.getItem(ck)||'null');}catch(_){rows=null;}
-  src=rows?'cache':'file';
- }
- if(rows&&rows.length)rows.forEach(r=>{DATA[r.map_key]=r.data;});
- return src;
+ }catch(e){try{rows=JSON.parse(localStorage.getItem(ck)||'null');}catch(_){rows=null;}}
+ (rows||[]).forEach(r=>{if(DATA[r.lang])DATA[r.lang][r.map_key]=r.data;});
 }
 
-const $=id=>document.getElementById(id),cv=$('cv'),menu=$('menu'),pl=$('pl');
-let ORIG=JSON.stringify(DATA);/* Original positions before moving (for Reset) */
-const IC={p:'●',a:'▭',r:'≈',d:'‖'};
-let cur,img=null,L,hi=null,marked=new Set(),sel=new Set(),drag=null,cf=new Set(),yf=new Set(),tmpCats=[],tmpYears=[];
-const NONE='__none__',esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-/* Category filter: if nothing is selected, show all. If several are selected, an item matching any one of them is shown */
-const tagLine=it=>[(it.g||[]).join(' · '),(it.yr||[]).length?'📅 '+it.yr.join(', '):''].filter(Boolean).join('   ');
-/* Several categories selected: match any; several years selected: match any; if both categories and years are selected, an item must match both */
-const itemOk=it=>{const t=(S,f)=>{if(!S.size)return true;const g=it[f]||[];return g.length?g.some(c=>S.has(c)):S.has(NONE);};return t(cf,'g')&&t(yf,'yr');};
+/* ---------- තත්ත්වය ---------- */
+const $=id=>document.getElementById(id),cv=$('cv');
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let lang='en',cur=null,img=null,L=null,G=new Map(),marked=new Set(),hl=null,mainName=null,activeCat=null,lbLetter=null,sugList=[],sugAct=-1;
+const items=()=>((DATA[lang]||{})[cur&&cur.k])||[];
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
-MAPS.forEach(m=>$('map').add(new Option(m.name,m.k)));
-const badge=n=>$('bc').textContent=n;
-const closePl=()=>{pl.style.display='none';badge(marked.size);};/* Updates the count when the directory closes */
-
-async function load(k){
- cur=MAPS.find(m=>m.k==k);$('st').textContent='Loading...';menu.style.display='none';pl.style.display='none';
- img=null;/* Prevents drawing the old image if loading fails */
- try{await fontReady();img=await loadImg(cur.url);}catch(e){img=null;$('st').textContent='Image failed to load';return;}
- L=layout(img);marked=new Set();cf=new Set();yf=new Set();hi=null;drag=null;badge(0);Z.reset();draw();
- $('st').textContent=`${L.land?'Landscape':'Portrait'} · ${L.cols}×${L.rows} cells`;
+cv.style.touchAction='none';cv.style.cursor='grab';
+/* ---------- Move මෙවලම (✋): නම පමණක් ඇදගෙන යාම. ඊතල හිස ස්ථානයේම තබා, අග කොටස 90° නැවුමකින් නම සමග ගමන් කරයි ---------- */
+let moveMode=false,drag=null,lastS=new Map();
+const manual=new Map();/* i -> {lx,ly} හෝ {ox,oy}. තාවකාලිකයි; සුරැකි දත්ත වෙනස් නොවේ */
+const effItems=()=>items().map((it,i)=>manual.has(i)?Object.assign({},it,manual.get(i)):it);
+function hitLabel(nx,ny){
+ const g=cv.getContext('2d'),fs=+$('fsz').value,X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny);
+ g.font=`${fs}px ${FONT}`;
+ const arr=effItems();
+ for(const i of [...marked].reverse()){
+  const base=arr[i];if(!base||!base.n)continue;
+  const it=lastS.get(i)||base,w=g.measureText(it.n).width;
+  if(it.t=='r'){
+   const P=it.pts.map(p=>[X(p[0]+(it.ox||0)),Y(p[1]+(it.oy||0))]);
+   if(P.length>1&&nearest(P,mx,my-fs*.6)[2]<=Math.max(16,fs*.8))return{i,kind:'r',ox0:it.ox||0,oy0:it.oy||0};
+   continue;
+  }
+  let cx,cy;
+  if(it.t=='p'){const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*.14;
+   if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}else{cx=x+r+6+w/2;cy=y-fs*.45;}}
+  else if(it.t=='a'){const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);cx=X(c[0]);cy=Y(c[1]);}
+  else if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}
+  else continue;
+  if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{i,kind:'l',dx:cx-mx,dy:cy-my};
+ }
+ return null;
 }
-let ad=null,doneMsg='';/* ad = the new name currently being added */
-function draw(ex){/* ex=true → Export: no grid, letters/numbers or highlight */
- if(!img||!L)return;
- const g=render(cv,img,L,DATA[cur.k]||[],{fs:+$('fsz').value,sp:+$('sp').value,gp:+$('gp').value,dr:+$('dr').value,grid:!ex&&$('grd').checked,title:$('ttl').value.trim(),footer:footerText(),show:i=>marked.has(i)});
- if(hi&&!ex){g.fillStyle='rgba(255,193,7,.28)';g.fillRect(L.ix+hi[0]*L.cw,L.iy+hi[1]*L.ch,L.cw,L.ch);}
- if(ad&&!ex){const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
-  g.save();g.strokeStyle=g.fillStyle='#ff6f00';g.lineWidth=3;
-  if(ad.pend){g.beginPath();g.arc(X(ad.pend[0]),Y(ad.pend[1]),5,0,7);g.fill();}
-  if(ad.pts.length){g.beginPath();ad.pts.forEach((q,i)=>i?g.lineTo(X(q[0]),Y(q[1])):g.moveTo(X(q[0]),Y(q[1])));g.stroke();
-   ad.pts.forEach(q=>{g.beginPath();g.arc(X(q[0]),Y(q[1]),4,0,7);g.fill();});}
-  g.restore();}
+cv.addEventListener('pointerdown',e=>{if(e.button)return;
+ if(moveMode&&L){const[nx,ny]=pointer(cv,L,e),h=hitLabel(nx,ny);
+  if(h){drag=Object.assign(h,{id:e.pointerId,nx0:nx,ny0:ny});try{cv.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();return;}}
+ Z.startPan(e);});
+addEventListener('pointermove',e=>{
+ const rd=n=>Math.round(n*1e4)/1e4,cl=(v,a,b)=>Math.min(b,Math.max(a,v));
+ if(drag&&e.pointerId==drag.id){
+  const[nx,ny]=pointer(cv,L,e);
+  if(drag.kind=='r')manual.set(drag.i,{ox:rd(cl(drag.ox0+nx-drag.nx0,-1,1)),oy:rd(cl(drag.oy0+ny-drag.ny0,-1,1))});
+  else manual.set(drag.i,{lx:rd(cl((L.ix+nx*L.iw+drag.dx-L.ix)/L.iw,0,1)),ly:rd(cl((L.iy+ny*L.ih+drag.dy-L.iy)/L.ih,0,1))});
+  draw();return;}
+ if(moveMode&&L&&e.target==cv&&!cv.classList.contains('zpan')){const[nx,ny]=pointer(cv,L,e);cv.style.cursor=hitLabel(nx,ny)?'move':'grab';}
+});
+const endDrag=e=>{if(drag&&e.pointerId==drag.id)drag=null;};
+addEventListener('pointerup',endDrag);addEventListener('pointercancel',endDrag);
+$('mvb').onclick=e=>{e.stopPropagation();closeAll();stopRipple();moveMode=!moveMode;$('mvb').classList.toggle('on',moveMode);cv.style.cursor='grab';
+ $('st').textContent=moveMode?T[lang].mvon:(G.size?T[lang].hint:T[lang].nodata);};
+$('mrs').onclick=()=>{manual.clear();draw();};
+
+/* ---------- තට්ටු කළ ස්ථානය වටා රතු වළලු (භූමිකම්පා කේන්ද්‍රයක් පෙන්වන ආකාරයට) ----------
+   • වෙනම පාරදෘශ්‍ය canvas එකක ඇඳේ; mouse / touch වලට බාධා නොකරයි, සිතියම ගෙනයන / විශාල කරන විටත් ස්ථානයත් සමග ගමන් කරයි.
+   • ක්‍රියාත්මක වන්නේ තනි click / තනි ඇඟිල්ලේ තට්ටුවකට පමණි (ඇදීම, ඇඟිලි දෙකකින් විශාල කිරීම ඇතුළත් නොවේ). */
+const RP=$('rip'),RC=RP.getContext('2d'),RS={on:false,x:0,y:0,t0:0,raf:0,dpr:1};
+function ripSize(){const b=$('vp').getBoundingClientRect(),d=window.devicePixelRatio||1;RS.dpr=d;RP.width=Math.max(1,Math.round(b.width*d));RP.height=Math.max(1,Math.round(b.height*d));}
+new ResizeObserver(ripSize).observe($('vp'));ripSize();
+function ripFrame(now){
+ RS.raf=0;if(!RS.on||!L)return;
+ const vr=$('vp').getBoundingClientRect(),r=cv.getBoundingClientRect(),d=RS.dpr;
+ RC.setTransform(1,0,0,1,0,0);RC.clearRect(0,0,RP.width,RP.height);RC.setTransform(d,0,0,d,0,0);
+ const sx=r.left-vr.left+RS.x/L.W*r.width,sy=r.top-vr.top+RS.y/L.H*r.height;/* සිතියමේ ස්ථානය → තිරයේ ස්ථානය */
+ const R=Math.max(70,Math.min(150,Math.min(vr.width,vr.height)*.22)),N=5,P=2800,ph=(now-RS.t0)/P;
+ for(let k=0;k<N;k++){
+  const t=(ph+k/N)%1,rad=R*(.06+.94*Math.pow(t,.85)),a=Math.pow(1-t,1.5);
+  RC.beginPath();RC.arc(sx,sy,rad,0,Math.PI*2);
+  RC.fillStyle='rgba(214,33,43,'+(a*.10).toFixed(3)+')';RC.fill();
+  RC.lineWidth=1.5+3*(1-t);RC.strokeStyle='rgba(214,33,43,'+(a*.95).toFixed(3)+')';RC.stroke();
+ }
+ const pr=5+1.5*Math.sin(now/180);/* මැද ස්පන්දන තිත */
+ RC.beginPath();RC.arc(sx,sy,pr,0,Math.PI*2);RC.fillStyle='#d6212b';RC.fill();RC.lineWidth=2;RC.strokeStyle='#fff';RC.stroke();
+ RS.raf=requestAnimationFrame(ripFrame);
+}
+function startRipple(x,y){RS.x=x;RS.y=y;RS.t0=performance.now();RS.on=true;if(!RS.raf)RS.raf=requestAnimationFrame(ripFrame);}
+function stopRipple(){RS.on=false;if(RS.raf){cancelAnimationFrame(RS.raf);RS.raf=0;}RC.setTransform(1,0,0,1,0,0);RC.clearRect(0,0,RP.width,RP.height);}
+$('ripOn').onchange=()=>{if(!$('ripOn').checked)stopRipple();};
+/* තනි තට්ටුවක් හඳුනාගැනීම: ඇඟිලි / pointer එකක් පමණි, ඇදීමක් නැත (px 10ට අඩු), කෙටි කාලයක් */
+const taps=new Set();let tg=null;
+cv.addEventListener('pointerdown',e=>{
+ if(e.pointerType=='mouse'&&e.button!==0)return;
+ taps.add(e.pointerId);
+ if(taps.size==1)tg={x:e.clientX,y:e.clientY,t:performance.now(),multi:false,moved:false};
+ else if(tg)tg.multi=true;
+});
+addEventListener('pointermove',e=>{if(tg&&taps.has(e.pointerId)&&Math.hypot(e.clientX-tg.x,e.clientY-tg.y)>10)tg.moved=true;});
+function tapEnd(e,ok){
+ if(!taps.has(e.pointerId))return;taps.delete(e.pointerId);
+ if(taps.size==0&&tg){const g=tg;tg=null;
+  if(ok&&!g.multi&&!g.moved&&performance.now()-g.t<900)onTap(e);}
+}
+addEventListener('pointerup',e=>tapEnd(e,true));
+addEventListener('pointercancel',e=>tapEnd(e,false));
+function onTap(e){
+ if(!L||moveMode||!$('ripOn').checked)return;
+ const r=cv.getBoundingClientRect();
+ let x=(e.clientX-r.left)/r.width*L.W,y=(e.clientY-r.top)/r.height*L.H;
+ if(x<0||y<0||x>L.W||y>L.H)return;
+ if(G.size){/* ස්ථානයක් මත නම්, එම ස්ථානයේ හරියටම මැදට */
+  const[nx,ny]=pointer(cv,L,e),g=groupAt(nx,ny,40*L.W/r.width);
+  if(g){x=L.ix+g.a[0]*L.iw;y=L.iy+g.a[1]*L.ih;}
+ }
+ if(RS.on){/* එම තැනම නැවත තට්ටු කළ විට නවතී */
+  const d=Math.hypot((x-RS.x)/L.W*r.width,(y-RS.y)/L.H*r.height);
+  if(d<24){stopRipple();return;}
+ }
+ startRipple(x,y);
 }
 
-/* ---------- Click a cell to choose places ---------- */
-cv.onclick=e=>{
- if(!img||$('mvt').checked)return;
- if(ad){addClick(e);return;}
- const[nx,ny]=pointer(cv,L,e);
- if(nx<0||ny<0||nx>=1||ny>=1){menu.style.display='none';hi=null;draw();return;}
- const c=Math.floor(nx*L.cols),r=Math.floor(ny*L.rows),id=colName(c)+(r+1);
- hi=[c,r];draw();if(pl.style.display=='flex')closePl();
- const list=(DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>itemCells(L,it).includes(id));
- menu.innerHTML=`<b>Cell ${id}</b>`+(list.length?'':'<em>No places in this cell</em>');
- list.forEach(([it,i])=>{const d=document.createElement('div');d.className=marked.has(i)?'on':'';
-  d.innerHTML=`${it.nd?'➚':IC[it.t]} ${esc(it.n)}<span>${marked.has(i)?'✓':''}</span>`;
-  d.onclick=ev=>{ev.stopPropagation();marked.has(i)?marked.delete(i):marked.add(i);badge(marked.size);menu.style.display='none';hi=null;draw();};
-  menu.appendChild(d);});
- menu.style.display='block';
- menu.style.left=Math.max(4,Math.min(e.clientX,innerWidth-menu.offsetWidth-4))+'px';
- menu.style.top=Math.max(4,Math.min(e.clientY,innerHeight-menu.offsetHeight-4))+'px';
-};
-document.addEventListener('keydown',e=>{
- if(e.key=='Escape'){menu.style.display='none';if(pl.style.display=='flex')closePl();
-  if($('cdlg').style.display=='flex')$('cdlg').style.display='none';
-  else if(ad)adCancel();
-  hi=null;draw();}
- if(e.key=='Enter'&&ad&&ad.t!='p'&&!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))adFinish();
+/* ---------- සිතියම මත click/touch: එම ස්ථානය + ආසන්න ස්ථාන 3 ---------- */
+const CLICK_N=3;/* ආසන්න ස්ථාන ගණන */
+function groupAt(nx,ny,maxPx){
+ const arr=items(),X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny);
+ let best=null,bd=1e9;
+ G.forEach(e=>{
+  let d=1e9;
+  e.idx.forEach(i=>{const it=arr[i];if(!it)return;
+   if(it.t=='p'){d=Math.min(d,Math.hypot(X(it.x)-mx,Y(it.y)-my));return;}
+   if(!it.pts||!it.pts.length)return;
+   const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0,
+    P=it.pts.map(p=>[X(p[0]+ox),Y(p[1]+oy)]);
+   if(it.t=='a'){
+    if(inPoly(P,mx,my)){d=Math.min(d,maxPx*.6);return;}/* ප්‍රදේශය ඇතුළත: තිත් වලට පළමුතැන දෙයි */
+    P.push(P[0]);
+   }
+   d=Math.min(d,P.length>1?nearest(P,mx,my)[2]:Math.hypot(P[0][0]-mx,P[0][1]-my));
+  });
+  if(d<bd){bd=d;best=e;}
+ });
+ return bd<=maxPx?best:null;
+}
+cv.addEventListener('click',e=>{
+ if(moveMode||!L||!G.size)return;
+ const r=cv.getBoundingClientRect(),
+  maxPx=40*L.W/r.width;/* තිරය මත ආසන්න පික්සල් 40ක් ඇතුළත */
+ const[nx,ny]=pointer(cv,L,e),g=groupAt(nx,ny,maxPx);
+ if(!g)return;
+ closeAll();activeCat=null;$('q').value=g.n;
+ marked=new Set(nearGroup(g.n,CLICK_N,false));
+ hl=g.a;mainName=g.n;
+ draw();/* zoom/pan වෙනස් නොකර, ඇති තැනම පෙන්වයි */
+ $('st').textContent=`🎯 ${g.n}  ${T[lang].near} ${CLICK_N}`;
 });
 
-/* ---------- Place Directory (dropdown + tick) ---------- */
-function visibleRows(){const q=$('ps').value.trim().toLowerCase();
- return (DATA[cur.k]||[]).map((it,i)=>[it,i]).filter(([it])=>(!q||it.n.toLowerCase().includes(q))&&itemOk(it));}
-function buildChips(){
- const host=$('cf'),items=DATA[cur.k]||[];host.innerHTML='';let n=0;
- [['g',cf,'🏷 Filter by category',catList,'No category'],['yr',yf,'📅 Filter by exam year',yearList,'No year']].forEach(([f,S,title,lister,noneLbl])=>{
-  const cnt={};let none=0;
-  items.forEach(it=>{const g=it[f]||[];if(!g.length)none++;g.forEach(c=>cnt[c]=(cnt[c]||0)+1);});
-  const names=lister(Object.keys(cnt)).filter(c=>cnt[c]);
-  if(!names.length){S.clear();return;}/* This map has no data of this kind */
-  [...S].forEach(c=>{if(c==NONE?!none:!cnt[c])S.delete(c);});
-  n++;const d=document.createElement('div');d.style.marginBottom='6px';
-  d.innerHTML=`<div class="cfh"><span><b>${title}</b></span><a>Clear</a></div><div class="cfc"></div>`;
-  d.querySelector('a').onclick=()=>{S.clear();buildList();};
-  const box=d.querySelector('.cfc'),mk=(key,label,k)=>{const c=document.createElement('span');c.className='fc'+(S.has(key)?' on':'');
-   c.innerHTML=`${esc(label)}<i>${k}</i>`;c.onclick=()=>{S.has(key)?S.delete(key):S.add(key);buildList();};box.appendChild(c);};
-  names.forEach(c=>mk(c,c,cnt[c]));if(none)mk(NONE,noneLbl,none);
-  host.appendChild(d);});
- if(n==2)host.insertAdjacentHTML('beforeend','<div style="color:#789">If both categories and years are selected, only items matching both are shown.</div>');
- host.style.display=n?'':'none';
-}
-function buildList(){
- const box=$('pi');box.innerHTML='';buildChips();
- const rows=visibleRows().sort((a,b)=>a[0].n.localeCompare(b[0].n,'en'));/* Alphabetical order */
- if(!rows.length){box.innerHTML='<em>No places</em>';return;}
- rows.forEach(([it,i])=>{
-  const lb=document.createElement('label'),cb=document.createElement('input');
-  cb.type='checkbox';cb.checked=sel.has(i);
-  cb.onchange=()=>{cb.checked?sel.add(i):sel.delete(i);count();};
-  const cells=itemCells(L,it).slice(0,3).join(' ');
-  lb.appendChild(cb);lb.insertAdjacentHTML('beforeend',`<span>${it.nd?'➚':IC[it.t]} ${esc(it.n)}${it.cu?' ✎':''}${tagLine(it)?`<span class="gl">${esc(tagLine(it))}</span>`:''}</span><small>${cells}</small>`);
-  box.appendChild(lb);});
-}
-function count(){$('pc').textContent=sel.size;badge(sel.size);}
-$('plb').onclick=e=>{
- e.stopPropagation();if(!img)return;
- if(pl.style.display=='flex'){closePl();return;}
- menu.style.display='none';hi=null;draw();
- sel=new Set(marked);$('ps').value='';buildList();count();
- pl.style.display='flex';
- const r=$('plb').getBoundingClientRect();
- pl.style.left=Math.max(4,Math.min(r.left,innerWidth-pl.offsetWidth-4))+'px';
- pl.style.top=(r.bottom+6)+'px';
- pl.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';
+new ResizeObserver(()=>Z.apply()).observe($('box'));
+const norm=s=>String(s||'').trim().toLowerCase();
+const coll=()=>{try{return new Intl.Collator(lang);}catch(e){return new Intl.Collator();}};
+
+/* ---------- ස්ථාන කණ්ඩායම් (එකම නමින් ඇති ඇතුළත් කිරීම් එකට) ---------- */
+const anchorOf=it=>{
+ if(it.t=='p')return[it.x,it.y];
+ if(it.t=='a')return centroid(it.pts);
+ const m=it.pts[Math.floor((it.pts.length-1)/2)];
+ return it.t=='r'?[m[0]+(it.ox||0),m[1]+(it.oy||0)]:m;
 };
-$('ps').oninput=buildList;
-$('pall').onclick=()=>{visibleRows().forEach(([,i])=>sel.add(i));buildList();count();};
-$('pvis').onclick=()=>{visibleRows().forEach(([,i])=>sel.add(i));marked=new Set(sel);closePl();draw();};
-$('pclr').onclick=()=>{sel.clear();buildList();count();};
-$('pok').onclick=()=>{marked=new Set(sel);closePl();draw();};
-$('pcl').onclick=closePl;
-pl.onclick=e=>e.stopPropagation();
-document.addEventListener('click',e=>{if(pl.style.display=='flex'&&!pl.contains(e.target))closePl();});
-
-/* ---------- Moving names / dots / river names (drag) – all types (hitItem / dragTo in core) ---------- */
-const r4=n=>Math.round(n*1e4)/1e4;
-const hitAt=e=>{if(!img)return null;const[nx,ny]=pointer(cv,L,e);return hitItem(cv.getContext('2d'),L,DATA[cur.k]||[],i=>marked.has(i),nx,ny,+$('fsz').value,+$('dr').value);};
-cv.onpointerdown=e=>{
- if(!img||!$('mvt').checked)return;const h=hitAt(e);if(!h){Z.startPan(e);return;}
- const[nx,ny]=pointer(cv,L,e);
- /* If the name has no arrow, dragging starts from where the name currently is (an arrow is added) */
- drag={it:DATA[cur.k][h.i],keys:h.keys,ox:h.bx-nx,oy:h.by-ny};
- cv.setPointerCapture(e.pointerId);e.preventDefault();
-};
-cv.onpointermove=e=>{
- if(!img||!$('mvt').checked)return;
- if(drag){const[x,y]=pointer(cv,L,e);dragTo(drag,x,y);draw();}
- else cv.style.cursor=hitAt(e)?'move':'default';
-};
-cv.onpointerup=cv.onpointercancel=()=>{drag=null;};
-$('mvt').onchange=()=>{const on=$('mvt').checked;
- cv.style.cursor=on?'default':(ad?'crosshair':'pointer');cv.style.touchAction=on?'none':'manipulation';
- menu.style.display='none';hi=null;draw();
- if(on&&!marked.size)$('st').textContent='First select places and add them to the map';};
-$('rst').onclick=()=>{const o=JSON.parse(ORIG);for(const k in o)DATA[k]=o[k].concat((DATA[k]||[]).filter(it=>it.cu));draw();};
-
-/* ---------- Other controls ---------- */
-new ResizeObserver(()=>Z.apply()).observe($('box'));/* The map re-fits the screen after the header / settings open or close */
-$('optb').onclick=()=>$('opts').classList.toggle('on');
-$('map').onchange=e=>{ad=null;doneMsg='';refreshBar();load(e.target.value);};
-$('dr').oninput=$('gp').oninput=$('sp').oninput=$('fsz').oninput=$('grd').onchange=$('ttl').oninput=()=>draw();
-$('clr').onclick=()=>{marked.clear();sel.clear();badge(0);draw();};
-function exp(f){if(!img)return;draw(true);try{f(cv,'GeoSketch_'+cur.k,L.land);}catch(e){alert('Cannot export: the image is blocked by CORS. Check your internet connection and refresh the page.');}draw();}
-$('jpg').onclick=()=>exp(exportJPG);
-$('pdf').onclick=()=>exp(exportPDF);
-/* Load data from the DB, then open the first map */
-$('st').textContent='Loading data...';
-loadFromDB().then(()=>{ORIG=JSON.stringify(DATA);load(MAPS[0].k);});
-
-
-/* =====================================================================
-   ➕ Adding a name not listed here (temporary memory – lost on Reload)
-   ===================================================================== */
-const catsAll=()=>catList(tmpCats,...Object.values(DATA).map(usedCats));
-const cpk=catPicker($('cpk'),{list:catsAll,onNew:n=>{if(!tmpCats.includes(n))tmpCats.push(n);}});
-const yearsAll=()=>yearList(tmpYears,...Object.values(DATA).map(usedYears));
-const ypk=catPicker($('ypk'),{list:yearsAll,ph:'— Choose a year from the dropdown —',newBtn:'➕ Another year',newPh:'e.g. 2022 or 2022(2021)',empty:'No year selected (leave as is if not needed)',onNew:n=>{if(!tmpYears.includes(n))tmpYears.push(n);}});
-const KT={p:'p',r:'r',c:'d',w:'d',a:'a'};/* Canals and weirs are both drawn as a pair of parallel lines */
-const INFO={
- p:'<b>● A place:</b> Press "Start", then click the location of the place on the map. A dot and its name are drawn. You can then drag the name / dot to move it (an arrow is added automatically).',
- r:'<b>≈ A river:</b> Press "Start", then click several points along the river (from source to mouth). Finally press <b>"Finish"</b> (or Enter). The name is written along the river. You can then drag the river name to move the whole name.',
- c:'<b>‖ A canal:</b> Press "Start", click 2 or more points along the canal, then press <b>"Finish"</b>. A pair of parallel lines is drawn, with the name placed beside the line. If you drag the name far away, an arrow is drawn automatically.',
- w:'<b>‖ A weir:</b> Press "Start", click 2 or more points along the weir, then press <b>"Finish"</b>. A pair of parallel lines is drawn, with the name placed beside the line. If you drag the name far away, an arrow is drawn automatically.',
- a:'<b>▭ An area:</b> Choose a colour and pattern, then press "Start". Click 3 or more points along the boundary of the area, then press <b>"Finish"</b>. The name is written in the middle of the area; you can drag it to move it.'
-};
-const ckind=()=>document.querySelector('[name=ck]:checked').value;
-function cxUpdate(){
- const k=ckind();$('cinfo').innerHTML=INFO[k];
- $('cx').innerHTML=k=='p'?'<div class="opt">Style <select id="cm"><option value="s">Name beside the dot</option><option value="a">With an arrow (1: dot, 2: name position)</option><option value="n">Arrow only (no dot)</option></select></div>'
-  :k=='a'?'<div class="opt">Colour <input id="cc" type="color" value="#ff9800" style="padding:0;width:42px;height:30px"> Pattern <select id="cpt"><option value="s">Solid colour</option><option value="h">Horizontal lines</option><option value="v">Vertical lines</option><option value="d1">Diagonal lines /</option><option value="d2">Diagonal lines \\</option><option value="g">Grid</option><option value="x">Diagonal grid</option><option value="o">Dots</option></select></div>':'';
+function buildGroups(){
+ G=new Map();const arr=items();
+ arr.forEach((it,i)=>{if(!it||!it.n)return;
+  let e=G.get(it.n);if(!e){e={n:it.n,idx:[],g:new Set()};G.set(it.n,e);}
+  e.idx.push(i);(it.g||[]).forEach(c=>e.g.add(c));});
+ G.forEach(e=>{const its=e.idx.map(i=>arr[i]);
+  const p=its.find(x=>x.t=='p'&&!x.nd)||its.find(x=>x.t=='p')||its[0];
+  e.a=anchorOf(p);e.t=p.t;});
 }
-document.querySelectorAll('[name=ck]').forEach(r=>r.onchange=cxUpdate);
+const sorted=()=>{const c=coll();return[...G.values()].sort((a,b)=>c.compare(a.n,b.n));};
+const tagOf=e=>[...e.g].join(' · ');
+const rowHtml=e=>`<div class="row" data-n="${esc(e.n)}"><span>${IC[e.t]||'●'}</span><span>${esc(e.n)}${e.g.size?`<span class="gl">${esc(tagOf(e))}</span>`:''}</span></div>`;
 
-function renderCu(){
- const box=$('cl');box.innerHTML='';
- (DATA[cur.k]||[]).forEach((it,i)=>{if(!it.cu)return;
-  const d=document.createElement('div');d.textContent=`${it.nd?'➚':IC[it.t]} ${it.n}${it.g&&it.g.length?'  ['+it.g.join(', ')+']':''}${it.yr&&it.yr.length?'  📅'+it.yr.join(', '):''}`;
-  const b=document.createElement('button');b.textContent='×';b.title='Delete';b.onclick=()=>delItem(i);d.appendChild(b);box.appendChild(d);});
- $('clh').style.display=box.children.length?'':'none';
+const NN=()=>Math.min(15,Math.max(0,+$('nN').value||0));
+/* N = ආසන්න ස්ථාන ගණන (ගංගා හැර). riv = true නම් ආසන්නතම ගංගා 5ක් ද එක් කරයි */
+/* ගංගාවක් ද? : (1) වක්‍ර අකුරු (t='r') හෝ (2) වර්ගය 'ගංගාව' / 'අතු ගංගාව' ලෙස සලකුණු කර ඇති ඕනෑම අයිතමයක්
+   හෝ (3) වර්ගයක් නැති, නම ගඟ/ඔය/ආරු වලින් අවසන් වන අයිතමයක් */
+const RIVCATS=['ගංගාව','අතු ගංගාව'];
+function isRiverG(e){
+ const arr=items();
+ return e.idx.some(i=>arr[i]&&arr[i].t=='r')||RIVCATS.some(c=>e.g.has(c))||
+  (!e.g.size&&/(ගඟ|ඔය|ආරු)$/.test(String(e.n).trim()));
 }
-function delItem(i){
- DATA[cur.k].splice(i,1);
- const m=new Set();marked.forEach(j=>{if(j<i)m.add(j);else if(j>i)m.add(j-1);});marked=m;
- badge(marked.size);draw();renderCu();
-}
-function addItem(it){
- it.cu=1;const a=DATA[cur.k]=DATA[cur.k]||[];a.push(it);marked.add(a.length-1);badge(marked.size);
-}
-function openCu(){
- if(!img)return;
- menu.style.display='none';pl.style.display='none';hi=null;
- $('cn').value='';document.querySelector('[name=ck][value=p]').checked=true;cxUpdate();renderCu();cpk.refresh();ypk.refresh();
- $('cdlg').style.display='flex';$('cn').focus();
-}
-$('padd').onclick=e=>{e.stopPropagation();badge(marked.size);openCu();};
-$('cno').onclick=()=>$('cdlg').style.display='none';
-$('cn').onkeydown=e=>{if(e.key=='Enter')$('cgo').click();};
-
-function setMove(on){$('mvt').checked=on;$('mvt').onchange();}
-$('cgo').onclick=()=>{
- const n=$('cn').value.trim();
- if(!n){alert('Please enter the place name first');$('cn').focus();return;}
- const k=ckind();
- ad={n,k,t:KT[k],g:cpk.get(),yr:ypk.get(),pts:[],pend:null,mode:k=='p'?$('cm').value:null,c:k=='a'?$('cc').value:null,pt:k=='a'?$('cpt').value:null};
- doneMsg='';$('cdlg').style.display='none';setMove(false);
- cv.style.cursor='crosshair';refreshBar();draw();
-};
-function adHint(){
- const q=`"${ad.n}" – `;
- if(ad.t=='p'){
-  if(ad.mode=='s')return q+'Click the place on the map.';
-  return q+(ad.pend?'Now click where the name should go.':(ad.mode=='n'?'First click where the arrow should point (no dot will be drawn).':'First click the place (the dot).'));
+function nearGroup(name,N=10,riv=false){
+ const e0=G.get(name);if(!e0||!L)return e0?e0.idx:[];
+ const arr=items(),isR=isRiverG,
+  d0=e=>Math.hypot((e.a[0]-e0.a[0])*L.iw,(e.a[1]-e0.a[1])*L.ih);
+ const others=[...G.values()].filter(e=>e!==e0&&!isR(e)).map(e=>({e,d:d0(e)}))
+  .sort((a,b)=>a.d-b.d).slice(0,N).map(x=>x.e);
+ let rv=[];
+ if(riv){
+  /* ගංගාවේ ඕනෑම කොටසක සිට තෝරාගත් ස්ථානයට ඇති ආසන්නතම දුර (තිත්, රේඛා, අකුරු මාර්ග සියල්ලටම) */
+  const dr=e=>Math.min(...e.idx.flatMap(i=>{const it=arr[i];if(!it)return[];
+   const D=(x,y)=>Math.hypot((x-e0.a[0])*L.iw,(y-e0.a[1])*L.ih);
+   if(it.t=='p')return[D(it.x,it.y)];
+   if(!it.pts)return[];
+   const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0;
+   return it.pts.map(p=>D(p[0]+ox,p[1]+oy));}));
+  rv=[...G.values()].filter(e=>e!==e0&&isR(e)).map(e=>({e,d:dr(e)})).filter(x=>isFinite(x.d))
+   .sort((a,b)=>a.d-b.d).slice(0,5).map(x=>x.e);
  }
- const need=ad.t=='a'?3:2;
- return q+`${ad.pts.length} point${ad.pts.length==1?'':'s'} marked. ${ad.pts.length<need?`Click more (at least ${need}).`:'Add more points, or press "Finish".'}`;
+ return[e0,...others,...rv].flatMap(e=>e.idx);
 }
-function refreshBar(){
- const b=$('ab');
- if(!ad&&!doneMsg){b.style.display='none';return;}
- b.style.display='flex';const dr=!!ad;
- $('afin').style.display=dr&&ad.t!='p'?'':'none';
- $('aun').style.display=$('acn').style.display=dr?'':'none';
- $('anew').style.display=$('adone').style.display=dr?'none':'';
- $('at').textContent=dr?adHint():doneMsg;
-}
-function adDone(it,hint){
- if(ad.g&&ad.g.length)it.g=ad.g.slice();
- if(ad.yr&&ad.yr.length)it.yr=ad.yr.slice();
- addItem(it);const n=ad.n;ad=null;
- doneMsg=`✓ "${n}" added to the map. ${hint} (✋ Move is on)`;
- setMove(true);refreshBar();draw();renderCu();
-}
-function addClick(e){
- const[x,y]=pointer(cv,L,e);if(x<0||y<0||x>1||y>1)return;
- const p=[r4(x),r4(y)];
- if(ad.t=='p'){
-  const H='Drag the name / dot to where you want it.';
-  if(ad.mode=='s')return adDone({n:ad.n,t:'p',x:p[0],y:p[1]},H);
-  if(!ad.pend){ad.pend=p;refreshBar();draw();return;}
-  return adDone(Object.assign({n:ad.n,t:'p',x:ad.pend[0],y:ad.pend[1],lx:p[0],ly:p[1]},ad.mode=='n'?{nd:1}:{}),H);
- }
- ad.pts.push(p);refreshBar();draw();
-}
-function adFinish(){
- if(!ad||ad.t=='p')return;
- const need=ad.t=='a'?3:2;
- if(ad.pts.length<need){alert(`At least ${need} points are required`);return;}
- const P=ad.pts;
- if(ad.t=='a')return adDone({n:ad.n,t:'a',c:ad.c,pt:ad.pt,pts:P},'Drag the name to move it.');
- if(ad.t=='r')return adDone({n:ad.n,t:'r',pts:P},'Drag the river name to move the whole name.');
- /* Canal / weir: the name is placed beside the line (slightly above the midpoint) */
- const i=Math.floor((P.length-1)/2),a=P[i],b=P[i+1],
-  lx=r4((a[0]+b[0])/2),ly=r4(Math.max(0,(a[1]+b[1])/2-30/L.ih));
- adDone({n:ad.n,t:'d',pts:P,lx,ly},'Drag the name to move it (an arrow is added if you move it far away).');
-}
-function adCancel(){ad=null;doneMsg='';cv.style.cursor=$('mvt').checked?'default':'pointer';refreshBar();draw();}
-$('afin').onclick=adFinish;
-$('aun').onclick=()=>{if(!ad)return;if(ad.pend)ad.pend=null;else ad.pts.pop();refreshBar();draw();};
-$('acn').onclick=adCancel;
-$('anew').onclick=()=>{doneMsg='';setMove(false);refreshBar();openCu();};
-$('adone').onclick=()=>{doneMsg='';setMove(false);refreshBar();};
 
-/* ---------- Admin ---------- */
-$('adm').onclick=()=>{
- if(isAdmin()){location.href='editor.html';return;}
- $('dlg').style.display='flex';$('pw').value='';$('hs').style.display='none';$('pw').focus();
- if(ADMIN_HASH){$('dt').textContent='Admin Login';$('dp').textContent='';$('ok').textContent='Log in';}
- else{$('dt').textContent='Set a password';$('ok').textContent='Generate hash';
-  $('dp').textContent='No password has been set yet. Type a new password and press the button; paste the resulting hash between the quotes in ADMIN_HASH=\'\' in geosketch-e-core.js and upload it to GitHub again.';}
+/* ---------- නම් එකිනෙක මත යෑම ස්වයංක්‍රීයව වැළැක්වීම ----------
+   පෙන්වීමේදී පමණක් නම් වල තැන ගණනය කරයි. සුරැකි දත්ත කිසිවිටෙක වෙනස් නොවේ. */
+function spreadLabels(g,fs){
+ const arr=effItems(),X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,out=new Map();
+ g.font=`${fs}px ${FONT}`;
+ const h=fs*1.15,boxes=[];/* box = [x0,y0,x1,y1,හිමිකරු] */
+ const hit=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
+ const free=(b,o)=>!boxes.some(x=>x[4]!==o&&hit(b,x));
+ const mk=(cx,cy,w,o)=>[cx-w/2-5,cy-h/2-3,cx+w/2+5,cy+h/2+3,o];
+ const idxs=[...marked].filter(i=>arr[i]);
+
+ /* බාධක: සියලු තිත් සහ ගංගා නම් */
+ idxs.forEach(i=>{const it=arr[i];
+  if(it.t=='p'){const x=X(it.x),y=Y(it.y),r=(it.nd?0:fs*.14)+4;boxes.push([x-r,y-r,x+r,y+r,i]);}
+  else if(it.t=='r'&&it.pts.length){const m=it.pts[Math.floor(it.pts.length/2)],
+    cx=X(m[0]+(it.ox||0)),cy=Y(m[1]+(it.oy||0))-fs*.6;boxes.push(mk(cx,cy,g.measureText(it.n).width,-1));}
+ });
+
+ /* තෝරාගත් ස්ථානය මුලින්ම, ඉන්පසු ආසන්නතම ඒවා */
+ const ref=hl?[X(hl[0]),Y(hl[1])]:null;
+ const dist=i=>{const a=anchorOf(arr[i]);return ref?Math.hypot(X(a[0])-ref[0],Y(a[1])-ref[1]):0;};
+ idxs.sort((a,b)=>(manual.has(b)-manual.has(a))||dist(a)-dist(b));/* අතින් Move කළ නම් මුලින්ම, ස්ථාවරව */
+
+ idxs.forEach(i=>{
+  const it=arr[i];if(it.t=='r'||!it.n)return;
+  if(it.t=='d'&&it.lx==null)return;
+  const w=g.measureText(it.n).width;
+  const fixed=(manual.has(i)||!$('sOn').checked)&&it.t!='r';
+  let ax,ay,pc,arrowDefault;
+  if(it.t=='p'){
+   ax=X(it.x);ay=Y(it.y);const r=it.nd?0:fs*.14;
+   if(it.lx!=null){pc=[X(it.lx),Y(it.ly)];arrowDefault=true;}
+   else{pc=[ax+r+6+w/2,ay-fs*.45];arrowDefault=false;}
+  }else if(it.t=='a'){
+   const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);pc=[X(c[0]),Y(c[1])];ax=pc[0];ay=pc[1];arrowDefault=false;
+  }else{pc=[X(it.lx),Y(it.ly)];const m=it.pts[Math.floor(it.pts.length/2)];ax=X(m[0]);ay=Y(m[1]);arrowDefault=false;}
+
+  /* අපේක්ෂක ස්ථාන: මුලින් දැනට ඇති තැන, ඉන්පසු වටේට විශාල වන වළලු */
+  const cands=[pc];
+  for(let k=1;!fixed&&k<=14;k++){const d=fs*(.9+k*.9);
+   for(let j=0;j<12;j++){const a=j*Math.PI/6+k*.26,co=Math.cos(a),si=Math.sin(a);
+    cands.push([ax+co*(d+w/2*Math.abs(co)),ay+si*(d*.8+h/2)]);}}
+
+  let best=null;
+  for(let n=0;n<cands.length;n++){
+   let [cx,cy]=cands[n];
+   cx=Math.min(L.W-w/2-8,Math.max(w/2+8,cx));cy=Math.min(L.H-h,Math.max(h,cy));
+   const b=mk(cx,cy,w,i),arrow=it.t=='p'&&(n>0||arrowDefault);
+   if(!fixed&&!free(b,i))continue;
+   let segs=[];
+   if(arrow)segs=[
+    [Math.min(cx,ax)-3,cy-3,Math.max(cx,ax)+3,cy+3,i],
+    [ax-3,Math.min(cy,ay)-3,ax+3,Math.max(cy,ay)+3,i]];
+   if(!fixed&&segs.some(s=>!free(s,i)))continue;
+   best={cx,cy,b,segs,n};break;
+  }
+  if(!best){const [cx,cy]=cands[0];best={cx,cy,b:mk(cx,cy,w,i),segs:[],n:0};}
+  boxes.push(best.b);best.segs.forEach(s=>boxes.push(s));
+  if(best.n>0||it.lx!=null){/* ගෙන ගිය හෝ ඊතල සහිත ඒවා */
+   out.set(i,Object.assign({},it,{lx:(best.cx-L.ix)/L.iw,ly:(best.cy-L.iy)/L.ih}));
+  }
+ });
+ return out;
+}
+
+/* ---------- සිතියම ඇඳීම (මෘදු ආවරණය සහිතව) ---------- */
+function draw(){if(!img||!L)return;lastS=paint(cv);}
+/* c = ඇඳිය යුතු canvas (තිරය හෝ export සඳහා වෙනම canvas එකක්) */
+function paint(c,o={}){
+ const g=render(c,img,L,[],{grid:!!o.grid,title:o.title,footer:o.footer});/* පසුබිම පමණි */
+ if($('vOn').checked){g.save();g.globalAlpha=+$('vA').value;g.fillStyle=TONES[+$('vC').value];g.fillRect(L.ix,L.iy,L.iw,L.ih);g.restore();}
+ const arr=effItems(),fs=+$('fsz').value;
+ const S=$('sOn').checked||manual.size?spreadLabels(g,fs):new Map();
+ marked.forEach(i=>{if(!arr[i])return;
+  const main=mainName&&arr[i].n==mainName;
+  if(main){/* තෝරාගත් ස්ථානයේ නම රතු පැහැයෙන් */
+   const ft=g.fillText;
+   g.fillText=function(t,x,y,w){this.fillStyle='#d6212b';return ft.call(this,t,x,y,w);};
+   drawItem(g,L,S.get(i)||arr[i],fs,.15,.17,.14);
+   delete g.fillText;
+  }else drawItem(g,L,S.get(i)||arr[i],fs,.15,.17,.14);
+ });
+ return S;
+}
+
+/* ---------- JPG / PDF Export: තිරයේ පෙනෙන සිතියම A4 ප්‍රමාණයෙන් ---------- */
+function doExport(kind){
+ if(!img||!L)return;
+ const c=document.createElement('canvas');
+ paint(c,{grid:$('exg').checked,title:mainName||'',footer:footerText()});
+ const name='GeoSketch-'+cur.k;
+ if(kind=='pdf')exportPDF(c,name,L.land);else exportJPG(c,name);
+}
+$('exj').onclick=()=>doExport('jpg');
+$('exp').onclick=()=>doExport('pdf');
+
+/* ---------- තෝරාගත් ස්ථාන තිරයට ගැළපෙන සේ zoom කිරීම ---------- */
+function focusOn(idxs,main){
+ const arr=items();let x0=1,y0=1,x1=0,y1=0;
+ const ext=(x,y)=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
+ idxs.forEach(i=>{const it=arr[i];
+  if(it.t=='p')ext(it.x,it.y);
+  else it.pts.forEach(p=>ext(p[0]+(it.t=='r'?it.ox||0:0),p[1]+(it.t=='r'?it.oy||0:0)));});
+ const bx=[x0-.2,y0-.2,x1+.2,y1+.2];
+ idxs.forEach(i=>{const it=arr[i];
+  if(it.lx!=null&&it.lx>=bx[0]&&it.lx<=bx[2]&&it.ly>=bx[1]&&it.ly<=bx[3])ext(it.lx,it.ly);});
+ const pad=.04,mw=.35,mh=.25,cx=(x0+x1)/2,cy=(y0+y1)/2;
+ x0-=pad;x1+=pad;y0-=pad;y1+=pad;
+ if(x1-x0<mw){x0=cx-mw/2;x1=cx+mw/2;}
+ if(y1-y0<mh){y0=cy-mh/2;y1=cy+mh/2;}
+ marked=new Set(idxs);hl=main&&G.get(main)?G.get(main).a:null;mainName=main&&G.get(main)?main:null;
+ draw();Z.focusRect(x0,y0,x1,y1);
+}
+function pick(name){
+ closeAll();stopRipple();activeCat=null;$('q').value=name;
+ focusOn(nearGroup(name,NN(),$('rOn').checked),name);
+ $('st').textContent=`🎯 ${name}  ${T[lang].near} ${NN()}`;
+}
+/* සැකසුම් වෙනස් කළ විට දැනට තෝරාගත් ස්ථානය නැවත පෙන්වීම (පුවරුව වැසෙන්නේ නැත) */
+function refreshNear(){
+ if(!mainName||!G.get(mainName))return;
+ focusOn(nearGroup(mainName,NN(),$('rOn').checked),mainName);
+ $('st').textContent=`🎯 ${mainName}  ${T[lang].near} ${NN()}`;
+}
+$('nN').oninput=()=>{$('nNv').textContent=$('nN').value;};
+$('nN').onchange=refreshNear;$('rOn').onchange=refreshNear;
+function pickCat(c){
+ closeAll();stopRipple();activeCat=c;
+ const idx=[];G.forEach(e=>{if(e.g.has(c))idx.push(...e.idx);});
+ if(!idx.length)return;
+ $('q').value='';focusOn(idx,null);
+ $('st').textContent=`🗂 ${c}  (${idx.length})`;
+}
+
+/* ---------- Create a Random Map ----------
+   1) වර්ග තෝරයි  2) ස්ථාන ගණන තෝරයි.
+   නීති:
+   • ස්ථාන ගණන තෝරාගත් වර්ග ගණනට වඩා අඩු නම් දෝෂ පණිවිඩයක් පෙන්වයි.
+   • සෑම වර්ගයකින්ම අවම වශයෙන් එක් ස්ථානයක්.
+   • ඉතිරි ස්ථාන, DB එකේ ස්ථාන වැඩි වර්ගවලට වැඩියෙන් සහ අඩු වර්ගවලට අඩුවෙන් බෙදේ (D'Hondt).
+   • එකම වර්ගයේ ස්ථාන දෙකක් එකම කොටුවේ හෝ ආසන්න කොටුවල (8 දිශාවේ) නොවිය යුතුය.
+   • සිතියම පුරා විසිරීම: දැනට තෝරාගත් ස්ථානවලින් වඩාත්ම ඈත අපේක්ෂකයන් 3න් එකක් අහඹුව තෝරයි. */
+let rmSel=new Set(),rmN=20;
+function catCounts(){const m=new Map();G.forEach(e=>e.g.forEach(c=>m.set(c,(m.get(c)||0)+1)));return m;}
+function dbCounts(){/* සමස්ත DB (සියලු සිතියම්, වත්මන් භාෂාව) */
+ const m=new Map(),D=DATA[lang]||{};
+ Object.keys(D).forEach(k=>(D[k]||[]).forEach(it=>(it.g||[]).forEach(c=>m.set(c,(m.get(c)||0)+1))));
+ return m;
+}
+function buildRM(){
+ const cnt=catCounts(),c=coll();
+ $('rmc').innerHTML=cnt.size?[...cnt.entries()].sort((a,b)=>c.compare(a[0],b[0])).map(([k,n])=>`<button type="button" class="chip${rmSel.has(k)?' on':''}" data-c="${esc(k)}">${esc(k)}<i>${n}</i></button>`).join(''):`<div class="none">${T[lang].nodata}</div>`;
+ const mx=Math.max(3,Math.min(100,G.size));
+ $('rmN').max=mx;if(rmN>mx)rmN=mx;$('rmN').value=rmN;$('rmNv').textContent=rmN;
+}
+const cellRC=a=>[Math.min(L.cols-1,Math.max(0,Math.floor(a[0]*L.cols))),Math.min(L.rows-1,Math.max(0,Math.floor(a[1]*L.rows)))];
+
+/* සෑම වර්ගයකටම 1 බැගින්; ඉතිරිය DB හි ගණනට සමානුපාතිකව (D'Hondt) */
+function rmAlloc(cats,N,cap){
+ const db=dbCounts(),w=c=>Math.max(1,db.get(c)||1),q=new Map(cats.map(c=>[c,1]));
+ for(let left=N-cats.length;left>0;left--){
+  let b=null,bv=-1;
+  cats.forEach(c=>{if(q.get(c)<cap.get(c)){const v=w(c)/(q.get(c)+1)+Math.random()*1e-6;if(v>bv){bv=v;b=c;}}});
+  if(!b)break;q.set(b,q.get(b)+1);
+ }
+ return q;
+}
+function rmGenerate(){
+ const have=catCounts(),cats=[...rmSel].filter(c=>have.has(c));
+ if(!cats.length){alert(T[lang].rmneed);return;}
+ const N=+$('rmN').value;
+ if(N<cats.length){alert('⚠ '+T[lang].rmerr(cats.length,N));return;}
+ const cand=new Map(),cap=new Map();
+ cats.forEach(c=>{const a=[];G.forEach(e=>{if(e.g.has(c))a.push({e,rc:cellRC(e.a)});});cand.set(c,a);cap.set(c,a.length);});
+ const quota=rmAlloc(cats,N,cap),q0=new Map(quota),chosen=[],names=new Set(),tally=new Map(),sel=[];
+ let relaxed=0;
+ const minD=a=>chosen.length?Math.min(...chosen.map(p=>Math.hypot((a[0]-p.a[0])*L.iw,(a[1]-p.a[1])*L.ih))):Infinity;
+ /* එකම වර්ගයේ ස්ථාන එකම කොටුවේ හෝ ආසන්න කොටු 8 තුළ නොවිය යුතුය */
+ const near=(c,o)=>chosen.some(p=>p.c==c&&Math.max(Math.abs(p.rc[0]-o.rc[0]),Math.abs(p.rc[1]-o.rc[1]))<2);
+ const choose=(c,pool)=>{
+  let g=pool.filter(o=>!near(c,o));if(!g.length){g=pool;relaxed++;}
+  if(!chosen.length)return g[Math.floor(Math.random()*g.length)];
+  const sc=g.map(o=>({o,d:minD(o.e.a)})).sort((a,b)=>b.d-a.d);
+  return sc[Math.floor(Math.random()*Math.min(3,sc.length))].o;/* විසිරීම: ඈතම 3න් එකක් */
+ };
+ const take=(c,o)=>{chosen.push({a:o.e.a,c,rc:o.rc});names.add(o.e.n);sel.push(o.e);tally.set(c,(tally.get(c)||0)+1);};
+ const poolOf=c=>cand.get(c).filter(o=>!names.has(o.e.n));
+ /* 1) සියලු වර්ග ආවරණය (අඩුම ස්ථාන ඇති වර්ග මුලින්) */
+ [...cats].sort((a,b)=>cap.get(a)-cap.get(b)).forEach(c=>{const p=poolOf(c);if(p.length){take(c,choose(c,p));quota.set(c,quota.get(c)-1);}});
+ /* 2) ඉතිරි කෝටා පිරවීම */
+ let guard=0;
+ while(sel.length<N&&guard++<N*6+60){
+  const act=cats.filter(c=>quota.get(c)>0&&poolOf(c).length);if(!act.length)break;
+  act.sort((a,b)=>quota.get(b)/q0.get(b)-quota.get(a)/q0.get(a)+(Math.random()-.5)*.01);
+  take(act[0],choose(act[0],poolOf(act[0])));quota.set(act[0],quota.get(act[0])-1);
+ }
+ if(!sel.length){alert(T[lang].rmnone);return;}
+ closeAll();stopRipple();activeCat=null;mainName=null;hl=null;$('q').value='';manual.clear();
+ marked=new Set(sel.flatMap(e=>e.idx));
+ Z.reset();draw();
+ $('st').textContent=`🎲 ${T[lang].rmres}: ${sel.length} — `+[...tally.entries()].map(([c,n])=>`${c} ${n}`).join(' · ')+(relaxed?` ⚠ ${relaxed}`:'');
+}
+$('rmb').onclick=e=>{e.stopPropagation();togglePop('rmp',$('rmb'),buildRM);};
+$('rmp').onclick=e=>{e.stopPropagation();
+ const b=e.target.closest('[data-c]');
+ if(b){const c=b.dataset.c;rmSel.has(c)?rmSel.delete(c):rmSel.add(c);b.classList.toggle('on',rmSel.has(c));}};
+$('rma').onclick=()=>{catCounts().forEach((_,c)=>rmSel.add(c));buildRM();};
+$('rmn').onclick=()=>{rmSel.clear();buildRM();};
+$('rmN').oninput=()=>{rmN=+$('rmN').value;$('rmNv').textContent=rmN;};
+$('rmgo').onclick=rmGenerate;
+
+/* ---------- පුවරු (panels) ---------- */
+const pops=['plp','typ','stp','rmp'];
+function closeAll(){pops.forEach(p=>$(p).style.display='none');$('sug').classList.remove('open');$('lbp').classList.remove('open');$('lbb').classList.remove('on');}
+function togglePop(id,btn,build){
+ const el=$(id),was=el.style.display=='flex';closeAll();if(was)return;
+ if(build)build();el.style.display='flex';
+ const r=btn.getBoundingClientRect();
+ el.style.left=Math.max(4,Math.min(r.left,innerWidth-el.offsetWidth-4))+'px';
+ el.style.top=(r.bottom+6)+'px';
+ el.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';
+}
+function buildPlaces(){
+ const list=sorted();$('plc').textContent=list.length;
+ $('pli').innerHTML=list.length?list.map(rowHtml).join(''):`<div class="none">${T[lang].nodata}</div>`;
+}
+function buildTypes(){
+ const cnt=new Map();G.forEach(e=>e.g.forEach(c=>cnt.set(c,(cnt.get(c)||0)+1)));
+ const c=coll();
+ $('tyc').innerHTML=cnt.size?[...cnt.entries()].sort((a,b)=>c.compare(a[0],b[0])).map(([k,n])=>`<button type="button" class="chip${k==activeCat?' on':''}" data-c="${esc(k)}">${esc(k)}<i>${n}</i></button>`).join(''):`<div class="none">${T[lang].nodata}</div>`;
+}
+$('plb').onclick=e=>{e.stopPropagation();togglePop('plp',$('plb'),buildPlaces);};
+$('tyb').onclick=e=>{e.stopPropagation();togglePop('typ',$('tyb'),buildTypes);};
+$('stb').onclick=e=>{e.stopPropagation();togglePop('stp',$('stb'));};
+$('pli').onclick=e=>{const r=e.target.closest('[data-n]');if(r)pick(r.dataset.n);};
+$('tyc').onclick=e=>{const b=e.target.closest('[data-c]');if(b)pickCat(b.dataset.c);};
+document.addEventListener('click',e=>{if(!e.target.closest('.pop,.sw'))closeAll();});
+document.addEventListener('keydown',e=>{if(e.key=='Escape'){closeAll();stopRipple();if($('hw').classList.contains('open'))closeHow();}});
+$('plp').onclick=$('typ').onclick=$('stp').onclick=e=>e.stopPropagation();
+['sOn','vOn','vA','vC','fsz'].forEach(id=>$(id).oninput=$(id).onchange=draw);
+
+/* ---------- Search bar ---------- */
+function renderSug(list){
+ sugList=list;sugAct=-1;
+ $('sug').innerHTML=list.length?list.map(rowHtml).join(''):`<div class="none">${T[lang].none}</div>`;
+ $('lbp').classList.remove('open');$('lbb').classList.remove('on');$('sug').classList.add('open');
+}
+$('q').oninput=()=>{
+ const v=norm($('q').value);
+ if(!v){$('sug').classList.remove('open');return;}
+ renderSug(sorted().filter(e=>norm(e.n).includes(v)).sort((a,b)=>(norm(b.n).startsWith(v)-norm(a.n).startsWith(v))).slice(0,12));
 };
-$('no').onclick=()=>$('dlg').style.display='none';
-$('pw').onkeydown=e=>{if(e.key=='Enter')$('ok').click();};
-$('ok').onclick=async()=>{
- const p=$('pw').value;if(!p)return;const h=await sha(p);
- if(!ADMIN_HASH){$('hs').value=h;$('hs').style.display='block';$('hs').select();return;}
- if(h===ADMIN_HASH){sessionStorage.setItem('gs_admin',h);location.href='editor.html';}
- else{$('dp').textContent='Incorrect password.';$('pw').value='';}
+$('q').onfocus=()=>{if($('q').value.trim())$('q').oninput();};
+$('q').onkeydown=e=>{
+ const rows=$('sug').querySelectorAll('.row'),open=$('sug').classList.contains('open');
+ if(e.key=='ArrowDown'&&open&&rows.length){e.preventDefault();sugAct=(sugAct+1)%rows.length;}
+ else if(e.key=='ArrowUp'&&open&&rows.length){e.preventDefault();sugAct=(sugAct-1+rows.length)%rows.length;}
+ else if(e.key=='Enter'){e.preventDefault();const p=sugList[sugAct>=0?sugAct:0];if(p)pick(p.n);return;}
+ else return;
+ rows.forEach((r,i)=>r.classList.toggle('act',i==sugAct));
 };
+$('sug').onclick=e=>{const r=e.target.closest('[data-n]');if(r)pick(r.dataset.n);};
+
+/* ---------- Letter bar (තිරස් අකුරු පුවරුව) ---------- */
+function initials(){
+ const m=new Map();
+ G.forEach(e=>{const ch=Array.from(e.n.trim())[0]||'',k=lang=='en'?ch.toUpperCase():ch;
+  if(!k)return;if(!m.has(k))m.set(k,[]);m.get(k).push(e);});
+ return m;
+}
+function renderLB(){
+ const m=initials(),c=coll(),keys=[...m.keys()].sort((a,b)=>c.compare(a,b));
+ let h=keys.length?`<div class="lbl">${keys.map(k=>`<button type="button" class="${k==lbLetter?'on':''}" data-k="${esc(k)}">${esc(k)}</button>`).join('')}</div>`:`<div class="none">${T[lang].nodata}</div>`;
+ if(lbLetter&&m.has(lbLetter)){h+=`<div class="lbr">${m.get(lbLetter).sort((a,b)=>c.compare(a.n,b.n)).map(rowHtml).join('')}</div>`;}
+ else if(keys.length)h+=`<div class="lbh">${T[lang].pickLetter}</div>`;
+ $('lbp').innerHTML=h;
+}
+$('lbb').onclick=e=>{
+ e.stopPropagation();const was=$('lbp').classList.contains('open');closeAll();if(was)return;
+ lbLetter=null;renderLB();$('lbp').classList.add('open');$('lbb').classList.add('on');
+};
+$('lbp').onclick=e=>{
+ e.stopPropagation();
+ const b=e.target.closest('[data-k]');if(b){lbLetter=b.dataset.k;renderLB();return;}
+ const r=e.target.closest('[data-n]');if(r)pick(r.dataset.n);
+};
+
+/* ---------- භාෂාව / සිතියම් මාරු කිරීම ---------- */
+function fillMapSelect(keep){
+ const s=$('map');s.innerHTML='';MAPS.forEach(m=>s.add(new Option(MN[lang][m.k]||m.name,m.k)));if(keep)s.value=keep;
+}
+function applyUI(){
+ const t=T[lang];
+ document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t[e.dataset.t]);
+ $('q').placeholder=t.ph;
+ const vc=$('vC'),v=vc.value||'0';vc.innerHTML='';t.tones.forEach((n,i)=>vc.add(new Option(n,i)));vc.value=v;
+ document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.classList.toggle('on',b.dataset.l==lang));
+ document.documentElement.lang=lang;
+ if($('hw').classList.contains('open'))buildHow();
+}
+function setLang(l){
+ lang=l;closeAll();stopRipple();applyUI();fillMapSelect(cur&&cur.k);
+ buildGroups();marked=new Set();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
+ $('st').textContent=G.size?T[lang].hint:T[lang].nodata;draw();
+}
+document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+
+/* ---------- How to use කවුළුව ---------- */
+function buildHow(){
+ $('hwb').innerHTML=HOW[lang].map((s,i)=>`<div class="st"><div class="n">${i+1}</div><div><h4>${s[0]}</h4><p>${s[1]}</p>${s[2]?`<div class="tip">💡 ${s[2]}</div>`:''}</div></div>`).join('');
+}
+function openHow(){closeAll();buildHow();$('hw').classList.add('open');$('hwb').scrollTop=0;}
+function closeHow(){
+ $('hw').classList.remove('open');
+ try{if($('hwn').checked)localStorage.setItem('gs_how_seen','1');else localStorage.removeItem('gs_how_seen');}catch(e){}
+}
+$('hwo').onclick=e=>{e.stopPropagation();openHow();};
+$('hwx').onclick=$('hwk').onclick=closeHow;
+$('hw').onclick=e=>{if(e.target===$('hw'))closeHow();};
+
+async function load(k){
+ cur=MAPS.find(m=>m.k==k);closeAll();stopRipple();$('st').textContent=T[lang].loading;
+ img=null;
+ try{await fontReady();img=await loadImg(cur.url);}catch(e){img=null;$('st').textContent='රූපය load වුණේ නැත / Image failed';return;}
+ L=layout(img);buildGroups();marked=new Set();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
+ Z.reset();draw();
+ $('st').textContent=G.size?T[lang].hint:T[lang].nodata;
+}
+$('map').onchange=e=>load(e.target.value);
+
+applyUI();fillMapSelect();$('st').textContent=T[lang].loading;
+loadAll().then(()=>load(MAPS[0].k)).then(()=>{try{if(!localStorage.getItem('gs_how_seen'))openHow();}catch(e){}});/* පළමු වරට පැමිණෙන අයට ස්වයංක්‍රීයව පෙන්වයි */
 </script>
 </body>
 </html>
