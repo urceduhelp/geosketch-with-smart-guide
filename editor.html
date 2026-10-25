@@ -91,6 +91,8 @@ aside{display:flex;flex-direction:column;gap:10px}
    <label><input type="radio" name="t" value="a"> ▭ ප්‍රදේශයක් (Area – වර්ණ)</label>
    <label><input type="radio" name="t" value="r"> ≈ ගඟක් (මාර්ගය දිගේ නම)</label>
    <label><input type="radio" name="t" value="mv"> ✋ නම් / තිත් Move කරන්න (drag)</label>
+   <label><input type="radio" name="t" value="ev"> ◇ ප්‍රදේශ / ගඟ / අමුණු වල මායිම සංස්කරණය</label>
+   <div id="evbox" style="display:none;padding:2px 0 6px 22px"><select id="evm" style="width:100%"><option value="mv">✋ ලක්ෂ්‍ය ඇදගෙන ගොස් වෙනස් කරන්න</option><option value="add">＋ රේඛාව මත click කර ලක්ෂ්‍යයක් එක් කරන්න</option><option value="del">− ලක්ෂ්‍යයක් click කර මකන්න</option></select></div>
    <label style="border-top:1px solid #eef3f6;margin-top:4px;padding-top:6px"><input type="checkbox" id="cmp" checked> 👁 සරල පෙනුම – තිත් පමණක් පෙන්වන්න <small style="color:#678">(තිතක් click කර නම බලන්න)</small></label>
   </div>
   <div class="box"><h3>නම</h3>
@@ -152,6 +154,7 @@ aside{display:flex;flex-direction:column;gap:10px}
  <label>වර්ග</label><div class="chips" id="emG"></div>
  <select id="emGs"></select>
  <div class="row" style="margin-top:4px"><input id="emGn" placeholder="අලුත් වර්ගයක් ටයිප් කරන්න" style="flex:1"><button class="alt" id="emGb">＋</button></div>
+ <div id="emA" style="display:none"><label>ප්‍රදේශයේ වර්ණය සහ රටාව</label><div class="row"><input id="emC" type="color" style="padding:0;width:48px"><select id="emP" style="flex:1;width:auto"><option value="s">සම්පූර්ණ වර්ණය</option><option value="h">තිරස් රේඛා</option><option value="v">සිරස් රේඛා</option><option value="d1">ඇලි රේඛා /</option><option value="d2">ඇලි රේඛා \</option><option value="g">කොටු</option><option value="x">ඇල කොටු</option><option value="o">තිත්</option></select></div></div>
  <label>වැදගත්කම් (උපරිම 10)</label><div class="chips" id="emS"></div>
  <select id="emSs"></select>
  <div class="row" style="margin-top:4px"><input id="emSn" placeholder="අලුත් වැදගත්කමක් ටයිප් කරන්න" style="flex:1"><button class="alt" id="emSb">＋</button></div>
@@ -211,7 +214,8 @@ const hints={
  d:'අමුණ/ඇළ දිගේ ලක්ෂ්‍ය 2ක් හෝ වැඩි ගණනක් click කර "අවසන්" ඔබන්න.',
  a:'ප්‍රදේශයේ මායිම ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න.',
  r:'ගඟ දිගේ ලක්ෂ්‍ය click කර "අවසන්" ඔබන්න (ගඟ ගලන දිශාවට අවශ්‍ය නැත).',
- mv:'නමක් (හෝ තිතක්) මත mouse එක තබා drag කරන්න. ඊතලය ස්වයංක්‍රීයව දිගු/කෙටි වී 90° හැරේ.'
+ mv:'නමක් (හෝ තිතක්) මත mouse එක තබා drag කරන්න. ඊතලය ස්වයංක්‍රීයව දිගු/කෙටි වී 90° හැරේ.',
+ ev:'සියලු ප්‍රදේශ / ගඟ / අමුණු වල ලක්ෂ්‍ය (සුදු කොටු) පෙනේ. ඉහළ ලැයිස්තුවෙන් ක්‍රමය තෝරා: ලක්ෂ්‍ය ඇදීම, රේඛාවක් මත click කර ලක්ෂ්‍යයක් එක් කිරීම, හෝ ලක්ෂ්‍යයක් click කර මකීම කරන්න.'
 };
 const r4=n=>Math.round(n*1e4)/1e4;
 
@@ -339,6 +343,12 @@ function redraw(){
  if(compact()){const r=Math.max(5,7/sc());
   items.forEach(it=>{const[ax,ay]=anchor(it);g.beginPath();g.arc(X(ax),Y(ay),r,0,7);g.fillStyle=MC[it.t]||'#d6212b';g.fill();g.lineWidth=Math.max(2,r*.3);g.strokeStyle='#fff';g.stroke();});
   if(insp!=null&&items[insp]){const[ax,ay]=anchor(items[insp]);g.beginPath();g.arc(X(ax),Y(ay),r*2.2,0,7);g.lineWidth=Math.max(3,r*.45);g.strokeStyle='#ff6f00';g.stroke();}}
+ if(tool()=='ev'){const r=Math.max(5,7/sc());g.save();
+  items.forEach(it=>{if(!it.pts||!it.pts.length)return;const of=evOff(it);
+   g.beginPath();it.pts.forEach((p,k)=>{const x=X(p[0]+of[0]),y=Y(p[1]+of[1]);k?g.lineTo(x,y):g.moveTo(x,y);});if(it.t=='a')g.closePath();
+   g.setLineDash([6,4]);g.lineWidth=Math.max(1.5,2/sc());g.strokeStyle='#ff6f00';g.stroke();g.setLineDash([]);
+   it.pts.forEach(p=>{g.beginPath();g.arc(X(p[0]+of[0]),Y(p[1]+of[1]),r,0,7);g.fillStyle='#fff';g.fill();g.lineWidth=Math.max(2,r*.35);g.strokeStyle='#ff6f00';g.stroke();});});
+  g.restore();}
  $('hint').textContent=(qActive()?'📋 Queue: සිතියමේ click කර, එන ලැයිස්තුවෙන් නම තෝරන්න. ':'')+hints[tool()]+(compact()?' (සරල පෙනුම: තිතක් click කර නම බලන්න)':tool()=='mv'?' (Move අතරතුර සියල්ල විස්තර සහිතව පෙන්වයි)':'');
  const ul=$('list');ul.innerHTML='';
  items.forEach((it,i)=>{const li=document.createElement('li');
@@ -351,6 +361,7 @@ function redraw(){
    if(t.trim())it.nt=t.trim();else delete it.nt;if(e.trim())it.ne=e.trim();else delete it.ne;changed();};
   li.appendChild(tb);
   /* ✎ සංස්කරණය (popup) */
+  if(it.t=='a'){const ci=document.createElement('input');ci.type='color';ci.value=it.c||'#ff9800';ci.title='ප්‍රදේශයේ වර්ණය වෙනස් කරන්න';ci.style.cssText='padding:0;width:26px;height:24px';ci.onchange=()=>{it.c=ci.value;changed();};li.appendChild(ci);}
   const eb=document.createElement('button');eb.textContent='✎';eb.title='වර්ග / නම සංස්කරණය කරන්න';eb.style.background='#f59e0b';eb.onclick=()=>openEdit(i);li.appendChild(eb);
   const b=document.createElement('button');b.textContent='×';b.onclick=()=>{items.splice(i,1);ck.clear();hideInfo();changed();};li.appendChild(b);
   /* කොළ පාට වර්ග පේළිය – එක් එක් chip එකේ × ඔබා ඉවත් කළ හැක; double-click කළ විට popup */
@@ -399,7 +410,7 @@ function nm(){const n=$('name').value.trim();if(!n){alert('පළමුව න�
 const esc=t=>String(t).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 const MC={p:'#d6212b',r:'#0a6bd6',d:'#111',a:'#ff9800'};
 $('cmp').checked=(()=>{try{return localStorage.getItem('gs_compact')!='0';}catch(e){return true;}})();
-const compact=()=>$('cmp').checked&&tool()!='mv';/* Move අතරතුර සියල්ල පෙනේ (නම් ගෙන යාමට) */
+const compact=()=>$('cmp').checked&&tool()!='mv'&&tool()!='ev';/* Move අතරතුර සියල්ල පෙනේ (නම් ගෙන යාමට) */
 const sc=()=>cv.getBoundingClientRect().width/L.W||.2;/* canvas px → තිරයේ px */
 function anchor(it){/* අයිතමයේ තිත තබන ස්ථානය */
  if(it.t=='p')return[it.x,it.y];
@@ -439,6 +450,7 @@ Z.onzoom=()=>{if(L&&compact()){clearTimeout(zt);zt=setTimeout(redraw,60);}};
 /* ---------- Click කර ලකුණු කිරීම ---------- */
 cv.onclick=e=>{
  if(tool()=='mv')return;
+ if(tool()=='ev'){evClick(e);return;}
  if(compact()&&!tmp.length&&!pend&&!qActive()){/* තිතක් click කළ විට නම පෙන්වයි; වෙනත් තැනක් click කළ විට විස්තරය පමණක් වැසේ */
   const h=markerAt(e);
   if(h!=null){redraw0(h,e);return;}
@@ -476,6 +488,7 @@ function hit(e){
  return null;
 }
 cv.onpointerdown=e=>{
+ if(tool()=='ev'){evDown(e);return;}
  if(tool()!='mv')return;const h=hit(e);if(!h){Z.startPan(e);return;}
  const it=items[h.i],[nx,ny]=pointer(cv,L,e),k=h.w=='l'?['lx','ly']:['x','y'];
  /* ඊතලයක් නැති සාමාන්‍ය නමක් නම්, දැනට නම තිබෙන තැනින් පටන් ගනී */
@@ -487,11 +500,51 @@ cv.onpointerdown=e=>{
 cv.onpointermove=e=>{
  const[x,y]=pointer(cv,L,e);
  $('cell').textContent='කොටුව: '+(x<0||y<0||x>1||y>1?'–':cellId(L,x,y));
+ if(vdrag){evMove(x,y);return;}
  if(drag){const c=v=>r4(Math.min(1,Math.max(0,v)));
   drag.it[drag.k[0]]=c(x+drag.ox);drag.it[drag.k[1]]=c(y+drag.oy);redraw();}
  else if(tool()=='mv')cv.style.cursor=hit(e)?'move':'default';
+ else if(tool()=='ev')cv.style.cursor=($('evm').value=='mv'&&evHitV(e))?'move':'default';
 };
-cv.onpointerup=cv.onpointercancel=()=>{if(drag){drag=null;changed();}};
+cv.onpointerup=cv.onpointercancel=()=>{if(drag){drag=null;changed();}if(vdrag){vdrag=null;evJust=true;setTimeout(()=>evJust=false,60);changed();}};
+
+/* ---------- මායිම සංස්කරණය: ප්‍රදේශ / ගංගා / අමුණු වල ලක්ෂ්‍ය ඇදීම, එක් කිරීම, මකීම ---------- */
+let vdrag=null,evJust=false;
+const evOff=it=>it.t=='r'?[it.ox||0,it.oy||0]:[0,0];
+const evCan=e=>{const[nx,ny]=pointer(cv,L,e);return{nx,ny,mx:L.ix+nx*L.iw,my:L.iy+ny*L.ih};};
+function evHitV(e){
+ const{mx,my}=evCan(e),th=Math.max(12,14/sc());let b=null,bd=1e9;
+ items.forEach((it,i)=>{if(!it.pts)return;const of=evOff(it);
+  it.pts.forEach((p,k)=>{const d=Math.hypot(L.ix+(p[0]+of[0])*L.iw-mx,L.iy+(p[1]+of[1])*L.ih-my);if(d<=th&&d<=bd){bd=d;b={i,k};}});});
+ return b;
+}
+function evHitE(e){
+ const{mx,my}=evCan(e),th=Math.max(12,14/sc());let b=null,bd=1e9;
+ items.forEach((it,i)=>{if(!it.pts||it.pts.length<2)return;const of=evOff(it),n=it.pts.length,m=it.t=='a'?n:n-1;
+  for(let k=0;k<m;k++){const a=it.pts[k],c=it.pts[(k+1)%n],
+   ax=L.ix+(a[0]+of[0])*L.iw,ay=L.iy+(a[1]+of[1])*L.ih,bx=L.ix+(c[0]+of[0])*L.iw,by=L.iy+(c[1]+of[1])*L.ih,
+   dx=bx-ax,dy=by-ay,l2=dx*dx+dy*dy,t=l2?Math.max(0,Math.min(1,((mx-ax)*dx+(my-ay)*dy)/l2)):0,
+   px=ax+t*dx,py=ay+t*dy,d=Math.hypot(px-mx,py-my);
+   if(d<=th&&d<bd){bd=d;b={i,k,x:(px-L.ix)/L.iw-of[0],y:(py-L.iy)/L.ih-of[1]};}}});
+ return b;
+}
+function evDown(e){
+ if(e.button||!L)return;
+ if($('evm').value=='mv'){const h=evHitV(e);
+  if(h){const it=items[h.i],p=it.pts[h.k],of=evOff(it),c=evCan(e);
+   vdrag={it,k:h.k,id:e.pointerId,ox:p[0]+of[0]-c.nx,oy:p[1]+of[1]-c.ny,of};
+   try{cv.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();return;}}
+ Z.startPan(e);
+}
+function evMove(x,y){const c=v=>r4(Math.min(1,Math.max(0,v))),d=vdrag;
+ d.it.pts[d.k]=[c(x+d.ox-d.of[0]),c(y+d.oy-d.of[1])];redraw();}
+function evClick(e){
+ if(evJust||!L)return;const m=$('evm').value;
+ if(m=='del'){const h=evHitV(e);if(!h)return;const it=items[h.i];
+  if(it.pts.length<=(it.t=='a'?3:2)){alert(it.t=='a'?'ප්‍රදේශයක ලක්ෂ්‍ය 3කට අඩු විය නොහැක':'ලක්ෂ්‍ය 2කට අඩු විය නොහැක');return;}
+  it.pts.splice(h.k,1);changed();}
+ else if(m=='add'){const h=evHitE(e);if(!h)return;items[h.i].pts.splice(h.k+1,0,[r4(h.x),r4(h.y)]);changed();}
+}
 
 /* ---------- ස්ථානයක් සංස්කරණය (popup) ---------- */
 let em=null;
@@ -514,6 +567,7 @@ function addNewVal(inp,arr,isCat,refill){const v=inp.value.trim();if(!v)return;
 function openEdit(i){const it=items[i];if(!it)return;
  em={i,g:(it.g||[]).slice(),yr:(it.yr||[]).slice(),sig:(it.sig||[]).slice()};
  $('emN').value=it.n;$('emT').value=it.nt||'';$('emE').value=it.ne||'';
+ $('emA').style.display=it.t=='a'?'block':'none';if(it.t=='a'){$('emC').value=it.c||'#ff9800';$('emP').value=it.pt||'s';}
  emFill();hideInfo();$('em').style.display='flex';}
 function closeEdit(){em=null;$('em').style.display='none';}
 function emFill(){
@@ -532,7 +586,8 @@ $('emClr').onclick=()=>{em.g=[];emFill();};
 $('emNo').onclick=closeEdit;
 $('emOk').onclick=()=>{
  const it=items[em.i],n=$('emN').value.trim();if(!n){alert('නම හිස් විය නොහැක');return;}
- it.n=n;const t=$('emT').value.trim(),e=$('emE').value.trim();
+ it.n=n;if(it.t=='a'){it.c=$('emC').value;it.pt=$('emP').value;}
+ const t=$('emT').value.trim(),e=$('emE').value.trim();
  if(t)it.nt=t;else delete it.nt;if(e)it.ne=e;else delete it.ne;
  if(em.g.length)it.g=em.g;else delete it.g;
  if(em.yr.length)it.yr=em.yr;else delete it.yr;
@@ -672,7 +727,7 @@ function qNames(){return $('qt').value.split('\n').map(x=>x.trim()).filter(Boole
  const p=raw.split(/\s*[|\t]\s*/),o={raw,n:(p[0]||'').trim()};
  if(p[1]&&p[1].trim())o.nt=p[1].trim();if(p[2]&&p[2].trim())o.ne=p[2].trim();return o;}).filter(o=>o.n);}
 const qTN=en=>{const o={};if(en.nt)o.nt=en.nt;if(en.ne)o.ne=en.ne;return o;};
-function qActive(){return $('qon').checked&&tool()!='mv'&&qNames().length>0;}
+function qActive(){return $('qon').checked&&tool()!='mv'&&tool()!='ev'&&qNames().length>0;}
 function qSave(){try{localStorage.setItem('gs_queue',$('qt').value);}catch(e){}$('qc').textContent='ඉතිරි: '+qNames().length;qHL();}
 function qRemove(en){const ls=$('qt').value.split('\n'),k=ls.findIndex(l=>l.trim()==en.raw);if(k>=0)ls.splice(k,1);$('qt').value=ls.join('\n');qSave();}
 function qMark(){const c=[...$('ql').children];c.forEach((d,i)=>d.className=(qlist.length&&i==qi)?'on':(qlist[i]&&dbHas(qlist[i].n)?'db':''));if(c[qi]&&qlist.length)c[qi].scrollIntoView({block:'nearest'});}
@@ -768,8 +823,9 @@ $('undo').onclick=()=>{if(pend){pend=null;pendQ=null;}else if(tmp.length)tmp.pop
 $('cancel').onclick=()=>{tmp=[];pend=null;pendQ=null;redraw();};
 document.addEventListener('keydown',e=>{const ai=document.activeElement.id;if(e.key=='Enter'&&ai!='out'&&ai!='qt'&&ai!='qs')finish();if(e.key=='Escape'){tmp=[];pend=null;pendQ=null;hideInfo();redraw();}});
 document.querySelectorAll('[name=t]').forEach(r=>r.onchange=()=>{tmp=[];pend=null;pendQ=null;closeQP();hideInfo();
- cv.style.cursor=tool()=='mv'?'default':'crosshair';
- cv.style.touchAction=tool()=='mv'?'none':'manipulation';redraw();});
+ cv.style.cursor=(tool()=='mv'||tool()=='ev')?'default':'crosshair';
+ cv.style.touchAction=(tool()=='mv'||tool()=='ev')?'none':'manipulation';
+ $('evbox').style.display=tool()=='ev'?'block':'none';redraw();});
 $('fsz').oninput=redraw;
 $('map').onchange=e=>load(e.target.value);
 /* භාෂා tabs */
