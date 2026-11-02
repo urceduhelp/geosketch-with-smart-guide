@@ -53,7 +53,7 @@
   e.stopPropagation();
   try{
    var r=await sb().auth.getSession();
-   if(r.data&&r.data.session){location.href='editor.html';return;}
+   if(r.data&&r.data.session){try{sessionStorage.setItem('gs_admin','1');}catch(_){}location.href='editor.html';return;}
   }catch(_){}
   labels();$('adR').textContent='';w.style.display='flex';$('adM').focus();
  };
@@ -62,6 +62,7 @@
   try{
    var r=await sb().auth.signInWithPassword({email:$('adM').value.trim(),password:$('adW').value});
    if(r.error||!r.data.session)throw (r.error||new Error('no session'));
+   try{sessionStorage.setItem('gs_admin','1');}catch(_){}
    location.href='editor.html';
   }catch(err){$('adR').textContent=tx().err;}
  }
