@@ -835,5 +835,6 @@ $('map').onchange=e=>load(e.target.value);
 applyUI();fillMapSelect();$('st').textContent=T[lang].loading;
 loadAll().then(()=>load(MAPS[0].k)).then(()=>{try{if(!localStorage.getItem('gs_how_seen'))openHow();}catch(e){}});/* පළමු වරට පැමිණෙන අයට ස්වයංක්‍රීයව පෙන්වයි */
 </script>
+ <script src="admin-button.js"></script>
 </body>
 </html>
