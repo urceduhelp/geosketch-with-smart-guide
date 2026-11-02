@@ -42,7 +42,7 @@
  var $=function(i){return document.getElementById(i);};
 
  function labels(){
-  var t=tx();btn.textContent=t.b;$('adT').textContent=t.t;$('adE').textContent=t.e;$('adP').textContent=t.p;$('adG').textContent=t.g;
+  var t=tx();btn.textContent=t.b;$('adT').textContent=t.t+' (v3)';$('adE').textContent=t.e;$('adP').textContent=t.p;$('adG').textContent=t.g;
  }
  labels();
  /* භාෂාව මාරු වූ විට නැවත නම් යොදයි */
