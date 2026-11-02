@@ -82,6 +82,12 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
 .hwb .tip{background:#fff7e0;border:1px solid #f0d58a;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:14px;color:#5a4a10}
 .hwf{padding:10px 16px;border-top:1px solid #e3edf3;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
 .hwf label{display:flex;gap:6px;align-items:center;cursor:pointer}
+/* මගේ සිතියම */
+#cmb{background:#1b9a55}
+#cmp .chip.on i{color:#fff}
+#cmq{width:100%;height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
+.cmb2{padding:0 12px 12px;display:flex;gap:6px;flex-wrap:wrap}
+.cmb2 button{flex:1;padding:9px}
 @media(max-width:760px){
  body{font-size:14px}
  header{padding:6px 8px}
@@ -111,6 +117,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <button id="plb" data-t="places"></button>
  <button id="tyb" data-t="types"></button>
  <button id="rmb" type="button" data-t="rmb"></button>
+ <button id="cmb" type="button" data-t="cmb"></button>
  <button id="hwo" type="button" data-t="howb"></button>
  <button id="exj" type="button">⬇ JPG</button>
  <button id="exp" type="button">⬇ PDF</button>
@@ -122,6 +129,16 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
 
 <div class="pop" id="plp"><div class="ph"><span data-t="places"></span><span id="plc"></span></div><div class="pb" id="pli"></div></div>
 <div class="pop" id="typ"><div class="ph"><span data-t="types"></span></div><div class="pb"><div class="chips" id="tyc"></div></div></div>
+<div class="pop" id="cmp"><div class="ph"><span data-t="cmb"></span><span id="cmn">0</span></div><div class="pb">
+ <div style="padding:10px 10px 0"><input id="cmq" autocomplete="off"><div id="cms" style="max-height:190px;overflow:auto"></div></div>
+ <div class="chips" style="padding-bottom:0"><button type="button" class="chip" id="cmadd" data-t="cmadd"></button></div>
+ <div class="rmh" data-t="cm2"></div>
+ <div class="chips" id="cmc"></div>
+ <div class="cmb2">
+  <button type="button" id="cmshow" data-t="cmshow"></button>
+  <button type="button" id="cmpdf" data-t="cmpdf" style="background:#d6212b"></button>
+  <button type="button" id="cmclr" data-t="cmclr" style="background:#7b4bd6"></button>
+ </div></div></div>
 <div class="pop" id="rmp"><div class="ph"><span data-t="rmt"></span></div><div class="pb">
  <div class="rmh" data-t="rm1"></div>
  <div class="chips" style="padding-bottom:0"><button type="button" class="chip" id="rma" data-t="rma"></button><button type="button" class="chip" id="rmn" data-t="rmn"></button></div>
@@ -175,6 +192,10 @@ const T={
   ph:'Search a place...',none:'No place found',hint:'Search a place, pick a letter, choose from the list, or tap a place on the map',near:'+ nearby places',nodata:'No data for this map',pickLetter:'Pick a letter',loading:'Loading...',
   tones:['White','Cream','Blue','Green'],all:'All in this type'}
 };
+/* ---------- මගේ සිතියම: භාෂා පාඨ ---------- */
+Object.assign(T.si,{cmb:'🧺 මගේ සිතියම',cm2:'තෝරාගත් ස්ථාන',cmph:'ස්ථානයක් සොයා එක් කරන්න...',cmadd:'＋ දැන් පෙන්වන ස්ථානය එක් කරන්න',cmshow:'සිතියමේ පෙන්වන්න',cmclr:'හිස් කරන්න',cmpdf:'⬇ PDF',cmempty:'ස්ථාන තෝරා නැත',cmres:'තෝරාගත් ස්ථාන සිතියම'});
+Object.assign(T.ta,{cmb:'🧺 என் வரைபடம்',cm2:'தேர்ந்தெடுத்த இடங்கள்',cmph:'இடத்தைத் தேடிச் சேர்க்கவும்...',cmadd:'＋ தற்போதைய இடத்தைச் சேர்',cmshow:'வரைபடத்தில் காட்டு',cmclr:'அழி',cmpdf:'⬇ PDF',cmempty:'இடங்கள் தேர்ந்தெடுக்கப்படவில்லை',cmres:'தேர்ந்தெடுத்த இடங்களின் வரைபடம்'});
+Object.assign(T.en,{cmb:'🧺 My Map',cm2:'Chosen places',cmph:'Search a place to add...',cmadd:'＋ Add the place now shown',cmshow:'Show on map',cmclr:'Clear',cmpdf:'⬇ PDF',cmempty:'No places chosen',cmres:'Selected places map'});
 const MN={
  si:{ol_lanka:'සාමාන්‍ය පෙළ ලංකා සිතියම',ol_eurasia:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',ol_world:'සම්පූර්ණ ලෝක සිතියම',al_europe1:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',al_europe2:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',al_lanka:'උසස් පෙළ ලංකා සිතියම',al_india:'උසස් පෙළ ඉන්දියා සිතියම'},
  ta:{ol_lanka:'சாதாரண தர இலங்கை வரைபடம்',ol_eurasia:'சாதாரண தர யூரேசியா வரைபடம்',ol_world:'முழு உலக வரைபடம்',al_europe1:'உயர்தர ஐரோப்பா வரைபடம் (கருங்கடல் வரை)',al_europe2:'உயர்தர ஐரோப்பா வரைபடம் (கஸ்பியன் கடல் வரை)',al_lanka:'உயர்தர இலங்கை வரைபடம்',al_india:'உயர்தர இந்தியா வரைபடம்'},
@@ -192,6 +213,7 @@ const HOW={
   ['අවට ස්ථාන ගණන වෙනස් කරන්න','<b>⚙</b> බොත්තම ඔබා "ආසන්න ස්ථාන ගණන" ලිස්සුම් තීරුව (0 සිට 15 දක්වා) වෙනස් කරන්න. ආසන්න <b>ගංගා</b> ද බැලීමට "ආසන්න ගංගා ද පෙන්වන්න" ටික් කරන්න.'],
   ['වර්ගයක් අනුව බලන්න','<b>🗂 සිතියම් වර්ග</b> බොත්තම ඔබා (ගංගාව, වැව, වරාය ආදී) එක් වර්ගයක් තෝරන්න. එවිට එම වර්ගයේ සියලු ස්ථාන එකවර සිතියමේ පෙනේ.'],
   ['Random සිතියමක් සාදන්න','<b>🎲 Random Map</b> බොත්තම ඔබන්න. පළමුව ඇතුළත් කළ යුතු <b>වර්ග</b> (ගංගා, ඓතිහාසික ස්ථාන ආදී) තෝරන්න, ඉන්පසු <b>ස්ථාන ගණන</b> තෝරා "සිතියම සාදන්න" ඔබන්න. DB එකේ වැඩිපුර ඇති වර්ගවලින් වැඩි ස්ථාන ගණනක් ද, අඩුවෙන් ඇති වර්ගවලින් අඩු ගණනක් ද ස්වයංක්‍රීයව තෝරයි. සිතියම පුරා විහිදුණු ස්ථාන තෝරන අතර, එකම වර්ගයේ ස්ථාන දෙකක් එකම කොටුවක හෝ ආසන්න කොටුවක නොපෙනේ. ස්ථාන ගණන වර්ග ගණනට වඩා අඩු නම් දෝෂ පණිවිඩයක් පෙන්වයි.','නැවත ඔබන සෑම වාරයකම වෙනස් සිතියමක් සැදේ.'],
+  ['මගේ සිතියම (කැමති ස්ථාන තෝරා PDF ගන්න)','<b>🧺 මගේ සිතියම</b> බොත්තම ඔබන්න. එහි සෙවුම් පෙට්ටියෙන් ස්ථාන සොයා එකින් එක එක් කරන්න (නැතිනම් සිතියමේ ස්ථානයක් පෙන්වා "දැන් පෙන්වන ස්ථානය එක් කරන්න" ඔබන්න). ඉන්පසු <b>සිතියමේ පෙන්වන්න</b> ඔබන්න - තෝරාගත් සියලු ස්ථාන එකම සිතියමක පෙනේ. <b>⬇ PDF</b> ඔබන විට එය A4 PDF එකක් ලෙස බාගත වේ.','භාෂාව හෝ සිතියම මාරු කළ විට ලැයිස්තුව හිස් වේ.'],
   ['නමක් වෙනත් තැනකට ගෙනයන්න','නම් එකිනෙක ළං වී පැහැදිලි නැතිනම් <b>✋</b> බොත්තම ඔබන්න (රතු පැහැ වේ). දැන් ඕනෑම නමක් <b>ඇදගෙන ගොස්</b> අවශ්‍ය තැන දමන්න. ඊතලයේ හිස ස්ථානයේම රැඳෙන අතර, ඊතලය 90° නැවී නම සමග ගමන් කරයි. අවසන් වූ පසු නැවත ✋ ඔබන්න.','මුල් තැනට ගෙන ඒමට: ⚙ → "Move කළ නම් යළි මුල් තැනට".'],
   ['ඉගෙනීම පහසු කරගන්න','<b>⚙</b> තුළ "අකුරු ප්‍රමාණය" වෙනස් කළ හැක. "මෘදු ආවරණය" මගින් සිතියමේ පසුබිම ළා පැහැයකින් මැකී, නම් වඩා පැහැදිලිව පෙනේ.']
  ],
@@ -205,6 +227,7 @@ const HOW={
   ['அருகிலுள்ள இடங்களின் எண்ணிக்கை','<b>⚙</b> பொத்தானை அழுத்தி "அருகிலுள்ள இடங்களின் எண்ணிக்கை" ஸ்லைடரை (0 முதல் 15 வரை) மாற்றுங்கள். அருகிலுள்ள <b>ஆறுகளையும்</b> காண "அருகிலுள்ள ஆறுகளையும் காட்டு" என்பதைத் தேர்வு செய்யுங்கள்.'],
   ['வகையின்படி பாருங்கள்','<b>🗂 வரைபட வகைகள்</b> பொத்தானை அழுத்தி (ஆறு, குளம், துறைமுகம் போன்ற) ஒரு வகையைத் தேர்ந்தெடுங்கள். அந்த வகையின் எல்லா இடங்களும் ஒரே நேரத்தில் வரைபடத்தில் தெரியும்.'],
   ['சீரற்ற வரைபடத்தை உருவாக்குங்கள்','<b>🎲 சீரற்ற வரைபடம்</b> பொத்தானை அழுத்துங்கள். முதலில் சேர்க்க வேண்டிய <b>வகைகளை</b> (ஆறுகள், வரலாற்றுத் தலங்கள் போன்றவை) தேர்ந்தெடுங்கள்; பின்னர் <b>இடங்களின் எண்ணிக்கையைத்</b> தேர்ந்தெடுத்து "வரைபடத்தை உருவாக்கு" என்பதை அழுத்துங்கள். தரவுத்தளத்தில் அதிகமாக உள்ள வகைகளிலிருந்து அதிக இடங்களும், குறைவாக உள்ள வகைகளிலிருந்து குறைந்த இடங்களும் தானாகத் தேர்ந்தெடுக்கப்படும். இடங்கள் வரைபடம் முழுவதும் பரவலாக இருக்கும்; ஒரே வகையின் இரண்டு இடங்கள் ஒரே கட்டத்திலோ அருகிலுள்ள கட்டத்திலோ வராது. இடங்களின் எண்ணிக்கை வகைகளின் எண்ணிக்கையைவிடக் குறைவாக இருந்தால் பிழைச் செய்தி காட்டப்படும்.','ஒவ்வொரு முறை அழுத்தும்போதும் வேறு வரைபடம் உருவாகும்.'],
+  ['என் வரைபடம் (விரும்பிய இடங்களுடன் PDF)','<b>🧺 என் வரைபடம்</b> பொத்தானை அழுத்துங்கள். அங்குள்ள தேடல் பெட்டியில் இடங்களைத் தேடி ஒவ்வொன்றாகச் சேருங்கள் (அல்லது வரைபடத்தில் ஓர் இடத்தைக் காட்டி "தற்போதைய இடத்தைச் சேர்" அழுத்துங்கள்). பின்னர் <b>வரைபடத்தில் காட்டு</b> அழுத்தினால் தேர்ந்தெடுத்த எல்லா இடங்களும் ஒரே வரைபடத்தில் தெரியும். <b>⬇ PDF</b> அழுத்தினால் A4 PDF ஆகப் பதிவிறக்கப்படும்.','மொழி அல்லது வரைபடத்தை மாற்றினால் பட்டியல் காலியாகும்.'],
   ['பெயரை வேறு இடத்துக்கு நகர்த்துங்கள்','பெயர்கள் நெருக்கமாக இருந்து தெளிவாகத் தெரியவில்லை என்றால் <b>✋</b> பொத்தானை அழுத்துங்கள் (சிவப்பாக மாறும்). பின்னர் எந்தப் பெயரையும் <b>இழுத்துச் சென்று</b> விரும்பிய இடத்தில் விடுங்கள். அம்புக்குறியின் முனை இடத்திலேயே இருக்கும்; அம்பு 90° வளைந்து பெயருடன் நகரும். முடிந்ததும் மீண்டும் ✋ ஐ அழுத்துங்கள்.','முதல் இடத்துக்குத் திரும்ப: ⚙ → "நகர்த்திய பெயர்களை மீட்டமை".'],
   ['கற்றலை எளிதாக்குங்கள்','<b>⚙</b> இல் "எழுத்து அளவை" மாற்றலாம். "மென்மையான திரை" வரைபடத்தின் பின்னணியை மங்கச் செய்து பெயர்களைத் தெளிவாகக் காட்டும்.']
  ],
@@ -218,6 +241,7 @@ const HOW={
   ['Change how many nearby places','Press <b>⚙</b> and move the "Number of nearby places" slider (0 to 15). Tick "Also show nearby rivers" to include rivers.'],
   ['Browse by type','Press <b>🗂 Map types</b> and choose a type (River, Tank, Port, etc.). All places of that type appear on the map together.'],
   ['Create a random map','Press <b>🎲 Random Map</b>. First choose the <b>types</b> to include (rivers, historical places, etc.), then choose the <b>number of places</b> and press "Create map". Types that are more common in the database get more places, and rarer types get fewer. Places are spread across the whole map, and two places of the same type never share a cell or sit in neighbouring cells. If you ask for fewer places than types, an error message is shown.','Press the button again for a different map each time.'],
+  ['My Map (pick places, get one PDF)','Press <b>🧺 My Map</b>. Use its search box to find places and add them one by one (or show a place on the map and press "Add the place now shown"). Then press <b>Show on map</b> and all chosen places appear on one map. Press <b>⬇ PDF</b> to download it as an A4 PDF.','The list is cleared when you change the language or the map.'],
   ['Move a name somewhere else','If names are too close to read, press <b>✋</b> (it turns red). Now <b>drag any name</b> and drop it where you want. The arrow tip stays on the place, and the arrow bends at 90° and follows the name. Press ✋ again when you are done.','To put names back: ⚙ → "Reset moved names".'],
   ['Make studying easier','In <b>⚙</b> you can change the "Text size". "Soft overlay" fades the map background so names stand out more.']
  ]
@@ -248,6 +272,8 @@ let lang='si',cur=null,img=null,L=null,G=new Map(),marked=new Set(),hl=null,main
 const items=()=>((DATA[lang]||{})[cur&&cur.k])||[];
 const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
 cv.style.touchAction='none';cv.style.cursor='grab';
+/* මගේ සිතියම සඳහා තත්ත්වය */
+const custom=new Set();let customMarked=null;
 /* ---------- Move මෙවලම (✋): නම පමණක් ඇදගෙන යාම. ඊතල හිස ස්ථානයේම තබා, අග කොටස 90° නැවුමකින් නම සමග ගමන් කරයි ---------- */
 let moveMode=false,drag=null,lastS=new Map();
 const manual=new Map();/* i -> {lx,ly} හෝ {ox,oy}. තාවකාලිකයි; සුරැකි දත්ත වෙනස් නොවේ */
@@ -505,7 +531,7 @@ function spreadLabels(g,fs){
  return out;
 }
 
-/* ---------- සිතියම ඇඳීම (මෘදු ආවරණය සහිතව) ---------- */
+/* ---------- සිතියම ඇඳීම (මෘදු ආවරණයත් සහිතව) ---------- */
 function draw(){if(!img||!L)return;lastS=paint(cv);}
 /* c = ඇඳිය යුතු canvas (තිරය හෝ export සඳහා වෙනම canvas එකක්) */
 function paint(c,o={}){
@@ -529,7 +555,7 @@ function paint(c,o={}){
 function doExport(kind){
  if(!img||!L)return;
  const c=document.createElement('canvas');
- paint(c,{grid:$('exg').checked,title:mainName||'',footer:footerText()});
+ paint(c,{grid:$('exg').checked,title:mainName||(marked===customMarked&&custom.size?T[lang].cmres:''),footer:footerText()});
  const name='GeoSketch-'+cur.k;
  if(kind=='pdf')exportPDF(c,name,L.land);else exportJPG(c,name);
 }
@@ -652,7 +678,7 @@ $('rmN').oninput=()=>{rmN=+$('rmN').value;$('rmNv').textContent=rmN;};
 $('rmgo').onclick=rmGenerate;
 
 /* ---------- පුවරු (panels) ---------- */
-const pops=['plp','typ','stp','rmp'];
+const pops=['plp','typ','stp','rmp','cmp'];
 function closeAll(){pops.forEach(p=>$(p).style.display='none');$('sug').classList.remove('open');$('lbp').classList.remove('open');$('lbb').classList.remove('on');}
 function togglePop(id,btn,build){
  const el=$(id),was=el.style.display=='flex';closeAll();if(was)return;
@@ -680,6 +706,41 @@ document.addEventListener('click',e=>{if(!e.target.closest('.pop,.sw'))closeAll(
 document.addEventListener('keydown',e=>{if(e.key=='Escape'){closeAll();stopRipple();if($('hw').classList.contains('open'))closeHow();}});
 $('plp').onclick=$('typ').onclick=$('stp').onclick=e=>e.stopPropagation();
 ['sOn','vOn','vA','vC','fsz'].forEach(id=>$(id).oninput=$(id).onchange=draw);
+
+/* ---------- මගේ සිතියම: කැමති ස්ථාන තෝරා තනි සිතියමකට එක් කර PDF ගැනීම ---------- */
+function buildCM(){
+ $('cmn').textContent=custom.size;
+ $('cmc').innerHTML=custom.size
+  ?[...custom].map(n=>`<button type="button" class="chip on" data-x="${esc(n)}">${esc(n)}<i>✕</i></button>`).join('')
+  :`<div class="none">${T[lang].cmempty}</div>`;
+}
+function cmSug(){
+ const v=norm($('cmq').value);
+ $('cms').innerHTML=v?sorted().filter(e=>norm(e.n).includes(v)&&!custom.has(e.n)).slice(0,10)
+  .map(e=>`<div class="row" data-a="${esc(e.n)}"><span>＋</span><span>${esc(e.n)}${e.g.size?`<span class="gl">${esc(tagOf(e))}</span>`:''}</span></div>`).join(''):'';
+}
+function cmAdd(n){if(n&&G.has(n)){custom.add(n);$('cmq').value='';cmSug();buildCM();}}
+function showCustom(){
+ const idx=[...custom].flatMap(n=>G.get(n)?G.get(n).idx:[]);
+ if(!idx.length){alert(T[lang].cmempty);return false;}
+ closeAll();stopRipple();activeCat=null;$('q').value='';
+ focusOn(idx,null);customMarked=marked;
+ $('st').textContent=`🧺 ${T[lang].cmres}: ${custom.size}`;
+ return true;
+}
+$('cmb').onclick=e=>{e.stopPropagation();togglePop('cmp',$('cmb'),()=>{buildCM();cmSug();});};
+$('cmp').onclick=e=>{e.stopPropagation();
+ const a=e.target.closest('[data-a]'),x=e.target.closest('[data-x]');
+ if(a)cmAdd(a.dataset.a);
+ else if(x){custom.delete(x.dataset.x);buildCM();cmSug();}};
+$('cmq').oninput=cmSug;
+$('cmq').onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();const f=$('cms').querySelector('[data-a]');if(f)cmAdd(f.dataset.a);}};
+$('cmadd').onclick=()=>{
+ if(mainName&&G.has(mainName))cmAdd(mainName);
+ else alert(T[lang].hint);};
+$('cmclr').onclick=()=>{custom.clear();buildCM();cmSug();};
+$('cmshow').onclick=showCustom;
+$('cmpdf').onclick=()=>{if(showCustom())doExport('pdf');};
 
 /* ---------- Search bar ---------- */
 function renderSug(list){
@@ -735,6 +796,7 @@ function applyUI(){
  const t=T[lang];
  document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t[e.dataset.t]);
  $('q').placeholder=t.ph;
+ $('cmq').placeholder=t.cmph;
  const vc=$('vC'),v=vc.value||'0';vc.innerHTML='';t.tones.forEach((n,i)=>vc.add(new Option(n,i)));vc.value=v;
  document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.classList.toggle('on',b.dataset.l==lang));
  document.documentElement.lang=lang;
@@ -742,7 +804,7 @@ function applyUI(){
 }
 function setLang(l){
  lang=l;closeAll();stopRipple();applyUI();fillMapSelect(cur&&cur.k);
- buildGroups();marked=new Set();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
+ buildGroups();marked=new Set();custom.clear();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
  $('st').textContent=G.size?T[lang].hint:T[lang].nodata;draw();
 }
 document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.onclick=()=>setLang(b.dataset.l));
@@ -764,7 +826,7 @@ async function load(k){
  cur=MAPS.find(m=>m.k==k);closeAll();stopRipple();$('st').textContent=T[lang].loading;
  img=null;
  try{await fontReady();img=await loadImg(cur.url);}catch(e){img=null;$('st').textContent='රූපය load වුණේ නැත / Image failed';return;}
- L=layout(img);buildGroups();marked=new Set();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
+ L=layout(img);buildGroups();marked=new Set();custom.clear();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
  Z.reset();draw();
  $('st').textContent=G.size?T[lang].hint:T[lang].nodata;
 }
