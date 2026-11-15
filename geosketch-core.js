@@ -115,13 +115,14 @@ function drawItem(g,L,it,fs,sp=.15,gp=.17,dr=.14){
   /* නම: Move කර ඇත්නම් (lx,ly) එතැන, නැත්නම් මැද */
   const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);halo(it.n,X(c[0]),Y(c[1]),'center');
  }else if(it.t=='d'){/* අමුණ / ඇළ: ආසන්න සමාන්තර රේඛා ද්විත්වයක් (ඉර පමණි). නම වෙනම තබයි (lx,ly) */
-  const P=it.pts.map(p=>[X(p[0]),Y(p[1])]),h=fs*gp;/* gp = රේඛා දෙක අතර අඩ පරතරය */
+  const P=it.pts.map(p=>[X(p[0]),Y(p[1])]),lw=it.lw||(it.ds?6:2.5),h=it.ds?lw/2:fs*(it.gp!=null?it.gp:gp);/* gp = රේඛා දෙක අතර අඩ පරතරය */
   const N=P.map((p,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;return[-dy/d*h,dx/d*h];});
-  g.strokeStyle='#111';g.lineWidth=2.5;
-  [1,-1].forEach(s=>{g.beginPath();P.forEach((p,i)=>{const x=p[0]+N[i][0]*s,y=p[1]+N[i][1]*s;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
+  g.strokeStyle='#111';g.lineWidth=lw;
+  if(it.ds){g.save();g.lineCap='butt';g.setLineDash([lw*1.8,lw*1.1]);g.beginPath();P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();g.restore();}/* තද කඩ ඉර */
+  else [1,-1].forEach(s=>{g.beginPath();P.forEach((p,i)=>{const x=p[0]+N[i][0]*s,y=p[1]+N[i][1]*s;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
   if(it.lx!=null){
    const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,q=nearest(P,lx,ly);
-   if(q[2]>fs*1.3)drawArrow(g,fs,lx,ly,q[0],q[1],h,w);/* නම රේඛාවෙන් ඈතනම් ඊතලයක් */
+   if(q[2]>fs*(it.ar?.5:1.3))drawArrow(g,fs,lx,ly,q[0],q[1],h,w);/* නම රේඛාවෙන් ඈතනම් ඊතලයක් */
    halo(it.n,lx,ly,'center');
   }
  }else if(it.t=='r'){
