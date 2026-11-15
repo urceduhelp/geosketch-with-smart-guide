@@ -84,6 +84,18 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
 #cmq{width:100%;height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
 .cmb2{padding:0 12px 12px;display:flex;gap:6px;flex-wrap:wrap}
 .cmb2 button{flex:1;padding:9px}
+/* සිතියම් පොත */
+.bki{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid #e3edf3}
+.bki.ed{background:#fff7e0}
+.bki img{width:64px;height:auto;border:1px solid #9bb;background:#fff;flex:none}
+.bki .bkt{flex:1;font-size:13px;min-width:0}
+.bki .bkt small{color:#678;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bki .bka{display:flex;gap:3px;flex:none}
+.bki .bka button{padding:3px 7px;font-size:13px;background:#e8f5fd;color:var(--ink);border:1px solid #9bd}
+.bkf{padding:10px 12px 0;display:flex;flex-direction:column;gap:6px}
+.bkf input{height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
+.bkh{padding:6px 12px 8px;font-size:12px;color:#678}
+#bkb{background:#1b9a55}
 @media(max-width:760px){
  body{font-size:14px}
  header{padding:6px 8px}
@@ -113,6 +125,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <button id="plb" data-t="places"></button>
  <button id="tyb" data-t="types"></button>
  <button id="rmb" type="button" data-t="rmb"></button>
+ <button id="bkb" type="button"></button>
  <button id="hwo" type="button" data-t="howb"></button>
  <button id="exj" type="button">⬇ JPG</button>
  <button id="exp" type="button">⬇ PDF</button>
@@ -129,6 +142,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
   <button type="button" id="cmjpg" style="background:#1b9a55">⬇ JPG</button>
   <button type="button" id="cmpdf" style="background:#d6212b">⬇ PDF</button>
   <button type="button" id="cmclr" data-t="cmclr" style="background:#7b4bd6"></button>
+  <button type="button" id="cmbook" data-t="cmbook" style="background:#f5a623"></button>
  </div></div>
 <div class="pop" id="typ"><div class="ph"><span data-t="types"></span></div><div class="pb"><div class="chips" id="tyc"></div></div></div>
 <div class="pop" id="rmp"><div class="ph"><span data-t="rmt"></span></div><div class="pb">
@@ -139,6 +153,15 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <div class="set"><label><input id="rmN" type="range" min="1" max="100" step="1" value="20"><b id="rmNv" style="min-width:30px;text-align:right">20</b></label></div>
  <div style="padding:0 12px 12px"><button id="rmgo" type="button" data-t="rmgo" style="width:100%;padding:10px;background:#7b4bd6"></button></div>
 </div></div>
+<div class="pop" id="bkp" style="width:min(94vw,440px)"><div class="ph"><span data-t="bkt"></span><span id="bkn"></span></div>
+ <div class="pb"><div class="bkf"><input id="bkTi" maxlength="80" autocomplete="off"><input id="bkAu" maxlength="60" autocomplete="off"></div>
+ <div class="bkh" data-t="bkhelp"></div><div id="bkl"></div></div>
+ <div class="cmb2" style="padding-top:10px">
+  <button type="button" id="bkadd" style="flex:1 1 100%"></button>
+  <button type="button" id="bkupd" style="flex:1 1 100%;background:#f5a623"></button>
+  <button type="button" id="bkpdf" data-t="bkpdf" style="background:#d6212b"></button>
+  <button type="button" id="bkclr" data-t="bkclr" style="background:#7b4bd6"></button>
+ </div></div>
 <div class="pop" id="stp"><div class="ph"><span data-t="settings"></span></div>
  <div class="set">
   <label><span data-t="nnum"></span><span style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end"><input id="nN" type="range" min="0" max="15" step="1" value="3"><b id="nNv" style="min-width:20px;text-align:right">3</b></span></label>
@@ -184,6 +207,9 @@ const T={
 Object.assign(T.si,{cmb:'🧺 මගේ සිතියම',cm2:'තෝරාගත් ස්ථාන',cmph:'ස්ථානයක් සොයා එක් කරන්න...',cmadd:'＋ දැන් පෙන්වන ස්ථානය එක් කරන්න',cmshow:'සිතියමේ පෙන්වන්න',cmclr:'හිස් කරන්න',cmpdf:'⬇ PDF',cmempty:'ස්ථාන තෝරා නැත',cmres:'තෝරාගත් ස්ථාන සිතියම'});
 Object.assign(T.ta,{cmb:'🧺 என் வரைபடம்',cm2:'தேர்ந்தெடுத்த இடங்கள்',cmph:'இடத்தைத் தேடிச் சேர்க்கவும்...',cmadd:'＋ தற்போதைய இடத்தைச் சேர்',cmshow:'வரைபடத்தில் காட்டு',cmclr:'அழி',cmpdf:'⬇ PDF',cmempty:'இடங்கள் தேர்ந்தெடுக்கப்படவில்லை',cmres:'தேர்ந்தெடுத்த இடங்களின் வரைபடம்'});
 Object.assign(T.en,{cmb:'🧺 My Map',cm2:'Chosen places',cmph:'Search a place to add...',cmadd:'＋ Add the place now shown',cmshow:'Show on map',cmclr:'Clear',cmpdf:'⬇ PDF',cmempty:'No places chosen',cmres:'Selected places map'});
+Object.assign(T.si,{bkb:'📖 සිතියම් පොත',bkt:'සිතියම් පොත සකසන්න',bkpages:'පිටු',bkph1:'පොතේ නම (පිටකවරයට)',bkph2:'කර්තෘ නම',bkadd:'＋ දැන් පෙන්වන සිතියම පොතට එක් කරන්න',bknew:'＋ අලුත් පිටුවක් ලෙස එක් කරන්න',bkupd:'✔ තෝරාගත් පිටුව මේ සිතියමෙන් යාවත්කාලීන කරන්න',bkpdf:'⬇ පොත PDF ලෙස සුරකින්න',bkclr:'පොත හිස් කරන්න',bkclrq:'පොතේ සියලු සිතියම් ඉවත් කරන්නද?',bkempty:'පළමුව සිතියමේ ස්ථාන තෝරන්න (සෙවුම හෝ 📍 මගින්)',bkfull:'සිතියම් 20ක් උපරිමයි',bkno:'පොතේ සිතියම් නැත',bkbusy:'පොත සාදමින්...',cmbook:'＋ පොතට',bkhelp:'සිතියම් 1 = පිටු 1. පිටකවර 2 ත්, ඒවායේ ඇතුළු හිස් පිටු 2 ත් ස්වයංක්‍රීයව එකතු වේ (සිතියම් 10 = පිටු 14). ✎ ඔබා පිටුවක් නැවත සකසන්න.'});
+Object.assign(T.ta,{bkb:'📖 வரைபடப் புத்தகம்',bkt:'வரைபடப் புத்தகம்',bkpages:'பக்கங்கள்',bkph1:'புத்தகத்தின் பெயர் (அட்டைக்கு)',bkph2:'ஆசிரியர் பெயர்',bkadd:'＋ தற்போதைய வரைபடத்தைப் புத்தகத்தில் சேர்',bknew:'＋ புதிய பக்கமாகச் சேர்',bkupd:'✔ தேர்ந்த பக்கத்தை இந்த வரைபடத்தால் புதுப்பி',bkpdf:'⬇ புத்தகத்தை PDF ஆகச் சேமி',bkclr:'புத்தகத்தை அழி',bkclrq:'புத்தகத்தின் எல்லா வரைபடங்களையும் நீக்கவா?',bkempty:'முதலில் வரைபடத்தில் இடங்களைத் தேர்ந்தெடுங்கள்',bkfull:'அதிகபட்சம் 20 வரைபடங்கள்',bkno:'புத்தகத்தில் வரைபடங்கள் இல்லை',bkbusy:'புத்தகம் உருவாகிறது...',cmbook:'＋ புத்தகத்தில்',bkhelp:'1 வரைபடம் = 1 பக்கம். 2 அட்டைகளும் அவற்றின் உள் வெற்றுப் பக்கங்கள் 2 உம் தானாகச் சேரும் (10 வரைபடங்கள் = 14 பக்கங்கள்). ✎ அழுத்தி ஒரு பக்கத்தை மீண்டும் திருத்தலாம்.'});
+Object.assign(T.en,{bkb:'📖 Map Book',bkt:'Make a map book',bkpages:'pages',bkph1:'Book title (for the cover)',bkph2:'Author name',bkadd:'＋ Add the map now shown to the book',bknew:'＋ Add as a new page',bkupd:'✔ Update the selected page with this map',bkpdf:'⬇ Save book as PDF',bkclr:'Clear book',bkclrq:'Remove all maps from the book?',bkempty:'Choose places on the map first (search or 📍)',bkfull:'Maximum 20 maps',bkno:'No maps in the book',bkbusy:'Building the book...',cmbook:'＋ To book',bkhelp:'1 map = 1 page. 2 covers and their 2 blank inside pages are added automatically (10 maps = 14 pages). Press ✎ to edit a page again.'});
 const MN={
  si:{ol_lanka:'සාමාන්‍ය පෙළ ලංකා සිතියම',ol_eurasia:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',ol_world:'සම්පූර්ණ ලෝක සිතියම',al_europe1:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',al_europe2:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',al_lanka:'උසස් පෙළ ලංකා සිතියම',al_india:'උසස් පෙළ ඉන්දියා සිතියම'},
  ta:{ol_lanka:'சாதாரண தர இலங்கை வரைபடம்',ol_eurasia:'சாதாரண தர யூரேசியா வரைபடம்',ol_world:'முழு உலக வரைபடம்',al_europe1:'உயர்தர ஐரோப்பா வரைபடம் (கருங்கடல் வரை)',al_europe2:'உயர்தர ஐரோப்பா வரைபடம் (கஸ்பியன் கடல் வரை)',al_lanka:'உயர்தர இலங்கை வரைபடம்',al_india:'உயர்தர இந்தியா வரைபடம்'},
@@ -607,7 +633,7 @@ $('rmN').oninput=()=>{rmN=+$('rmN').value;$('rmNv').textContent=rmN;};
 $('rmgo').onclick=rmGenerate;
 
 /* ---------- පුවරු (panels) ---------- */
-const pops=['plp','typ','stp','rmp'];
+const pops=['plp','typ','stp','rmp','bkp'];
 function closeAll(){pops.forEach(p=>$(p).style.display='none');$('sug').classList.remove('open');$('lbp').classList.remove('open');$('lbb').classList.remove('on');}
 function togglePop(id,btn,build){
  const el=$(id),was=el.style.display=='flex';closeAll();if(was)return;
@@ -710,6 +736,7 @@ function applyUI(){
  document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.classList.toggle('on',b.dataset.l==lang));
  document.documentElement.lang=lang;
  if($('hw').classList.contains('open'))buildHow();
+ updateBk();
 }
 function setLang(l){
  lang=l;closeAll();stopRipple();applyUI();fillMapSelect(cur&&cur.k);
@@ -730,6 +757,186 @@ function closeHow(){
 $('hwo').onclick=e=>{e.stopPropagation();openHow();};
 $('hwx').onclick=$('hwk').onclick=closeHow;
 $('hw').onclick=e=>{if(e.target===$('hw'))closeHow();};
+
+/* ---------- සිතියම් පොත (උපරිම සිතියම් 20 + පිටකවර 2 + ඇතුළු හිස් පිටු 2) ---------- */
+const BKMAX=20;let book=[],editIdx=null;
+HOW.si.splice(10,0,['සිතියම් පොතක් සාදන්න','<b>📖 සිතියම් පොත</b> බොත්තම ඔබන්න. පළමුව සිතියමට ස්ථාන තෝරන්න (සෙවුම, 📍 ලැයිස්තුව, Random Map ආදී ඕනෑම ක්‍රමයකින්). පසුව <b>＋ දැන් පෙන්වන සිතියම පොතට එක් කරන්න</b> ඔබන්න. ඊළඟ සිතියම සඳහා නැවත ස්ථාන තෝරා නැවත එක් කරන්න (එකම සිතියම හෝ වෙනත් සිතියමක් විය හැක). සිතියම් 20ක් දක්වා එක් කළ හැක. පොතේ නම හා කර්තෘ නම ලියා <b>⬇ පොත PDF ලෙස සුරකින්න</b> ඔබන්න.','පිටකවර 2 සහ ඒවායේ ඇතුළු හිස් පිටු 2 ස්වයංක්‍රීයව එකතු වේ. සිතියම් 10ක් = පිටු 14. සෑම පිටුවකම පහළ GeoSketch ලකුණ ඇත.']);
+HOW.ta.splice(10,0,['வரைபடப் புத்தகம் உருவாக்குங்கள்','<b>📖 வரைபடப் புத்தகம்</b> பொத்தானை அழுத்துங்கள். முதலில் வரைபடத்தில் இடங்களைத் தேர்ந்தெடுங்கள் (தேடல், 📍 பட்டியல், சீரற்ற வரைபடம் ஏதேனும்). பின்னர் <b>＋ தற்போதைய வரைபடத்தைப் புத்தகத்தில் சேர்</b> அழுத்துங்கள். அடுத்த வரைபடத்திற்கும் இதையே செய்யுங்கள். 20 வரை சேர்க்கலாம். புத்தகத்தின் பெயர், ஆசிரியர் பெயரை எழுதி <b>⬇ புத்தகத்தை PDF ஆகச் சேமி</b> அழுத்துங்கள்.','2 அட்டைகளும் அவற்றின் உள் வெற்றுப் பக்கங்கள் 2 உம் தானாகச் சேரும். 10 வரைபடங்கள் = 14 பக்கங்கள். ஒவ்வொரு பக்கத்தின் கீழும் GeoSketch இருக்கும்.']);
+HOW.en.splice(10,0,['Make a map book','Press <b>📖 Map Book</b>. First choose places on the map (search, the 📍 list, Random Map, any way). Then press <b>＋ Add the map now shown to the book</b>. Choose places again and add the next one (same map or a different map). You can add up to 20. Type the book title and author, then press <b>⬇ Save book as PDF</b>.','2 covers and their 2 blank inside pages are added automatically. 10 maps = 14 pages. Every page carries the GeoSketch mark at the bottom.']);
+
+function updateBk(){
+ const t=T[lang],n=book.length;
+ $('bkb').textContent=`${t.bkb} (${n}/${BKMAX})`;
+ $('bkTi').placeholder=t.bkph1;$('bkAu').placeholder=t.bkph2;
+ $('bkn').textContent=`${n}/${BKMAX} · ${t.bkpages} ${n?n+4:0}`;
+ $('bkadd').textContent=editIdx==null?t.bkadd:t.bknew;
+ $('bkupd').textContent=t.bkupd;$('bkupd').style.display=editIdx==null?'none':'';
+}
+function buildBook(){
+ updateBk();
+ $('bkl').innerHTML=book.length?book.map((p,i)=>`<div class="bki${i==editIdx?' ed':''}"><img src="${p.thumb}" alt=""><div class="bkt"><b>${i+1}.</b> ${esc(p.mapName)}<small>${esc(p.title||'')}</small></div><span class="bka"><button type="button" data-a="open" data-i="${i}">✎</button><button type="button" data-a="up" data-i="${i}">↑</button><button type="button" data-a="dn" data-i="${i}">↓</button><button type="button" data-a="del" data-i="${i}">✕</button></span></div>`).join(''):`<div class="none">${T[lang].bkno}</div>`;
+}
+function snapPage(){
+ if(!L||!img||!marked.size){alert(T[lang].bkempty);return null;}
+ const ttl=mainName||(marked===customMarked&&custom.size?T[lang].cmres:'');
+ const t=document.createElement('canvas');paint(t,{grid:false,title:ttl,footer:footerText()});
+ const th=document.createElement('canvas');th.width=160;th.height=Math.max(1,Math.round(160*t.height/t.width));
+ th.getContext('2d').drawImage(t,0,0,th.width,th.height);
+ return{k:cur.k,lang,mapName:MN[lang][cur.k]||cur.name||cur.k,title:ttl,marked:[...marked],
+  manual:[...manual.entries()].map(([i,v])=>[i,Object.assign({},v)]),hl:hl?[...hl]:null,mainName,thumb:th.toDataURL('image/jpeg',.7)};
+}
+async function openPage(i){
+ const p=book[i];if(!p)return;
+ closeAll();
+ if(p.lang!==lang)setLang(p.lang);
+ if(cur.k!==p.k){$('map').value=p.k;await load(p.k);}else $('map').value=p.k;
+ manual.clear();
+ focusOn(p.marked,p.mainName);
+ p.manual.forEach(([j,v])=>manual.set(j,Object.assign({},v)));
+ draw();editIdx=i;updateBk();
+ $('st').textContent=`📖 ${i+1}/${book.length} — ${p.mapName}`;
+}
+$('bkb').onclick=e=>{e.stopPropagation();togglePop('bkp',$('bkb'),buildBook);};
+$('bkp').onclick=e=>{
+ e.stopPropagation();
+ const b=e.target.closest('[data-a]');if(!b)return;
+ const i=+b.dataset.i,a=b.dataset.a;
+ if(a=='open'){openPage(i);return;}
+ if(a=='del'){book.splice(i,1);editIdx=null;}
+ else if(a=='up'&&i>0){[book[i-1],book[i]]=[book[i],book[i-1]];editIdx=null;}
+ else if(a=='dn'&&i<book.length-1){[book[i+1],book[i]]=[book[i],book[i+1]];editIdx=null;}
+ buildBook();
+};
+$('bkadd').onclick=()=>{
+ if(book.length>=BKMAX){alert(T[lang].bkfull);return;}
+ const p=snapPage();if(!p)return;
+ book.push(p);editIdx=null;buildBook();
+};
+$('bkupd').onclick=()=>{
+ if(editIdx==null||!book[editIdx])return;
+ const p=snapPage();if(!p)return;
+ book[editIdx]=p;editIdx=null;buildBook();
+};
+$('bkclr').onclick=()=>{if(book.length&&confirm(T[lang].bkclrq)){book=[];editIdx=null;buildBook();}};
+$('cmbook').onclick=()=>{
+ if(book.length>=BKMAX){alert(T[lang].bkfull);return;}
+ if(!showCustom())return;
+ const p=snapPage();if(!p)return;
+ book.push(p);editIdx=null;updateBk();
+ $('st').textContent=`📖 ${T[lang].bkb}: ${book.length}/${BKMAX}`;
+};
+
+/* පිටකවර ඇඳීම */
+function wrapText(g,text,maxW){
+ const out=[];let line='';
+ const words=String(text).split(/\s+/).filter(Boolean);
+ const flush=()=>{if(line){out.push(line);line='';}};
+ words.forEach(w=>{
+  if(g.measureText(w).width>maxW){
+   flush();let part='';
+   Array.from(w).forEach(ch=>{if(g.measureText(part+ch).width>maxW&&part){out.push(part);part=ch;}else part+=ch;});
+   line=part;return;}
+  const t=line?line+' '+w:w;
+  if(g.measureText(t).width>maxW){flush();line=w;}else line=t;
+ });
+ flush();return out;
+}
+function coverCanvas(W,H,title,author,back){
+ const c=document.createElement('canvas');c.width=W;c.height=H;
+ const g=c.getContext('2d'),u=Math.min(W,H);
+ g.fillStyle='#0d2b45';g.fillRect(0,0,W,H);
+ g.strokeStyle='rgba(26,167,236,.16)';g.lineWidth=Math.max(1,u/900);
+ const st=u/12;
+ for(let x=st;x<W;x+=st){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke();}
+ for(let y=st;y<H;y+=st){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();}
+ g.strokeStyle='#1aa7ec';g.lineWidth=u/220;const m=u*.04;g.strokeRect(m,m,W-2*m,H-2*m);
+ g.textAlign='center';g.textBaseline='middle';
+ if(!back){
+  const fs=u*.085;g.font=`bold ${fs}px ${FONT}`;g.fillStyle='#ffffff';
+  const lines=wrapText(g,title||'',W*.76),lh=fs*1.35,y0=H*.38-(lines.length-1)*lh/2;
+  lines.forEach((l,i)=>g.fillText(l,W/2,y0+i*lh));
+  const yb=y0+(lines.length-1)*lh+fs*1.1;
+  g.fillStyle='#1aa7ec';g.fillRect(W/2-u*.12,yb,u*.24,u/160);
+  if(author){const fa=u*.045;g.font=`${fa}px ${FONT}`;g.fillStyle='#bfe6fa';
+   wrapText(g,author,W*.7).forEach((l,i)=>g.fillText(l,W/2,yb+fa*1.9+i*fa*1.4));}
+ }else if(title){
+  const fs=u*.04;g.font=`${fs}px ${FONT}`;g.fillStyle='#bfe6fa';
+  wrapText(g,title,W*.7).forEach((l,i)=>g.fillText(l,W/2,H*.45+i*fs*1.4));
+ }
+ /* පහළ GeoSketch ලකුණ */
+ const lf=u*.06;g.font=`bold ${lf}px ${FONT}`;g.textAlign='left';
+ const w1=g.measureText('Geo').width,w2=g.measureText('Sketch').width,x0=(W-w1-w2)/2,ly=H-m-lf*1.2;
+ g.fillStyle='#ffffff';g.fillText('Geo',x0,ly);g.fillStyle='#1aa7ec';g.fillText('Sketch',x0+w1,ly);
+ return c;
+}
+
+/* PDF ගොනුව සෑදීම (JPEG පිටු) */
+const jpgBytes=c=>{const b=atob(c.toDataURL('image/jpeg',.92).split(',')[1]),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;};
+function buildPDF(pgs){
+ const enc=new TextEncoder(),chunks=[],offs=[];let len=0;
+ const push=b=>{chunks.push(b);len+=b.length;},str=s=>push(enc.encode(s));
+ let next=3;
+ pgs.forEach(p=>{p.pid=next++;p.cid=next++;p.iid=p.jpg?next++:0;});
+ str('%PDF-1.4\n');
+ offs[1]=len;str('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+ offs[2]=len;str(`2 0 obj\n<< /Type /Pages /Count ${pgs.length} /Kids [${pgs.map(p=>p.pid+' 0 R').join(' ')}] >>\nendobj\n`);
+ pgs.forEach(p=>{
+  const f=n=>n.toFixed(2);
+  offs[p.pid]=len;
+  str(`${p.pid} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${f(p.pw)} ${f(p.ph)}] /Resources << ${p.iid?`/XObject << /Im0 ${p.iid} 0 R >>`:''} >> /Contents ${p.cid} 0 R >>\nendobj\n`);
+  let cs='';
+  if(p.jpg){const s=Math.min(p.pw/p.iw,p.ph/p.ih),dw=p.iw*s,dh=p.ih*s;cs=`q ${f(dw)} 0 0 ${f(dh)} ${f((p.pw-dw)/2)} ${f((p.ph-dh)/2)} cm /Im0 Do Q`;}
+  offs[p.cid]=len;
+  str(`${p.cid} 0 obj\n<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
+  if(p.iid){
+   offs[p.iid]=len;
+   str(`${p.iid} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${p.iw} /Height ${p.ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.jpg.length} >>\nstream\n`);
+   push(p.jpg);str('\nendstream\nendobj\n');
+  }
+ });
+ const xr=len,n=next;
+ str(`xref\n0 ${n}\n0000000000 65535 f \n`);
+ for(let i=1;i<n;i++)str(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+ str(`trailer\n<< /Size ${n} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
+ return new Blob(chunks,{type:'application/pdf'});
+}
+async function exportBook(){
+ if(!book.length){alert(T[lang].bkno);return;}
+ const btn=$('bkpdf'),old=btn.textContent;btn.disabled=true;btn.textContent=T[lang].bkbusy;$('st').textContent=T[lang].bkbusy;
+ const saved={lang,cur,img,L,marked,hl,mainName,manual:[...manual.entries()]};
+ try{
+  await fontReady();
+  const imgs=new Map();
+  for(const p of book)if(!imgs.has(p.k))imgs.set(p.k,await loadImg(MAPS.find(m=>m.k==p.k).url));
+  const mp=[];let size=null;
+  for(const p of book){
+   lang=p.lang;cur=MAPS.find(m=>m.k==p.k);img=imgs.get(p.k);L=layout(img);buildGroups();
+   marked=new Set(p.marked);hl=p.hl?[...p.hl]:null;mainName=p.mainName;
+   manual.clear();p.manual.forEach(([j,v])=>manual.set(j,Object.assign({},v)));
+   const c=document.createElement('canvas');
+   paint(c,{grid:$('exg').checked,title:p.title,footer:footerText()});
+   if(!size)size=[c.width,c.height];
+   const land=c.width>c.height;
+   mp.push({jpg:jpgBytes(c),iw:c.width,ih:c.height,pw:land?841.89:595.28,ph:land?595.28:841.89});
+   await new Promise(r=>setTimeout(r,0));
+  }
+  const land=size[0]>size[1],pw=land?841.89:595.28,ph=land?595.28:841.89;
+  const blank={jpg:null,pw,ph},ttl=$('bkTi').value.trim(),au=$('bkAu').value.trim();
+  const cover=b=>{const c=coverCanvas(size[0],size[1],ttl,au,b);return{jpg:jpgBytes(c),iw:c.width,ih:c.height,pw,ph};};
+  const pages=[cover(false),Object.assign({},blank),...mp,Object.assign({},blank),cover(true)];
+  const blob=buildPDF(pages),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='GeoSketch-Book.pdf';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),20000);
+  $('st').textContent=`📖 PDF: ${pages.length}`;
+ }catch(err){console.error(err);alert('PDF error: '+(err&&err.message||err));}
+ finally{
+  lang=saved.lang;cur=saved.cur;img=saved.img;L=saved.L;buildGroups();
+  marked=saved.marked;hl=saved.hl;mainName=saved.mainName;
+  manual.clear();saved.manual.forEach(([j,v])=>manual.set(j,v));
+  btn.disabled=false;btn.textContent=old;draw();
+ }
+}
+$('bkpdf').onclick=exportBook;
 
 async function load(k){
  cur=MAPS.find(m=>m.k==k);closeAll();stopRipple();$('st').textContent=T[lang].loading;
