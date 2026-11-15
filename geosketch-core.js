@@ -1,958 +1,433 @@
-<!DOCTYPE html>
-<html lang="si">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GeoSketch</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;700&display=swap" rel="stylesheet">
-<style>
-:root{--ink:#0d2b45;--grid:#1aa7ec;--paper:#f4f8fb;--red:#d6212b}
-*{box-sizing:border-box}
-html,body{max-width:100%;overflow-x:hidden}
-body{margin:0;height:100vh;height:100dvh;display:flex;flex-direction:column;font:15px 'Noto Sans Sinhala','Iskoola Pota',sans-serif;background:var(--paper);color:var(--ink)}
-header{flex:none;background:var(--ink);color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;position:relative;z-index:30}
-h1{margin:0;font-size:21px;letter-spacing:.5px}h1 i{font-style:normal;color:var(--grid)}
-select,button,input{font:inherit}
-select,button{padding:6px 10px;border-radius:6px;border:1px solid #9bb;background:#fff;color:var(--ink)}
-button{cursor:pointer;background:var(--grid);color:#fff;border:0;font-weight:700}
-header label.mapl{display:flex;gap:6px;align-items:center;font-size:13px}
-header select{max-width:260px}
-#lang{display:flex;gap:4px}
-#lang button{background:transparent;border:1px solid #ffffff66;border-radius:14px;padding:4px 11px;font-size:13px;font-weight:400}
-#lang button.on{background:var(--grid);border-color:var(--grid);font-weight:700}
-/* search + letter bar */
-.sw{position:relative;flex:1 1 300px;min-width:240px;max-width:560px}
-#q{width:100%;height:40px;padding:0 112px 0 12px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
-#lbb{position:absolute;right:5px;top:5px;height:30px;padding:0 10px;font-size:13px}
-#lbb.on{background:var(--ink)}
-#mvb{font-size:17px;padding:4px 10px}
-#mvb.on{background:var(--red);box-shadow:0 0 0 2px #fff8}
-#rmb{background:#7b4bd6}
-.drop{position:absolute;left:0;right:0;top:46px;display:none;background:#fff;color:var(--ink);border:2px solid var(--grid);border-radius:8px;box-shadow:0 8px 26px #0005;max-height:min(60vh,460px);overflow:auto;z-index:40}
-.drop.open{display:block}
-.row{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid #e3edf3;cursor:pointer}
-.row:hover,.row.act{background:#e8f5fd}
-.row .gl{display:block;font-size:11px;color:#1b7a3a}
-.row small{margin-left:auto;color:#678;font-size:11px}
-.none{padding:12px;color:#789}
-/* horizontal letter board */
-#lbp{padding:10px}
-.lbl{display:flex;flex-wrap:wrap;gap:6px}
-.lbl button{min-width:40px;height:40px;padding:0 8px;background:#e8f5fd;color:var(--ink);border:1px solid #9bd;font-size:18px;font-weight:700}
-.lbl button:hover{background:var(--grid);color:#fff}
-.lbl button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
-.lbr{margin-top:8px;border-top:1px dashed #9bb;max-height:260px;overflow:auto}
-.lbh{font-size:12px;color:#678;margin:8px 0 0}
-/* fixed panels */
-.pop{position:fixed;z-index:35;display:none;width:min(94vw,380px);max-height:72vh;flex-direction:column;background:#fff;color:var(--ink);border:2px solid var(--grid);border-radius:8px;box-shadow:0 6px 24px #0005}
-.pop .ph{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--grid);color:#fff;font-weight:700}
-.pop .pb{overflow:auto;flex:1;min-height:60px}
-.chips{display:flex;flex-wrap:wrap;gap:7px;padding:10px}
-.chip{background:#fff;color:var(--ink);border:1px solid #9bb;border-radius:16px;padding:4px 12px;font-weight:400;font-size:14px}
-.chip i{font-style:normal;color:#678;margin-left:5px;font-size:12px}
-.chip:hover{background:#e8f5fd}
-.chip.on{background:var(--grid);color:#fff;border-color:var(--grid)}.chip.on i{color:#fff}
-.set{padding:10px 12px;display:flex;flex-direction:column;gap:12px;font-size:14px}
-.set label{display:flex;gap:8px;align-items:center;justify-content:space-between}
-.set input[type=range]{flex:1;max-width:190px}
-.rmh{padding:10px 12px 0;font-weight:700;font-size:14px}
-#rmp .set input[type=range]{max-width:none}
-#st{font-size:13px;opacity:.9;flex:1 1 100%}
-main{flex:1;min-height:0;padding:8px}
-#vp{position:relative;height:100%}
-#box{height:100%;overflow:auto;display:flex;background:#dbe5ec;border:1px solid #c3d5e0;border-radius:6px}
-canvas{background:#fff;box-shadow:0 2px 14px #0003}
-/* How to use */
-#hwo{background:#f5a623}
-.hw{position:fixed;inset:0;z-index:60;display:none;background:#0d2b45cc;align-items:flex-start;justify-content:center;padding:3vh 10px;overflow:auto}
-.hw.open{display:flex}
-.hwc{background:#fff;color:var(--ink);border-radius:12px;max-width:660px;width:100%;box-shadow:0 10px 40px #0007;display:flex;flex-direction:column;max-height:94vh}
-.hwh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 16px;background:var(--grid);color:#fff;border-radius:10px 10px 0 0;font-weight:700;font-size:17px}
-.hwh .r{display:flex;gap:6px;align-items:center}
-.hwlb{background:#ffffff33;font-weight:400;font-size:13px;padding:3px 10px;border-radius:14px}
-.hwlb.on{background:#fff;color:var(--ink);font-weight:700}
-#hwx{background:#ffffff33;font-size:18px;padding:2px 10px}
-.hwb{padding:16px;overflow:auto;line-height:1.7;font-size:15px}
-.hwb .st{display:flex;gap:12px;margin:0 0 16px}
-.hwb .n{flex:none;width:32px;height:32px;border-radius:50%;background:var(--grid);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
-.hwb h4{margin:0 0 2px;font-size:16px}
-.hwb p{margin:0;color:#345}
-.hwb .tip{background:#fff7e0;border:1px solid #f0d58a;border-radius:8px;padding:8px 10px;margin-top:6px;font-size:14px;color:#5a4a10}
-.hwf{padding:10px 16px;border-top:1px solid #e3edf3;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
-.hwf label{display:flex;gap:6px;align-items:center;cursor:pointer}
-/* මගේ සිතියම */
-#cmq{width:100%;height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
-.cmb2{padding:0 12px 12px;display:flex;gap:6px;flex-wrap:wrap}
-.cmb2 button{flex:1;padding:9px}
-/* සිතියම් පොත */
-.bki{display:flex;gap:8px;align-items:center;padding:6px 10px;border-bottom:1px solid #e3edf3}
-.bki.ed{background:#fff7e0}
-.bki img{width:64px;height:auto;border:1px solid #9bb;background:#fff;flex:none}
-.bki .bkt{flex:1;font-size:13px;min-width:0}
-.bki .bkt small{color:#678;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bki .bka{display:flex;gap:3px;flex:none}
-.bki .bka button{padding:3px 7px;font-size:13px;background:#e8f5fd;color:var(--ink);border:1px solid #9bd}
-.bkf{padding:10px 12px 0;display:flex;flex-direction:column;gap:6px}
-.bkf input{height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
-.bkh{padding:6px 12px 8px;font-size:12px;color:#678}
-#bkb{background:#1b9a55}
-.bkti{width:100%;height:26px;margin-top:3px;padding:0 6px;border:1px solid #9bb;border-radius:6px;font-size:13px;color:var(--ink)}
-@media(max-width:760px){
- body{font-size:14px}
- header{padding:6px 8px}
- h1{font-size:18px;margin-right:auto}
- header label.mapl{flex:1 1 100%}
- header select{flex:1;max-width:none}
- .sw{flex:1 1 100%;max-width:none}
- main{padding:4px}
+/* GeoSketch core – index.html සහ editor.html දෙකම මෙය භාවිතා කරයි (එකම folder එකේ තබන්න) */
+const B='https://raw.githubusercontent.com/urceduhelp/geo-sketch-map-make/main/';
+const MAPS=[
+{k:'ol_lanka',name:'සාමාන්‍ය පෙළ ලංකා සිතියම',url:B+'2022(2021)OL%20Lanka-01.jpg'},
+{k:'ol_eurasia',name:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',url:B+'2022 OL Euracia02.jpg'},
+{k:'ol_world',name:'සම්පූර්ණ ලෝක සිතියම',url:B+'2022(2021)OL%20world-02.jpg'},
+{k:'al_europe1',name:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',url:B+'AL_Europe_1.jpg'},
+{k:'al_europe2',name:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',url:B+'AL_Europe_2.jpg'},
+{k:'al_lanka',name:'උසස් පෙළ ලංකා සිතියම',url:B+'AL_Lanka_India-01.jpg'},
+{k:'al_india',name:'උසස් පෙළ ඉන්දියා සිතියම',url:B+'AL_Lanka_India-02.jpg'}
+];
+/* A4 @200dpi: 1654x2339 px. Margin = 1 inch = 200px. Grid cell ≈ 0.5 inch */
+const MG=200,CELL=100,FONT="'Noto Sans Sinhala','Iskoola Pota',sans-serif";
+const colName=i=>String.fromCharCode(65+i);
+const fontReady=()=>document.fonts?document.fonts.load("24px 'Noto Sans Sinhala'").catch(()=>{}):Promise.resolve();
+
+function loadImg(u){return new Promise((ok,no)=>{const i=new Image();i.crossOrigin='anonymous';
+ i.onload=()=>ok(i);i.onerror=()=>{const j=new Image();j.onload=()=>ok(j);j.onerror=no;j.src=u;};i.src=u;});}
+
+function layout(img){
+ const land=img.width>img.height,W=land?2339:1654,H=land?1654:2339;
+ const s=Math.min((W-2*MG)/img.width,(H-2*MG)/img.height),iw=img.width*s,ih=img.height*s;
+ const cols=Math.max(1,Math.round(iw/CELL)),rows=Math.max(1,Math.round(ih/CELL));
+ return{land,W,H,iw,ih,ix:(W-iw)/2,iy:(H-ih)/2,cols,rows,cw:iw/cols,ch:ih/rows};
 }
-</style>
-</head>
-<body>
-<header>
- <h1>Geo<i>Sketch</i></h1>
- <div id="lang">
-  <button data-l="si">සිංහල</button>
-  <button data-l="ta">தமிழ்</button>
-  <button data-l="en">English</button>
- </div>
- <label class="mapl"><span data-t="map"></span><select id="map"></select></label>
- <div class="sw" id="sw">
-  <input id="q" autocomplete="off">
-  <button id="lbb" type="button" data-t="letters"></button>
-  <div id="sug" class="drop"></div>
-  <div id="lbp" class="drop"></div>
- </div>
- <button id="plb" data-t="places"></button>
- <button id="tyb" data-t="types"></button>
- <button id="rmb" type="button" data-t="rmb"></button>
- <button id="bkb" type="button"></button>
- <button id="hwo" type="button" data-t="howb"></button>
- <button id="exj" type="button">⬇ JPG</button>
- <button id="exp" type="button">⬇ PDF</button>
- <button id="mvb" type="button" title="Move: නම ඇදගෙන යන්න">✋</button>
- <button id="stb">⚙</button>
- <span id="st"></span>
-</header>
-<main><div id="vp"><div id="box"><canvas id="cv"></canvas></div></div></main>
+const cellId=(L,x,y)=>colName(Math.min(L.cols-1,Math.max(0,Math.floor(x*L.cols))))+(Math.min(L.rows-1,Math.max(0,Math.floor(y*L.rows)))+1);
 
-<div class="pop" id="plp"><div class="ph"><span data-t="places"></span><span id="plc">0</span></div>
- <div class="pb"><div style="padding:10px 10px 0"><input id="cmq" autocomplete="off"></div><div id="pli"></div></div>
- <div class="cmb2" style="padding-top:10px">
-  <button type="button" id="cmshow" data-t="cmshow"></button>
-  <button type="button" id="cmjpg" style="background:#1b9a55">⬇ JPG</button>
-  <button type="button" id="cmpdf" style="background:#d6212b">⬇ PDF</button>
-  <button type="button" id="cmclr" data-t="cmclr" style="background:#7b4bd6"></button>
-  <button type="button" id="cmbook" data-t="cmbook" style="background:#f5a623"></button>
- </div></div>
-<div class="pop" id="typ"><div class="ph"><span data-t="types"></span></div><div class="pb"><div class="chips" id="tyc"></div></div></div>
-<div class="pop" id="rmp"><div class="ph"><span data-t="rmt"></span></div><div class="pb">
- <div class="rmh" data-t="rm1"></div>
- <div class="chips" style="padding-bottom:0"><button type="button" class="chip" id="rma" data-t="rma"></button><button type="button" class="chip" id="rmn" data-t="rmn"></button></div>
- <div class="chips" id="rmc"></div>
- <div class="rmh" data-t="rm2"></div>
- <div class="set"><label><input id="rmN" type="range" min="1" max="100" step="1" value="20"><b id="rmNv" style="min-width:30px;text-align:right">20</b></label></div>
- <div style="padding:0 12px 12px"><button id="rmgo" type="button" data-t="rmgo" style="width:100%;padding:10px;background:#7b4bd6"></button></div>
-</div></div>
-<div class="pop" id="bkp" style="width:min(94vw,440px)"><div class="ph"><span data-t="bkt"></span><span id="bkn"></span></div>
- <div class="pb"><div class="bkf"><input id="bkTi" maxlength="80" autocomplete="off"><input id="bkAu" maxlength="60" autocomplete="off"></div>
- <div class="bkh" data-t="bkhelp"></div><div id="bkl"></div></div>
- <div class="cmb2" style="padding-top:10px">
-  <input id="bkPt" maxlength="90" autocomplete="off" style="flex:1 1 100%;height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)">
-  <button type="button" id="bkadd" style="flex:1 1 100%"></button>
-  <button type="button" id="bkupd" style="flex:1 1 100%;background:#f5a623"></button>
-  <button type="button" id="bkpdf" data-t="bkpdf" style="background:#d6212b"></button>
-  <button type="button" id="bkclr" data-t="bkclr" style="background:#7b4bd6"></button>
- </div></div>
-<div class="pop" id="stp"><div class="ph"><span data-t="settings"></span></div>
- <div class="set">
-  <label><span data-t="nnum"></span><span style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end"><input id="nN" type="range" min="0" max="15" step="1" value="3"><b id="nNv" style="min-width:20px;text-align:right">3</b></span></label>
-  <label><span data-t="rivs"></span><input id="rOn" type="checkbox"></label>
-  <label><span data-t="spread"></span><input id="sOn" type="checkbox" checked></label>
-  <label><span data-t="fsz"></span><input id="fsz" type="range" min="18" max="44" value="26"></label>
-  <label><span data-t="exg"></span><input id="exg" type="checkbox"></label>
-  <label><button id="mrs" type="button" data-t="mvrs"></button></label>
- </div></div>
+function centroid(P){let a=0,cx=0,cy=0;for(let i=0;i<P.length;i++){const[p,q]=[P[i],P[(i+1)%P.length]],f=p[0]*q[1]-q[0]*p[1];a+=f;cx+=(p[0]+q[0])*f;cy+=(p[1]+q[1])*f;}
+ if(Math.abs(a)<1e-9)return P[0];return[cx/(3*a),cy/(3*a)];}
+function inPoly(P,x,y){let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++)
+ if((P[i][1]>y)!=(P[j][1]>y)&&x<(P[j][0]-P[i][0])*(y-P[i][1])/(P[j][1]-P[i][1])+P[i][0])c=!c;return c;}
 
-<div class="hw" id="hw"><div class="hwc">
- <div class="hwh"><span data-t="howt"></span>
-  <span class="r"><button class="hwlb" data-l="si">සිංහල</button><button class="hwlb" data-l="ta">தமிழ்</button><button class="hwlb" data-l="en">English</button><button id="hwx" type="button">✕</button></span></div>
- <div class="hwb" id="hwb"></div>
- <div class="hwf"><label><input type="checkbox" id="hwn" checked><span data-t="hown"></span></label><button id="hwk" type="button" data-t="howok"></button></div>
-</div></div>
+/* රේඛාවක (polyline) x,y ට ආසන්නතම ලක්ෂ්‍යය: [px,py,දුර] */
+function nearest(P,x,y){let b=[P[0][0],P[0][1],1e9];
+ for(let i=1;i<P.length;i++){const a=P[i-1],c=P[i],dx=c[0]-a[0],dy=c[1]-a[1],l=dx*dx+dy*dy||1,
+  t=Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/l)),px=a[0]+t*dx,py=a[1]+t*dy,d=Math.hypot(x-px,y-py);
+  if(d<b[2])b=[px,py,d];}
+ return b;}
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="geosketch-core.js"></script>
-<script>
-/* ---------- භාෂා / Language texts ---------- */
-const T={
- si:{map:'සිතියම',letters:'අකුරු ▾',places:'📍 අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න',types:'🗂 සිතියම් වර්ග',settings:'සැකසුම්',spread:'නම් එකිනෙක මත යෑම වළක්වන්න',ripl:'තට්ටු කළ විට වළලු (නිල්-කොළ) පෙන්වන්න',howb:'❓ භාවිතය',howt:'GeoSketch භාවිතා කරන්නේ කෙසේද?',howok:'තේරුණා, වසන්න',hown:'නැවත පෙන්වන්න එපා',nnum:'ආසන්න ස්ථාන ගණන',rivs:'ආසන්න ගංගා ද පෙන්වන්න',mvon:'✋ Move සක්‍රියයි: නමක් ඇදගෙන යන්න (හිස් තැනක් අදිමින් සිතියම ගෙන යන්න)',mvrs:'Move කළ නම් යළි මුල් තැනට',veil:'මෘදු ආවරණය',vstr:'ආවරණ තීව්‍රතාව',vtone:'ආවරණ වර්ණය',fsz:'අකුරු ප්‍රමාණය',exg:'JPG / PDF වලට කොටු දැල ඇතුළත් කරන්න',
-  rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. ඇතුළත් කළ යුතු වර්ග තෝරන්න',rm2:'2. ස්ථාන ගණන තෝරන්න',rmgo:'🎲 සිතියම සාදන්න',rma:'සියල්ල තෝරන්න',rmn:'හිස් කරන්න',rmneed:'අවම වශයෙන් වර්ගයක් තෝරන්න',rmres:'Random සිතියම',
-  rmerr:(k,n)=>`තෝරාගත් වර්ග ගණන ${k} කි. ස්ථාන ගණන (${n}) එයට වඩා අඩුය. සියලු වර්ග ආවරණය කිරීමට අවම වශයෙන් ස්ථාන ${k} ක් අවශ්‍යයි.`,
-  rmnone:'තෝරාගත් වර්ගවලින් ස්ථාන හමු නොවීය',
-  ph:'ස්ථානයක් සොයන්න...',none:'ස්ථානයක් හමු නොවීය',hint:'ස්ථානයක් සොයන්න, අකුරක් තෝරන්න, නැතිනම් නාමාවලියෙන් තෝරන්න. සිතියමේ ස්ථානයක් ක්ලික් කළ ද හැක',near:'+ ආසන්න ස්ථාන',nodata:'මෙම සිතියමට දත්ත නැත',pickLetter:'අකුරක් තෝරන්න',loading:'load වෙමින්...',
-  tones:['සුදු','ළා කහ','ළා නිල්','ළා කොළ'],all:'වර්ගයේ සියල්ල'},
- ta:{map:'வரைபடம்',letters:'எழுத்துகள் ▾',places:'📍 தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்',types:'🗂 வரைபட வகைகள்',settings:'அமைப்புகள்',spread:'பெயர்கள் ஒன்றின்மேல் ஒன்று வருவதைத் தவிர்',ripl:'தொட்டால் வளையங்களை (நீலப்பச்சை) காட்டு',howb:'❓ பயன்பாடு',howt:'GeoSketch ஐப் பயன்படுத்துவது எப்படி?',howok:'புரிந்தது, மூடு',hown:'மீண்டும் காட்ட வேண்டாம்',nnum:'அருகிலுள்ள இடங்களின் எண்ணிக்கை',rivs:'அருகிலுள்ள ஆறுகளையும் காட்டு',mvon:'✋ Move இயக்கத்தில்: பெயரை இழுத்துச் செல்லுங்கள் (வெற்றிடத்தை இழுத்து வரைபடத்தை நகர்த்துங்கள்)',mvrs:'நகர்த்திய பெயர்களை மீட்டமை',veil:'மென்மையான திரை',vstr:'திரையின் அடர்த்தி',vtone:'திரை நிறம்',fsz:'எழுத்து அளவு',exg:'JPG / PDF இல் கட்டங்களைச் சேர்',
-  rmb:'🎲 சீரற்ற வரைபடம்',rmt:'Create a Random Map',rm1:'1. சேர்க்க வேண்டிய வகைகளைத் தேர்ந்தெடுங்கள்',rm2:'2. இடங்களின் எண்ணிக்கையைத் தேர்ந்தெடுங்கள்',rmgo:'🎲 வரைபடத்தை உருவாக்கு',rma:'அனைத்தையும் தேர்ந்தெடு',rmn:'அழி',rmneed:'குறைந்தது ஒரு வகையைத் தேர்ந்தெடுங்கள்',rmres:'சீரற்ற வரைபடம்',
-  rmerr:(k,n)=>`தேர்ந்தெடுத்த வகைகள் ${k}. இடங்களின் எண்ணிக்கை (${n}) அதைவிடக் குறைவு. அனைத்து வகைகளையும் உள்ளடக்க குறைந்தது ${k} இடங்கள் தேவை.`,
-  rmnone:'தேர்ந்தெடுத்த வகைகளில் இடங்கள் இல்லை',
-  ph:'இடத்தைத் தேடுங்கள்...',none:'இடம் கிடைக்கவில்லை',hint:'இடத்தைத் தேடுங்கள், எழுத்தைத் தேர்ந்தெடுங்கள் அல்லது பட்டியலில் தேர்ந்தெடுங்கள். வரைபடத்தில் ஓர் இடத்தைத் தொட்டும் பார்க்கலாம்',near:'+ அருகிலுள்ள இடங்கள்',nodata:'இந்த வரைபடத்திற்குத் தரவு இல்லை',pickLetter:'எழுத்தைத் தேர்ந்தெடுங்கள்',loading:'ஏற்றுகிறது...',
-  tones:['வெள்ளை','இளமஞ்சள்','இளநீலம்','இளம்பச்சை'],all:'வகையில் அனைத்தும்'},
- en:{map:'Map',letters:'Letters ▾',places:'📍 Pick places, make a map',types:'🗂 Map types',settings:'Settings',spread:'Avoid overlapping names',ripl:'Show teal ripples on tap',howb:'❓ How to use',howt:'How to use GeoSketch',howok:'Got it, close',hown:'Do not show again',nnum:'Number of nearby places',rivs:'Also show nearby rivers',mvon:'✋ Move on: drag a name (drag empty space to pan the map)',mvrs:'Reset moved names',veil:'Soft overlay',vstr:'Overlay strength',vtone:'Overlay tone',fsz:'Text size',exg:'Include grid in JPG / PDF',
-  rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. Choose the types to include',rm2:'2. Choose the number of places',rmgo:'🎲 Create map',rma:'Select all',rmn:'Clear',rmneed:'Please choose at least one type',rmres:'Random map',
-  rmerr:(k,n)=>`You chose ${k} types, but only ${n} places. At least ${k} places are needed to cover every type.`,
-  rmnone:'No places found in the chosen types',
-  ph:'Search a place...',none:'No place found',hint:'Search a place, pick a letter, choose from the list, or tap a place on the map',near:'+ nearby places',nodata:'No data for this map',pickLetter:'Pick a letter',loading:'Loading...',
-  tones:['White','Cream','Blue','Green'],all:'All in this type'}
-};
-/* ---------- මගේ සිතියම: භාෂා පාඨ ---------- */
-Object.assign(T.si,{cmb:'🧺 මගේ සිතියම',cm2:'තෝරාගත් ස්ථාන',cmph:'ස්ථානයක් සොයා එක් කරන්න...',cmadd:'＋ දැන් පෙන්වන ස්ථානය එක් කරන්න',cmshow:'සිතියමේ පෙන්වන්න',cmclr:'හිස් කරන්න',cmpdf:'⬇ PDF',cmempty:'ස්ථාන තෝරා නැත',cmres:'තෝරාගත් ස්ථාන සිතියම'});
-Object.assign(T.ta,{cmb:'🧺 என் வரைபடம்',cm2:'தேர்ந்தெடுத்த இடங்கள்',cmph:'இடத்தைத் தேடிச் சேர்க்கவும்...',cmadd:'＋ தற்போதைய இடத்தைச் சேர்',cmshow:'வரைபடத்தில் காட்டு',cmclr:'அழி',cmpdf:'⬇ PDF',cmempty:'இடங்கள் தேர்ந்தெடுக்கப்படவில்லை',cmres:'தேர்ந்தெடுத்த இடங்களின் வரைபடம்'});
-Object.assign(T.en,{cmb:'🧺 My Map',cm2:'Chosen places',cmph:'Search a place to add...',cmadd:'＋ Add the place now shown',cmshow:'Show on map',cmclr:'Clear',cmpdf:'⬇ PDF',cmempty:'No places chosen',cmres:'Selected places map'});
-Object.assign(T.si,{bkph3:'මෙම සිතියමේ නම (උදා: ශ්‍රී ලංකාවේ ප්‍රධාන ගංගා)',bkb:'📖 සිතියම් පොත',bkt:'සිතියම් පොත සකසන්න',bkpages:'පිටු',bkph1:'පොතේ නම (පිටකවරයට)',bkph2:'කර්තෘ නම',bkadd:'＋ දැන් පෙන්වන සිතියම පොතට එක් කරන්න',bknew:'＋ අලුත් පිටුවක් ලෙස එක් කරන්න',bkupd:'✔ තෝරාගත් පිටුව මේ සිතියමෙන් යාවත්කාලීන කරන්න',bkpdf:'⬇ පොත PDF ලෙස සුරකින්න',bkclr:'පොත හිස් කරන්න',bkclrq:'පොතේ සියලු සිතියම් ඉවත් කරන්නද?',bkempty:'පළමුව සිතියමේ ස්ථාන තෝරන්න (සෙවුම හෝ 📍 මගින්)',bkfull:'සිතියම් 20ක් උපරිමයි',bkno:'පොතේ සිතියම් නැත',bkbusy:'පොත සාදමින්...',cmbook:'＋ පොතට',bkhelp:'සිතියම් 1 = පිටු 1. පිටකවර 2 ත්, ඒවායේ ඇතුළු හිස් පිටු 2 ත් ස්වයංක්‍රීයව එකතු වේ (සිතියම් 10 = පිටු 14). ✎ ඔබා පිටුවක් නැවත සකසන්න.'});
-Object.assign(T.ta,{bkph3:'இந்த வரைபடத்தின் பெயர் (எ.கா: இலங்கையின் முக்கிய ஆறுகள்)',bkb:'📖 வரைபடப் புத்தகம்',bkt:'வரைபடப் புத்தகம்',bkpages:'பக்கங்கள்',bkph1:'புத்தகத்தின் பெயர் (அட்டைக்கு)',bkph2:'ஆசிரியர் பெயர்',bkadd:'＋ தற்போதைய வரைபடத்தைப் புத்தகத்தில் சேர்',bknew:'＋ புதிய பக்கமாகச் சேர்',bkupd:'✔ தேர்ந்த பக்கத்தை இந்த வரைபடத்தால் புதுப்பி',bkpdf:'⬇ புத்தகத்தை PDF ஆகச் சேமி',bkclr:'புத்தகத்தை அழி',bkclrq:'புத்தகத்தின் எல்லா வரைபடங்களையும் நீக்கவா?',bkempty:'முதலில் வரைபடத்தில் இடங்களைத் தேர்ந்தெடுங்கள்',bkfull:'அதிகபட்சம் 20 வரைபடங்கள்',bkno:'புத்தகத்தில் வரைபடங்கள் இல்லை',bkbusy:'புத்தகம் உருவாகிறது...',cmbook:'＋ புத்தகத்தில்',bkhelp:'1 வரைபடம் = 1 பக்கம். 2 அட்டைகளும் அவற்றின் உள் வெற்றுப் பக்கங்கள் 2 உம் தானாகச் சேரும் (10 வரைபடங்கள் = 14 பக்கங்கள்). ✎ அழுத்தி ஒரு பக்கத்தை மீண்டும் திருத்தலாம்.'});
-Object.assign(T.en,{bkph3:'Name of this map (e.g. Main rivers of Sri Lanka)',bkb:'📖 Map Book',bkt:'Make a map book',bkpages:'pages',bkph1:'Book title (for the cover)',bkph2:'Author name',bkadd:'＋ Add the map now shown to the book',bknew:'＋ Add as a new page',bkupd:'✔ Update the selected page with this map',bkpdf:'⬇ Save book as PDF',bkclr:'Clear book',bkclrq:'Remove all maps from the book?',bkempty:'Choose places on the map first (search or 📍)',bkfull:'Maximum 20 maps',bkno:'No maps in the book',bkbusy:'Building the book...',cmbook:'＋ To book',bkhelp:'1 map = 1 page. 2 covers and their 2 blank inside pages are added automatically (10 maps = 14 pages). Press ✎ to edit a page again.'});
-const MN={
- si:{ol_lanka:'සාමාන්‍ය පෙළ ලංකා සිතියම',ol_eurasia:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',ol_world:'සම්පූර්ණ ලෝක සිතියම',al_europe1:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',al_europe2:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',al_lanka:'උසස් පෙළ ලංකා සිතියම',al_india:'උසස් පෙළ ඉන්දියා සිතියම'},
- ta:{ol_lanka:'சாதாரண தர இலங்கை வரைபடம்',ol_eurasia:'சாதாரண தர யூரேசியா வரைபடம்',ol_world:'முழு உலக வரைபடம்',al_europe1:'உயர்தர ஐரோப்பா வரைபடம் (கருங்கடல் வரை)',al_europe2:'உயர்தர ஐரோப்பா வரைபடம் (கஸ்பியன் கடல் வரை)',al_lanka:'உயர்தர இலங்கை வரைபடம்',al_india:'உயர்தர இந்தியா வரைபடம்'},
- en:{ol_lanka:'O/L Sri Lanka map',ol_eurasia:'O/L Eurasia map',ol_world:'Full world map',al_europe1:'A/L Europe map (to the Black Sea)',al_europe2:'A/L Europe map (to the Caspian Sea)',al_lanka:'A/L Sri Lanka map',al_india:'A/L India map'}
-};
-/* ---------- How to use (පියවරෙන් පියවර) : [මාතෘකාව, විස්තරය, උපදෙස (අවශ්‍ය නම්)] ---------- */
-const HOW={
- si:[
-  ['සිතියමක් තෝරන්න','ඉහළ තීරුවේ "සිතියම" ලැයිස්තුවෙන් ඔබට අවශ්‍ය සිතියම (ලංකා, ලෝක, යුරෝපා ආදිය) තෝරන්න. භාෂාව වෙනස් කිරීමට <b>සිංහල / தமிழ் / English</b> බොත්තම් භාවිතා කරන්න.'],
-  ['ස්ථානයක් සොයන්න','ඉහළ ඇති <b>සෙවුම් පෙට්ටියේ</b> ස්ථානයේ නමේ මුල් අකුරු කිහිපයක් ටයිප් කරන්න (උදා: <b>යාප</b>). පහළින් නම් ලැයිස්තුවක් පෙනේ. ඔබට අවශ්‍ය නම මත ක්ලික් කරන්න.','නම හරියට මතක නැද්ද? <b>අකුරු ▾</b> බොත්තම ඔබා මුල් අකුරක් තෝරන්න, නැතිනම් <b>📍 අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න</b> ලැයිස්තුව බලන්න.'],
-  ['ප්‍රතිඵලය බලන්න','සිතියම ස්වයංක්‍රීයව විශාල වී, ඔබ තෝරාගත් ස්ථානයේ <b style="color:#d6212b">නම රතු පැහැයෙන්</b> පෙනේ. ඒ සමගම අවට ඇති ස්ථාන කිහිපයක් (මුලින් 10ක්) කළු පැහැති නම් සහ ඊතල සහිතව පෙන්වයි. මෙයින් ස්ථාන එකිනෙකට සාපේක්ෂව පිහිටා ඇති ආකාරය පහසුවෙන් ඉගෙන ගත හැක. නම් එකිනෙක මත නොයන සේ ස්වයංක්‍රීයව සකසයි.'],
-  ['සිතියම මත ක්ලික් / ස්පර්ශ කරන්න','සිතියමේ ඕනෑම ස්ථානයක් (තිතක්, ප්‍රදේශයක්, ගංගාවක්) මත <b>ක්ලික් කරන්න / ඇඟිල්ලෙන් තට්ටු කරන්න</b>. එවිට එම ස්ථානය රතු පැහැයෙන් ද, ඒ අවට ඇති ආසන්නතම ස්ථාන 3 කළු පැහැයෙන් ද පෙන්වයි.','සිතියම අදිමින් ගෙන යන විට මෙය ක්‍රියා නොකරයි.'],
-  ['සිතියම ගෙනයාම සහ විශාල කිරීම','සිතියම <b>ඇඟිල්ලෙන් / mouse එකෙන් අදින්න</b>. ඉහළ දකුණේ ඇති <b>+</b> සහ <b>−</b> බොත්තමින් විශාල / කුඩා කරන්න. <b>ගැලපෙන</b> බොත්තම ඔබන විට සම්පූර්ණ සිතියම නැවත පෙනේ. පරිගණකයේ <b>Ctrl</b> ඔබාගෙන mouse wheel එක කරකවා ද විශාල කළ හැක.'],
-  ['අවට ස්ථාන ගණන වෙනස් කරන්න','<b>⚙</b> බොත්තම ඔබා "ආසන්න ස්ථාන ගණන" ලිස්සුම් තීරුව (0 සිට 15 දක්වා) වෙනස් කරන්න. ආසන්න <b>ගංගා</b> ද බැලීමට "ආසන්න ගංගා ද පෙන්වන්න" ටික් කරන්න.'],
-  ['වර්ගයක් අනුව බලන්න','<b>🗂 සිතියම් වර්ග</b> බොත්තම ඔබා (ගංගාව, වැව, වරාය ආදී) එක් වර්ගයක් තෝරන්න. එවිට එම වර්ගයේ සියලු ස්ථාන එකවර සිතියමේ පෙනේ.'],
-  ['Random සිතියමක් සාදන්න','<b>🎲 Random Map</b> බොත්තම ඔබන්න. පළමුව ඇතුළත් කළ යුතු <b>වර්ග</b> (ගංගා, ඓතිහාසික ස්ථාන ආදී) තෝරන්න, ඉන්පසු <b>ස්ථාන ගණන</b> තෝරා "සිතියම සාදන්න" ඔබන්න. DB එකේ වැඩිපුර ඇති වර්ගවලින් වැඩි ස්ථාන ගණනක් ද, අඩුවෙන් ඇති වර්ගවලින් අඩු ගණනක් ද ස්වයංක්‍රීයව තෝරයි. සිතියම පුරා විහිදුණු ස්ථාන තෝරන අතර, එකම වර්ගයේ ස්ථාන දෙකක් එකම කොටුවක හෝ ආසන්න කොටුවක නොපෙනේ. ස්ථාන ගණන වර්ග ගණනට වඩා අඩු නම් දෝෂ පණිවිඩයක් පෙන්වයි.','නැවත ඔබන සෑම වාරයකම වෙනස් සිතියමක් සැදේ.'],
-  ['අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න','<b>📍 අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න</b> බොත්තම ඔබන්න. ලැයිස්තුවේ අවශ්‍ය ස්ථාන ඉදිරියෙන් ඇති කොටුව <b>tick</b> කරන්න (නම ටයිප් කර ලැයිස්තුව පෙරා ගත හැක). ඉන්පසු <b>සිතියමේ පෙන්වන්න</b> ඔබන්න; තෝරාගත් සියලු ස්ථාන එකම සිතියමක පෙනේ. <b>⬇ JPG</b> හෝ <b>⬇ PDF</b> ඔබා බාගත කරන්න.','නම් ළං වී ඇත්නම් ✋ මගින් ඇදගෙන ගොස් සකසන්න. භාෂාව හෝ සිතියම මාරු කළ විට ලැයිස්තුව හිස් වේ.'],
-  ['නමක් වෙනත් තැනකට ගෙනයන්න','නම් එකිනෙක ළං වී පැහැදිලි නැතිනම් <b>✋</b> බොත්තම ඔබන්න (රතු පැහැ වේ). දැන් ඕනෑම නමක් <b>ඇදගෙන ගොස්</b> අවශ්‍ය තැන දමන්න. ඊතලයේ හිස ස්ථානයේම රැඳෙන අතර, ඊතලය 90° නැවී නම සමග ගමන් කරයි. අවසන් වූ පසු නැවත ✋ ඔබන්න.','මුල් තැනට ගෙන ඒමට: ⚙ → "Move කළ නම් යළි මුල් තැනට".'],
-  ['ඉගෙනීම පහසු කරගන්න','<b>⚙</b> තුළ "අකුරු ප්‍රමාණය" වෙනස් කළ හැක.']
- ],
- ta:[
-  ['வரைபடத்தைத் தேர்ந்தெடுங்கள்','மேலே உள்ள "வரைபடம்" பட்டியலில் இருந்து தேவையான வரைபடத்தை (இலங்கை, உலகம், ஐரோப்பா போன்றவை) தேர்ந்தெடுங்கள். மொழியை மாற்ற <b>සිංහල / தமிழ் / English</b> பொத்தான்களைப் பயன்படுத்துங்கள்.'],
-  ['இடத்தைத் தேடுங்கள்','மேலே உள்ள <b>தேடல் பெட்டியில்</b> இடத்தின் பெயரின் முதல் சில எழுத்துகளைத் தட்டச்சு செய்யுங்கள். கீழே தோன்றும் பட்டியலில் தேவையான பெயரைத் தேர்ந்தெடுங்கள்.','பெயர் சரியாக நினைவில் இல்லையா? <b>எழுத்துகள் ▾</b> பொத்தானை அழுத்தி முதல் எழுத்தைத் தேர்ந்தெடுங்கள், அல்லது <b>📍 தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்</b> மூலம் பட்டியலைப் பாருங்கள்.'],
-  ['முடிவைப் பாருங்கள்','வரைபடம் தானாகப் பெரிதாகி, தேர்ந்தெடுத்த இடத்தின் <b style="color:#d6212b">பெயர் சிவப்பு நிறத்தில்</b> தெரியும். அதனுடன் அருகிலுள்ள சில இடங்களும் (முதலில் 10) கருப்புப் பெயர்களுடனும் அம்புகளுடனும் காட்டப்படும். இதனால் இடங்கள் ஒன்றுக்கொன்று எங்கே அமைந்துள்ளன என்பதை எளிதாகக் கற்கலாம். பெயர்கள் ஒன்றின்மேல் ஒன்று விழாதபடி தானாக அமைக்கப்படும்.'],
-  ['வரைபடத்தில் கிளிக் / தொடுதல்','வரைபடத்தில் எந்த இடத்தையும் (புள்ளி, பகுதி, ஆறு) <b>கிளிக் செய்யுங்கள் / விரலால் தொடுங்கள்</b>. அந்த இடம் சிவப்பு நிறத்திலும், அதன் அருகிலுள்ள 3 இடங்கள் கருப்பு நிறத்திலும் காட்டப்படும்.','வரைபடத்தை இழுக்கும்போது இது செயல்படாது.'],
-  ['வரைபடத்தை நகர்த்தவும் பெரிதாக்கவும்','வரைபடத்தை <b>விரலால் / மவுசால் இழுத்து</b> நகர்த்துங்கள். மேல் வலதுபுறத்தில் உள்ள <b>+</b> மற்றும் <b>−</b> பொத்தான்களால் பெரிதாக்கவும் சிறிதாக்கவும் செய்யலாம். <b>ගැලපෙන</b> பொத்தானை அழுத்தினால் முழு வரைபடமும் மீண்டும் தெரியும். கணினியில் <b>Ctrl</b> அழுத்தியபடி மவுஸ் சக்கரத்தைச் சுழற்றியும் பெரிதாக்கலாம்.'],
-  ['அருகிலுள்ள இடங்களின் எண்ணிக்கை','<b>⚙</b> பொத்தானை அழுத்தி "அருகிலுள்ள இடங்களின் எண்ணிக்கை" ஸ்லைடரை (0 முதல் 15 வரை) மாற்றுங்கள். அருகிலுள்ள <b>ஆறுகளையும்</b> காண "அருகிலுள்ள ஆறுகளையும் காட்டு" என்பதைத் தேர்வு செய்யுங்கள்.'],
-  ['வகையின்படி பாருங்கள்','<b>🗂 வரைபட வகைகள்</b> பொத்தானை அழுத்தி (ஆறு, குளம், துறைமுகம் போன்ற) ஒரு வகையைத் தேர்ந்தெடுங்கள். அந்த வகையின் எல்லா இடங்களும் ஒரே நேரத்தில் வரைபடத்தில் தெரியும்.'],
-  ['சீரற்ற வரைபடத்தை உருவாக்குங்கள்','<b>🎲 சீரற்ற வரைபடம்</b> பொத்தானை அழுத்துங்கள். முதலில் சேர்க்க வேண்டிய <b>வகைகளை</b> (ஆறுகள், வரலாற்றுத் தலங்கள் போன்றவை) தேர்ந்தெடுங்கள்; பின்னர் <b>இடங்களின் எண்ணிக்கையைத்</b> தேர்ந்தெடுத்து "வரைபடத்தை உருவாக்கு" என்பதை அழுத்துங்கள். தரவுத்தளத்தில் அதிகமாக உள்ள வகைகளிலிருந்து அதிக இடங்களும், குறைவாக உள்ள வகைகளிலிருந்து குறைந்த இடங்களும் தானாகத் தேர்ந்தெடுக்கப்படும். இடங்கள் வரைபடம் முழுவதும் பரவலாக இருக்கும்; ஒரே வகையின் இரண்டு இடங்கள் ஒரே கட்டத்திலோ அருகிலுள்ள கட்டத்திலோ வராது. இடங்களின் எண்ணிக்கை வகைகளின் எண்ணிக்கையைவிடக் குறைவாக இருந்தால் பிழைச் செய்தி காட்டப்படும்.','ஒவ்வொரு முறை அழுத்தும்போதும் வேறு வரைபடம் உருவாகும்.'],
-  ['தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்','<b>📍 தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்</b> பொத்தானை அழுத்துங்கள். பட்டியலில் தேவையான இடங்களுக்கு முன்னுள்ள பெட்டியில் <b>tick</b> செய்யுங்கள் (பெயரைத் தட்டச்சு செய்து பட்டியலை வடிகட்டலாம்). பின்னர் <b>வரைபடத்தில் காட்டு</b> அழுத்தினால் தேர்ந்தெடுத்த எல்லா இடங்களும் ஒரே வரைபடத்தில் தெரியும். <b>⬇ JPG</b> அல்லது <b>⬇ PDF</b> அழுத்திப் பதிவிறக்குங்கள்.','பெயர்கள் நெருக்கமாக இருந்தால் ✋ மூலம் இழுத்து அமையுங்கள். மொழி அல்லது வரைபடத்தை மாற்றினால் பட்டியல் காலியாகும்.'],
-  ['பெயரை வேறு இடத்துக்கு நகர்த்துங்கள்','பெயர்கள் நெருக்கமாக இருந்து தெளிவாகத் தெரியவில்லை என்றால் <b>✋</b> பொத்தானை அழுத்துங்கள் (சிவப்பாக மாறும்). பின்னர் எந்தப் பெயரையும் <b>இழுத்துச் சென்று</b> விரும்பிய இடத்தில் விடுங்கள். அம்புக்குறியின் முனை இடத்திலேயே இருக்கும்; அம்பு 90° வளைந்து பெயருடன் நகரும். முடிந்ததும் மீண்டும் ✋ ஐ அழுத்துங்கள்.','முதல் இடத்துக்குத் திரும்ப: ⚙ → "நகர்த்திய பெயர்களை மீட்டமை".'],
-  ['கற்றலை எளிதாக்குங்கள்','<b>⚙</b> இல் "எழுத்து அளவை" மாற்றலாம்.']
- ],
- en:[
-  ['Choose a map','Pick the map you need (Sri Lanka, World, Europe, etc.) from the "Map" list at the top. Use the <b>සිංහල / தமிழ் / English</b> buttons to change the language.'],
-  ['Search for a place','Type the first few letters of a place name in the <b>search box</b> at the top (for example <b>Jaff</b>). A list of names appears below. Click the one you want.','Do not remember the exact name? Press <b>Letters ▾</b> and pick the first letter, or open <b>📍 Pick places, make a map</b> to see the list.'],
-  ['Read the result','The map zooms in automatically and shows the <b style="color:#d6212b">name of your place in red</b>. A few nearby places (10 at first) are shown too, with black names and arrows. This helps you learn how places are located relative to each other. Names are arranged automatically so they do not cover each other.'],
-  ['Click or tap the map','<b>Click or tap</b> any place on the map (a dot, an area or a river). That place is shown in red together with the 3 nearest places in black.','This does not trigger while you are dragging the map.'],
-  ['Move and zoom the map','<b>Drag the map</b> with your finger or mouse. Use <b>+</b> and <b>−</b> at the top right to zoom, and press the fit button (<b>ගැලපෙන</b>) to see the whole map again. On a computer you can also hold <b>Ctrl</b> and turn the mouse wheel.'],
-  ['Change how many nearby places','Press <b>⚙</b> and move the "Number of nearby places" slider (0 to 15). Tick "Also show nearby rivers" to include rivers.'],
-  ['Browse by type','Press <b>🗂 Map types</b> and choose a type (River, Tank, Port, etc.). All places of that type appear on the map together.'],
-  ['Create a random map','Press <b>🎲 Random Map</b>. First choose the <b>types</b> to include (rivers, historical places, etc.), then choose the <b>number of places</b> and press "Create map". Types that are more common in the database get more places, and rarer types get fewer. Places are spread across the whole map, and two places of the same type never share a cell or sit in neighbouring cells. If you ask for fewer places than types, an error message is shown.','Press the button again for a different map each time.'],
-  ['Pick places, make a map','Press <b>📍 Pick places, make a map</b>. Tick the box beside each place you want (type to filter the list). Then press <b>Show on map</b> and all chosen places appear on one map. Press <b>⬇ JPG</b> or <b>⬇ PDF</b> to download it.','If names are too close, drag them with ✋. The list is cleared when you change the language or the map.'],
-  ['Move a name somewhere else','If names are too close to read, press <b>✋</b> (it turns red). Now <b>drag any name</b> and drop it where you want. The arrow tip stays on the place, and the arrow bends at 90° and follows the name. Press ✋ again when you are done.','To put names back: ⚙ → "Reset moved names".'],
-  ['Make studying easier','In <b>⚙</b> you can change the "Text size".']
- ]
-};
-const TONES=['#ffffff','#fff1c2','#dcecff','#e2f2dc'];
-const IC={p:'●',a:'▭',r:'≈',d:'‖'};
-
-/* ---------- Supabase දත්ත (සියලු භාෂා එකවර) ---------- */
-const SUPABASE_URL='https://jcijglwpkfluyzrltimk.supabase.co';
-const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaWpnbHdwa2ZsdXl6cmx0aW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MzU3OTUsImV4cCI6MjA4MjQxMTc5NX0.dvT8OiyVEiYn_DhkMakmSq1Vvr4REDr0kYPnyqCtWHs';
-const DATA={si:{},ta:{},en:{}};
-async function loadAll(){
- const ck='gs_viewer_all';let rows=null;
- try{
-  if(!window.supabase)throw new Error('no lib');
-  const sbx=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-  const{data,error}=await sbx.from('map_data').select('map_key,lang,data');
-  if(error)throw error;
-  rows=data;try{localStorage.setItem(ck,JSON.stringify(rows));}catch(e){}
- }catch(e){try{rows=JSON.parse(localStorage.getItem(ck)||'null');}catch(_){rows=null;}}
- (rows||[]).forEach(r=>{if(DATA[r.lang])DATA[r.lang][r.map_key]=r.data;});
+/* අයිතමයක් අයත් කොටු ලැයිස්තුව (dropdown සඳහා) */
+function itemCells(L,it){
+ const s=new Set(),add=(x,y)=>{if(x>=0&&y>=0&&x<=1&&y<=1)s.add(cellId(L,x,y));};
+ if(it.t=='p'){add(it.x,it.y);return[...s];}
+ const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0,P=it.pts.map(p=>[p[0]+ox,p[1]+oy]);
+ P.forEach((p,i)=>{add(p[0],p[1]);if(i){const q=P[i-1];for(let k=1;k<40;k++)add(q[0]+(p[0]-q[0])*k/40,q[1]+(p[1]-q[1])*k/40);}});
+ if(it.t=='a'){for(let c=0;c<L.cols;c++)for(let r=0;r<L.rows;r++)if(inPoly(P,(c+.5)/L.cols,(r+.5)/L.rows))s.add(colName(c)+(r+1));}
+ return[...s];
 }
 
-/* ---------- තත්ත්වය ---------- */
-const $=id=>document.getElementById(id),cv=$('cv');
-const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let lang='si',cur=null,img=null,L=null,G=new Map(),marked=new Set(),hl=null,mainName=null,activeCat=null,lbLetter=null,sugList=[],sugAct=-1;
-const items=()=>((DATA[lang]||{})[cur&&cur.k])||[];
-const Z=setupZoom(cv,$('box'),()=>L,$('vp'));
-cv.style.touchAction='none';cv.style.cursor='grab';
-/* මගේ සිතියම සඳහා තත්ත්වය */
-const custom=new Set();let customMarked=null;
-/* ---------- Move මෙවලම (✋): නම පමණක් ඇදගෙන යාම. ඊතල හිස ස්ථානයේම තබා, අග කොටස 90° නැවුමකින් නම සමග ගමන් කරයි ---------- */
-let moveMode=false,drag=null,lastS=new Map();
-const manual=new Map();/* i -> {lx,ly} හෝ {ox,oy}. තාවකාලිකයි; සුරැකි දත්ත වෙනස් නොවේ */
-const effItems=()=>items().map((it,i)=>manual.has(i)?Object.assign({},it,manual.get(i)):it);
-function hitLabel(nx,ny){
- const g=cv.getContext('2d'),fs=+$('fsz').value,X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny);
- g.font=`${fs}px ${FONT}`;
- const arr=effItems();
- for(const i of [...marked].reverse()){
-  const base=arr[i];if(!base||!base.n)continue;
-  const it=lastS.get(i)||base,w=g.measureText(it.n).width;
-  if(it.t=='r'){
-   const P=it.pts.map(p=>[X(p[0]+(it.ox||0)),Y(p[1]+(it.oy||0))]);
-   if(P.length>1&&nearest(P,mx,my-fs*.6)[2]<=Math.max(16,fs*.8))return{i,kind:'r',ox0:it.ox||0,oy0:it.oy||0};
-   continue;
+function graphemes(t){return window.Intl&&Intl.Segmenter?[...new Intl.Segmenter('si',{granularity:'grapheme'}).segment(t)].map(x=>x.segment):Array.from(t);}
+
+/* ඊතලය: නමෙන් තිරස්ව x දක්වා, ඉන්පසු 90° හැරී සිරස්ව ඉලක්කයට (r = ඉලක්කයේ අරය) */
+function drawArrow(g,fs,lx,ly,x,y,r,w){
+ const hw=w/2+6,hh=fs/2+6,dx=x-lx,dy=y-ly,sx=dx>=0?1:-1,sy=dy>=0?1:-1;let P;
+ if(Math.abs(dx)<=hw)P=[[x,ly+sy*hh],[x,y-sy*r]];
+ else if(Math.abs(dy)<=hh)P=[[lx+sx*hw,y],[x-sx*r,y]];
+ else P=[[lx+sx*hw,ly],[x,ly],[x,y-sy*r]];
+ g.strokeStyle=g.fillStyle='#111';g.lineWidth=2;g.beginPath();P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
+ const e=P[P.length-1],q=P[P.length-2],d=Math.hypot(e[0]-q[0],e[1]-q[1])||1,ux=(e[0]-q[0])/d,uy=(e[1]-q[1])/d,h=fs*.36,k=h*.42;
+ g.beginPath();g.moveTo(e[0],e[1]);g.lineTo(e[0]-ux*h-uy*k,e[1]-uy*h+ux*k);g.lineTo(e[0]-ux*h+uy*k,e[1]-uy*h-ux*k);g.closePath();g.fill();
+}
+
+/* ---------- ප්‍රදේශයක වර්ණය / රටාව: මායිම මෘදු ලෙස බොඳ වී යයි, සීමා රේඛාවක් (outline) නැත ----------
+   වර්ණය / රටාව වෙනම තට්ටුවක ඇඳ, බොඳ කළ ප්‍රදේශ හැඩය "mask" එකක් ලෙස යොදයි. එක් වරක් ගණනය කර (cache) නැවත භාවිතා කරයි.
+   බොඳ ප්‍රමාණය වෙනස් කිරීමට පහත  AREA_SOFT  අගය (1 = සාමාන්‍ය, 2 = තවත් බොඳ, 0.5 = අඩු බොඳ) වෙනස් කරන්න. */
+const AREA_SOFT=1;
+const AREA_CACHE=new WeakMap();
+function areaLayer(L,it){
+ const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,col=it.c||'#ff9800',pt=it.pt||'s',
+  xs=it.pts.map(p=>X(p[0])),ys=it.pts.map(p=>Y(p[1])),
+  x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),
+  bw=x1-x0,bh=y1-y0,bl=Math.max(8,Math.min(34,Math.min(bw,bh)*.08))*AREA_SOFT,m=Math.ceil(bl*2+4);
+ const key=[col,pt,AREA_SOFT,L.W,L.ix,L.iy,L.iw,L.ih,it.pts.join(';')].join('|');
+ const hit=AREA_CACHE.get(it);if(hit&&hit.key==key)return hit;
+ const ow=Math.max(1,Math.ceil(bw+2*m)),oh=Math.max(1,Math.ceil(bh+2*m)),
+  mk=()=>{const k=document.createElement('canvas');k.width=ow;k.height=oh;return k;},
+  lay=mk(),a=lay.getContext('2d'),msk=mk(),b=msk.getContext('2d');
+ /* 1) බොඳ වූ හැඩය (mask): හැඩය තිරයෙන් පිටත ඇඳ, එහි සෙවණැල්ල (shadow) පමණක් ඇතුළට ගෙන එයි */
+ const OFF=ow+200;
+ b.shadowColor='rgba(0,0,0,1)';b.shadowBlur=bl;b.shadowOffsetX=-OFF;b.shadowOffsetY=0;b.fillStyle='#000';
+ b.beginPath();xs.forEach((x,i)=>{const px=x-x0+m+OFF,py=ys[i]-y0+m;i?b.lineTo(px,py):b.moveTo(px,py);});b.closePath();b.fill();
+ /* 2) වර්ණය / රටාව ඇඳීම */
+ a.translate(m-x0,m-y0);
+ if(pt=='s'){a.fillStyle=col;a.fillRect(x0-m,y0-m,ow,oh);}
+ else{/* pattern: h=තිරස් v=සිරස් d1=/ d2=\ g=කොටු x=ඇල කොටු o=තිත් */
+  a.strokeStyle=a.fillStyle=col;a.lineWidth=3;
+  const S=16,H=bh,W=bw,ln=(p,q,r,s)=>{a.beginPath();a.moveTo(p,q);a.lineTo(r,s);a.stroke();};
+  if(pt=='h'||pt=='g')for(let y=y0;y<=y1;y+=S)ln(x0,y,x1,y);
+  if(pt=='v'||pt=='g')for(let x=x0;x<=x1;x+=S)ln(x,y0,x,y1);
+  if(pt=='d1'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y1,x0+k+H,y0);
+  if(pt=='d2'||pt=='x')for(let k=-H;k<=W;k+=S)ln(x0+k,y0,x0+k+H,y1);
+  if(pt=='o')for(let y=y0;y<=y1;y+=S)for(let x=x0;x<=x1;x+=S){a.beginPath();a.arc(x,y,3,0,7);a.fill();}
+ }
+ /* 3) බොඳ වූ හැඩයෙන් කපා ගැනීම */
+ a.setTransform(1,0,0,1,0,0);a.globalCompositeOperation='destination-in';a.drawImage(msk,0,0);
+ const r={key,cv:lay,x:x0-m,y:y0-m};AREA_CACHE.set(it,r);return r;
+}
+
+function drawItem(g,L,it,fs,sp=.15,gp=.17,dr=.14){
+ const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih;
+ g.font=`${fs}px ${FONT}`;g.textBaseline='middle';g.lineJoin='round';
+ const halo=(t,x,y,al)=>{g.textAlign=al;g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(t,x,y);g.fillStyle='#111';g.fillText(t,x,y);};
+ if(it.t=='p'){
+  const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*dr;/* dr = තිතේ අරය (අකුරු ප්‍රමාණයෙන් කොටසක්) */
+  if(it.lx!=null){
+   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width;
+   drawArrow(g,fs,lx,ly,x,y,r,w);
+   halo(it.n,lx,ly,'center');
+  }else halo(it.n,x+r+6,y-fs*.45,'left');
+  if(!it.nd){g.fillStyle='#d6212b';g.strokeStyle='#fff';g.lineWidth=2;g.beginPath();g.arc(x,y,r,0,7);g.fill();g.stroke();}
+ }else if(it.t=='a'){
+  if(it.pts&&it.pts.length>=3){/* වර්ණය / රටාව: මායිම බොඳ වී යයි, සීමා රේඛාවක් නැත */
+   const lay=areaLayer(L,it);
+   g.save();g.globalAlpha=(it.pt||'s')=='s'?.45:1;g.drawImage(lay.cv,lay.x,lay.y);g.restore();}
+  /* නම: Move කර ඇත්නම් (lx,ly) එතැන, නැත්නම් මැද */
+  const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);halo(it.n,X(c[0]),Y(c[1]),'center');
+ }else if(it.t=='d'){/* අමුණ / ඇළ: ආසන්න සමාන්තර රේඛා ද්විත්වයක් (ඉර පමණි). නම වෙනම තබයි (lx,ly) */
+  const P=it.pts.map(p=>[X(p[0]),Y(p[1])]),lw=it.lw||(it.ds?6:2.5),h=it.ds?lw/2:fs*(it.gp!=null?it.gp:gp);/* gp = රේඛා දෙක අතර අඩ පරතරය */
+  const N=P.map((p,i)=>{const a=P[Math.max(0,i-1)],b=P[Math.min(P.length-1,i+1)],dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;return[-dy/d*h,dx/d*h];});
+  g.strokeStyle='#111';g.lineWidth=lw;
+  if(it.ds){g.save();g.lineCap='butt';g.setLineDash([lw*1.8,lw*1.1]);g.beginPath();P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();g.restore();}/* තද කඩ ඉර */
+  else [1,-1].forEach(s=>{g.beginPath();P.forEach((p,i)=>{const x=p[0]+N[i][0]*s,y=p[1]+N[i][1]*s;i?g.lineTo(x,y):g.moveTo(x,y);});g.stroke();});
+  if(it.lx!=null){
+   const lx=X(it.lx),ly=Y(it.ly),w=g.measureText(it.n).width,q=nearest(P,lx,ly);
+   if(q[2]>fs*(it.ar?.5:1.3))drawArrow(g,fs,lx,ly,q[0],q[1],h,w);/* නම රේඛාවෙන් ඈතනම් ඊතලයක් */
+   halo(it.n,lx,ly,'center');
   }
-  let cx,cy;
-  if(it.t=='p'){const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*.14;
-   if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}else{cx=x+r+6+w/2;cy=y-fs*.45;}}
-  else if(it.t=='a'){const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);cx=X(c[0]);cy=Y(c[1]);}
-  else if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}
-  else continue;
-  if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{i,kind:'l',dx:cx-mx,dy:cy-my};
+ }else if(it.t=='r'){
+  /* ox,oy = Move කිරීමෙන් ලැබෙන විස්ථාපනය */
+  let P=it.pts.map(p=>[X(p[0]+(it.ox||0)),Y(p[1]+(it.oy||0))]);if(P[0][0]>P[P.length-1][0])P.reverse();
+  const Ld=[0];for(let i=1;i<P.length;i++)Ld[i]=Ld[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
+  const tot=Ld[Ld.length-1];
+  /* මාර්ගයට වඩා නම දිග නම් අග රේඛාව දිගේ දිගු කර ගනී (අකුරු එක තැනකට ගොඩ නොවේ) */
+  const at=s=>{let i=1;if(s>=tot)i=P.length-1;else if(s>0)while(Ld[i]<s)i++;
+   const f=(s-Ld[i-1])/((Ld[i]-Ld[i-1])||1);return[P[i-1][0]+(P[i][0]-P[i-1][0])*f,P[i-1][1]+(P[i][1]-P[i-1][1])*f];};
+  const ch=[];graphemes(it.n).forEach(x=>{const l=ch[ch.length-1];if(l&&(/[\u0DCA]\u200D$|\u200D$/.test(l)||x[0]=='\u200D'))ch[ch.length-1]=l+x;else ch.push(x);});
+  const pre=[0];for(let i=1;i<=ch.length;i++)pre[i]=g.measureText(ch.slice(0,i).join('')).width;
+  const gap=fs*sp,tw=pre[ch.length]+gap*(ch.length-1);
+  g.textAlign='center';
+  ch.forEach((c,i)=>{const adv=pre[i+1]-pre[i],m=(tot-tw)/2+pre[i]+gap*i+adv/2,p=at(m),a=at(m-5),b=at(m+5),ang=Math.atan2(b[1]-a[1],b[0]-a[0]);
+   g.save();g.translate(p[0],p[1]);g.rotate(ang);g.lineWidth=fs/3;g.strokeStyle='#fff';g.strokeText(c,0,-fs*.6);g.fillStyle='#0a3d91';g.fillText(c,0,-fs*.6);g.restore();});
+ }
+}
+
+/* o: {fs, grid, show(i)} */
+function render(cv,img,L,items,o={}){
+ cv.width=L.W;cv.height=L.H;const g=cv.getContext('2d');
+ g.fillStyle='#fff';g.fillRect(0,0,L.W,L.H);g.drawImage(img,L.ix,L.iy,L.iw,L.ih);
+ if(o.grid!==false){
+  g.strokeStyle='#1aa7ec';g.lineWidth=2;g.fillStyle='#111';g.font=`bold 30px ${FONT}`;g.textAlign='center';g.textBaseline='middle';
+  for(let c=0;c<=L.cols;c++){const x=L.ix+c*L.cw;g.beginPath();g.moveTo(x,L.iy);g.lineTo(x,L.iy+L.ih);g.stroke();if(c<L.cols)g.fillText(colName(c),x+L.cw/2,L.iy-28);}
+  for(let r=0;r<=L.rows;r++){const y=L.iy+r*L.ch;g.beginPath();g.moveTo(L.ix,y);g.lineTo(L.ix+L.iw,y);g.stroke();if(r<L.rows)g.fillText(r+1,L.ix-30,y+L.ch/2);}
+ }
+ items.forEach((it,i)=>{if(!o.show||o.show(i))drawItem(g,L,it,o.fs||26,o.sp??.15,o.gp??.17,o.dr??.14);});
+ g.fillStyle='#111';g.textAlign='center';g.textBaseline='middle';
+ if(o.title){let f=54;g.font=`bold ${f}px ${FONT}`;const mw=L.W-2*MG*.6;
+  const w=g.measureText(o.title).width;if(w>mw){f=Math.floor(f*mw/w);g.font=`bold ${f}px ${FONT}`;}
+  g.fillText(o.title,L.W/2,L.iy/2);}
+ if(o.footer){g.font=`24px ${FONT}`;g.fillText(o.footer,L.W/2,(L.iy+L.ih+L.H)/2);}
+ return g;
+}
+
+/* ===== නම් / තිත් Move කිරීම (index සහ editor දෙකටම පොදු) =====
+   (nx,ny) = සිතියම මත 0..1 ලක්ෂ්‍යය. show(i) = පෙනෙන අයිතම පමණක් (index).
+   ලැබෙන්නේ: {i, keys:[කුමන දත්ත දෙක වෙනස් වේද], bx,by: ඒවායේ දැනට අගය} හෝ null */
+function hitItem(g,L,items,show,nx,ny,fs,dr){
+ const X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny);
+ g.font=`${fs}px ${FONT}`;
+ for(let i=items.length-1;i>=0;i--){
+  if(show&&!show(i))continue;const it=items[i],w=g.measureText(it.n).width;
+  if(it.t=='p'){
+   const x=X(it.x),y=Y(it.y),r=it.nd?0:fs*dr;
+   if(Math.hypot(mx-x,my-y)<=Math.max(10,r+6))return{i,keys:['x','y'],bx:it.x,by:it.y};
+   let cx,cy;
+   if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}else{cx=x+r+6+w/2;cy=y-fs*.45;}
+   if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{i,keys:['lx','ly'],bx:(cx-L.ix)/L.iw,by:(cy-L.iy)/L.ih};
+  }else if(it.t=='r'){
+   const P=it.pts.map(p=>[X(p[0]+(it.ox||0)),Y(p[1]+(it.oy||0))]);
+   if(P.length>1&&nearest(P,mx,my-fs*.6)[2]<=Math.max(16,fs*.8))return{i,keys:['ox','oy'],bx:it.ox||0,by:it.oy||0};
+  }else{/* a, d */
+   let cx,cy;
+   if(it.lx!=null){cx=X(it.lx);cy=Y(it.ly);}
+   else if(it.t=='a'){const c=centroid(it.pts);cx=X(c[0]);cy=Y(c[1]);}
+   else continue;/* නමක් තබා නැති අමුණක් */
+   if(Math.abs(mx-cx)<=w/2+8&&Math.abs(my-cy)<=fs/2+8)return{i,keys:['lx','ly'],bx:(cx-L.ix)/L.iw,by:(cy-L.iy)/L.ih};
+  }
  }
  return null;
 }
-cv.addEventListener('pointerdown',e=>{if(e.button)return;
- if(moveMode&&L){const[nx,ny]=pointer(cv,L,e),h=hitLabel(nx,ny);
-  if(h){drag=Object.assign(h,{id:e.pointerId,nx0:nx,ny0:ny});try{cv.setPointerCapture(e.pointerId);}catch(_){}e.preventDefault();return;}}
- Z.startPan(e);});
-addEventListener('pointermove',e=>{
- const rd=n=>Math.round(n*1e4)/1e4,cl=(v,a,b)=>Math.min(b,Math.max(a,v));
- if(drag&&e.pointerId==drag.id){
-  const[nx,ny]=pointer(cv,L,e);
-  if(drag.kind=='r')manual.set(drag.i,{ox:rd(cl(drag.ox0+nx-drag.nx0,-1,1)),oy:rd(cl(drag.oy0+ny-drag.ny0,-1,1))});
-  else manual.set(drag.i,{lx:rd(cl((L.ix+nx*L.iw+drag.dx-L.ix)/L.iw,0,1)),ly:rd(cl((L.iy+ny*L.ih+drag.dy-L.iy)/L.ih,0,1))});
-  draw();return;}
- if(moveMode&&L&&e.target==cv&&!cv.classList.contains('zpan')){const[nx,ny]=pointer(cv,L,e);cv.style.cursor=hitLabel(nx,ny)?'move':'grab';}
-});
-const endDrag=e=>{if(drag&&e.pointerId==drag.id)drag=null;};
-addEventListener('pointerup',endDrag);addEventListener('pointercancel',endDrag);
-$('mvb').onclick=e=>{e.stopPropagation();closeAll();stopRipple();moveMode=!moveMode;$('mvb').classList.toggle('on',moveMode);cv.style.cursor='grab';
- $('st').textContent=moveMode?T[lang].mvon:(G.size?T[lang].hint:T[lang].nodata);};
-$('mrs').onclick=()=>{manual.clear();draw();};
-
-function stopRipple(){}
-
-/* ---------- සිතියම මත click/touch: එම ස්ථානය + ආසන්න ස්ථාන 3 ---------- */
-const CLICK_N=3;/* ආසන්න ස්ථාන ගණන */
-function groupAt(nx,ny,maxPx){
- const arr=items(),X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,mx=X(nx),my=Y(ny);
- let best=null,bd=1e9;
- G.forEach(e=>{
-  let d=1e9;
-  e.idx.forEach(i=>{const it=arr[i];if(!it)return;
-   if(it.t=='p'){d=Math.min(d,Math.hypot(X(it.x)-mx,Y(it.y)-my));return;}
-   if(!it.pts||!it.pts.length)return;
-   const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0,
-    P=it.pts.map(p=>[X(p[0]+ox),Y(p[1]+oy)]);
-   if(it.t=='a'){
-    if(inPoly(P,mx,my)){d=Math.min(d,maxPx*.6);return;}/* ප්‍රදේශය ඇතුළත: තිත් වලට පළමුතැන දෙයි */
-    P.push(P[0]);
-   }
-   d=Math.min(d,P.length>1?nearest(P,mx,my)[2]:Math.hypot(P[0][0]-mx,P[0][1]-my));
-  });
-  if(d<bd){bd=d;best=e;}
- });
- return bd<=maxPx?best:null;
+/* drag කරන අතරතුර අගයන් යෙදීම */
+function dragTo(d,nx,ny){
+ const r=n=>Math.round(n*1e4)/1e4,c=(k,v)=>k=='ox'||k=='oy'?Math.min(1,Math.max(-1,v)):Math.min(1,Math.max(0,v));
+ d.it[d.keys[0]]=r(c(d.keys[0],nx+d.ox));d.it[d.keys[1]]=r(c(d.keys[1],ny+d.oy));
 }
-cv.addEventListener('click',e=>{
- if(moveMode||!L||!G.size)return;
- const r=cv.getBoundingClientRect(),
-  maxPx=40*L.W/r.width;/* තිරය මත ආසන්න පික්සල් 40ක් ඇතුළත */
- const[nx,ny]=pointer(cv,L,e),g=groupAt(nx,ny,maxPx);
- if(!g)return;
- closeAll();activeCat=null;$('q').value=g.n;
- marked=new Set(nearGroup(g.n,CLICK_N,false));
- hl=g.a;mainName=g.n;
- draw();/* zoom/pan වෙනස් නොකර, ඇති තැනම පෙන්වයි */
- $('st').textContent=`🎯 ${g.n}  ${T[lang].near} ${CLICK_N}`;
-});
 
-new ResizeObserver(()=>Z.apply()).observe($('box'));
-const norm=s=>String(s||'').trim().toLowerCase();
-const coll=()=>{try{return new Intl.Collator(lang);}catch(e){return new Intl.Collator();}};
+/* canvas → ගොනු */
+function pointer(cv,L,e){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*L.W/r.width,y=(e.clientY-r.top)*L.H/r.height;return[(x-L.ix)/L.iw,(y-L.iy)/L.ih];}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+function exportJPG(cv,name){cv.toBlob(b=>dl(b,name+'.jpg'),'image/jpeg',.95);}
+function exportPDF(cv,name,land){
+ const jpg=Uint8Array.from(atob(cv.toDataURL('image/jpeg',.95).split(',')[1]),c=>c.charCodeAt(0));
+ const pw=land?841.89:595.28,ph=land?595.28:841.89,enc=new TextEncoder(),parts=[],offs=[];let len=0;
+ const add=d=>{if(typeof d=='string')d=enc.encode(d);parts.push(d);len+=d.length;};
+ const obj=(i,s)=>{offs[i]=len;add(i+' 0 obj\n'+s+'\nendobj\n');};
+ add('%PDF-1.4\n');
+ obj(1,'<</Type/Catalog/Pages 2 0 R>>');obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+ obj(3,`<</Type/Page/Parent 2 0 R/MediaBox[0 0 ${pw} ${ph}]/Resources<</XObject<</I 4 0 R>>>>/Contents 5 0 R>>`);
+ offs[4]=len;add(`4 0 obj\n<</Type/XObject/Subtype/Image/Width ${cv.width}/Height ${cv.height}/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length ${jpg.length}>>\nstream\n`);add(jpg);add('\nendstream\nendobj\n');
+ const c=`q ${pw} 0 0 ${ph} 0 0 cm /I Do Q`;obj(5,`<</Length ${c.length}>>\nstream\n${c}\nendstream`);
+ const x=len;add('xref\n0 6\n0000000000 65535 f \n');for(let i=1;i<=5;i++)add(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+ add(`trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n${x}\n%%EOF`);
+ dl(new Blob(parts,{type:'application/pdf'}),name+'.pdf');
+}
 
-/* ---------- ස්ථාන කණ්ඩායම් (එකම නමින් ඇති ඇතුළත් කිරීම් එකට) ---------- */
-const anchorOf=it=>{
+/* ===================== ADMIN PASSWORD =====================
+   මුරපදය කෙලින්ම මෙහි නොලියයි; එහි "hash" එක පමණක් මෙහි තබයි.
+   Hash එක ලබාගන්නා ආකාරය: index.html → Admin → (මුරපදය තවම සකසා නැත) කොටසින්.
+   ලැබෙන දිගු අකුරු පෙළ පහත '' අතරට paste කරන්න. */
+const ADMIN_HASH='c8ba01aaed02efcd39c630d08275284a64a99361bc9d1aad153ea8df844d04ff';
+/* ========================================================= */
+async function sha(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('geosketch:'+t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+const isAdmin=()=>!!ADMIN_HASH&&sessionStorage.getItem('gs_admin')===ADMIN_HASH;
+
+/* Footer: Created by GeoSketch | Eduhelp.lk. දිනය (අද දිනය dd.mm.yyyy ලෙස ස්වයංක්‍රීයව) */
+function footerText(){const d=new Date(),p=n=>String(n).padStart(2,'0');return`Created by GeoSketch | Eduhelp.lk. ${p(d.getDate())}.${p(d.getMonth()+1)}.${d.getFullYear()}`;}
+
+/* ===== Zoom in / out (index.html සහ editor.html දෙකටම) =====
+   බොත්තම්: − + පළලට ගැලපෙන | Ctrl + Mouse wheel | scroll bars වලින් pan */
+function setupZoom(cv,box,getL,vp){
+ const st=document.createElement('style');
+ st.textContent='.zbar{position:absolute;right:20px;top:10px;z-index:5;display:flex;gap:4px;align-items:center;background:#fffe;padding:4px 6px;border-radius:8px;box-shadow:0 1px 8px #0004}.zbar button{padding:3px 10px}.zbar span{min-width:46px;text-align:center;font-size:13px;color:#0d2b45}.zbar button.on{background:#0d2b45}.zbar.zmin>*:not([data-a=pan]):not([data-a=min]){display:none}canvas.zpan{touch-action:none!important;cursor:grab!important}@media(max-width:700px){.zbar{right:8px;top:6px;padding:3px 4px;gap:3px}.zbar button{padding:3px 8px;font-size:13px}.zbar span{min-width:36px;font-size:12px}}';
+ document.head.appendChild(st);
+ const bar=document.createElement('div');bar.className='zbar';
+ bar.innerHTML='<button data-a="out" title="Zoom out">−</button><span>100%</span><button data-a="in" title="Zoom in">+</button><button data-a="w">පළලට</button><button data-a="fit">ගැලපෙන</button><button data-a="pan" title="එක ඇඟිල්ලෙන් සිතියම අදින්න (Scroll). නැවත ඔබා අක්‍රිය කරන්න">✥</button><button data-a="min" title="මෙම පෙට්ටිය කුඩා/විශාල කරන්න">⋯</button>';
+ vp.appendChild(bar);
+ cv.style.maxWidth=cv.style.maxHeight='none';cv.style.flex='none';cv.style.margin='auto';
+ let z=1,pm=false,pn=null,swallow=false,api=null;
+/* ---- සිතියම අදින (pan) ක්‍රමය: ✥ බොත්තම, හෝ Move මෙවලමේදී හිස් තැනක් අදින විට (Z.startPan) ---- */
+ function startPan(e){pn={x:e.clientX,y:e.clientY,sl:box.scrollLeft,st:box.scrollTop,id:e.pointerId,mv:false};try{cv.setPointerCapture(e.pointerId);}catch(_){}}
+ addEventListener('pointermove',e=>{if(!pn||e.pointerId!=pn.id)return;const dx=e.clientX-pn.x,dy=e.clientY-pn.y;
+  if(Math.abs(dx)+Math.abs(dy)>4)pn.mv=true;box.scrollLeft=pn.sl-dx;box.scrollTop=pn.st-dy;});
+ const endPan=e=>{if(pn&&e.pointerId==pn.id){swallow=pn.mv;pn=null;setTimeout(()=>swallow=false,60);}};
+ addEventListener('pointerup',endPan);addEventListener('pointercancel',endPan);
+ cv.addEventListener('pointerdown',e=>{if(!pm)return;startPan(e);e.stopImmediatePropagation();e.preventDefault();},true);
+ cv.addEventListener('click',e=>{if(pm||swallow){e.stopImmediatePropagation();e.preventDefault();}},true);
+ const fit=()=>{const L=getL();return Math.max(.05,Math.min((box.clientWidth-6)/L.W,(box.clientHeight-6)/L.H));};
+ function apply(){const L=getL();if(!L)return;const f=fit()*z;cv.style.width=L.W*f+'px';cv.style.height=L.H*f+'px';bar.children[1].textContent=Math.round(z*100)+'%';if(api&&api.onzoom)api.onzoom();}
+ function set(nz,cx,cy){
+  if(!getL())return;nz=Math.min(8,Math.max(.2,nz));
+  const b=box.getBoundingClientRect();if(cx==null){cx=box.clientWidth/2;cy=box.clientHeight/2;}
+  const r=cv.getBoundingClientRect(),fx=(b.left+cx-r.left)/r.width,fy=(b.top+cy-r.top)/r.height;
+  z=nz;apply();
+  const r2=cv.getBoundingClientRect();
+  box.scrollLeft+=r2.left+fx*r2.width-(b.left+cx);box.scrollTop+=r2.top+fy*r2.height-(b.top+cy);
+ }
+ function reset(){z=1;apply();box.scrollLeft=box.scrollTop=0;}
+ bar.onclick=e=>{const a=e.target.dataset.a;if(!a)return;
+  if(a=='pan'){pm=!pm;cv.classList.toggle('zpan',pm);e.target.classList.toggle('on',pm);return;}
+  if(a=='min'){bar.classList.toggle('zmin');return;}
+  if(a=='in')set(z*1.25);else if(a=='out')set(z/1.25);else if(a=='fit')reset();
+  else if(a=='w'){z=1;set(((box.clientWidth-24)/getL().W)/fit());box.scrollTop=0;}};
+ box.addEventListener('wheel',e=>{if(!(e.ctrlKey||e.metaKey))return;e.preventDefault();
+  const b=box.getBoundingClientRect();set(z*(e.deltaY<0?1.12:1/1.12),e.clientX-b.left,e.clientY-b.top);},{passive:false});
+ addEventListener('resize',apply);
+ /* (x0,y0)-(x1,y1) = සිතියම මත 0..1 ඛණ්ඩාංක සහිත සෘජුකෝණාස්‍රය; එය තිරයට ගැළපෙන සේ zoom කර මැදට ගෙන එයි */
+ function focusRect(x0,y0,x1,y1){
+  const L=getL();if(!L)return;
+  const rw=Math.max(1,(x1-x0)*L.iw),rh=Math.max(1,(y1-y0)*L.ih),f0=fit();
+  z=Math.min(8,Math.max(.2,Math.min((box.clientWidth-12)/rw,(box.clientHeight-12)/rh)/f0));apply();
+  const r=cv.getBoundingClientRect(),b=box.getBoundingClientRect(),
+   tx=r.left+((L.ix+(x0+x1)/2*L.iw)/L.W)*r.width,ty=r.top+((L.iy+(y0+y1)/2*L.ih)/L.H)*r.height;
+  box.scrollLeft+=tx-(b.left+box.clientWidth/2);box.scrollTop+=ty-(b.top+box.clientHeight/2);
+ }
+ api={apply,reset,startPan,focusRect};return api;
+}
+
+
+/* ===================== වර්ග (Categories) =====================
+   අයිතමයක වර්ග: it.g = ['ගංගාව','වැව',...]  (එකකට වඩා තිබිය හැක; නැතිනම් it.g නැත)
+   DEFCATS = මුල් වර්ග ලැයිස්තුව. අලුත් වර්ග editor/index හි Dropdown එකෙන්ම එක් කළ හැක. */
+const DEFCATS=['ගංගාව','අතු ගංගාව','ඓතිහාසික ස්ථානය','ප්‍රාග් ඓතිහාසික ස්ථානය','පූර්ව ඓතිහාසික ස්ථානය','වරාය','රට','ප්‍රදේශය','නගරය','පැරණි පරිපාලන ඒකකය','නව පරිපාලන ඒකකය','රාජධානිය','උපපාලන මධ්‍යස්ථානය','වැව','ඇළ මාර්ගය','අමුණ'];
+const catList=(...ex)=>{const s=new Set(DEFCATS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(c)));return[...s];};
+/* විභාග වර්ෂ: it.yr = ['2022','2019',...] (කිහිපයක් විය හැක; "2022(2021)" වැනි ලිවිය ද හැක). (it.y = සිතියමේ y ඛණ්ඩාංකය, එබැවින් yr භාවිතා කරයි) */
+const DEFYEARS=(()=>{const a=[];for(let y=new Date().getFullYear()+1;y>=2005;y--)a.push(String(y));return a;})();
+const yrKey=v=>{const m=String(v).match(/\d{4}/);return m?+m[0]:0;};
+const yearList=(...ex)=>{const s=new Set(DEFYEARS);ex.forEach(a=>(a||[]).forEach(c=>c&&s.add(String(c))));return[...s].sort((a,b)=>yrKey(b)-yrKey(a)||a.localeCompare(b));};
+const usedYears=items=>{const s=new Set();(items||[]).forEach(it=>(it.yr||[]).forEach(c=>s.add(String(c))));return[...s];};
+const usedCats=items=>{const s=new Set();(items||[]).forEach(it=>(it.g||[]).forEach(c=>s.add(c)));return[...s];};
+/* නම අනුව වර්ග අනුමාන කිරීම (වර්ගයක් නැති අයිතම සඳහා පමණි) */
+function guessCats(it){const n=(it.n||'').trim(),g=[];
+ if(it.t=='r'||/(ගඟ|ඔය|ආරු)$/.test(n))g.push('ගංගාව');
+ if(/වැව/.test(n))g.push('වැව');
+ if(/ඇළ/.test(n))g.push('ඇළ මාර්ගය');
+ if(/අමුණ/.test(n))g.push('අමුණ');
+ if(it.t=='d'&&!g.length)g.push('ඇළ මාර්ගය');
+ return g;}
+
+/* වර්ග තෝරන Widget: Dropdown + ➕ අලුත් වර්ගයක් + තෝරාගත් වර්ග (chips)
+   o.list() → සියලු වර්ග නාම | o.onNew(name) → අලුත් වර්ගයක් සෑදූ විට | o.onChange(arr)
+   ලැබෙන්නේ {get(), set(arr), refresh()} */
+function catPicker(host,o){
+ if(!document.getElementById('cpst')){const st=document.createElement('style');st.id='cpst';
+  st.textContent='.cp-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}.cp select{flex:1;min-width:150px;padding:5px 8px;border-radius:6px;border:1px solid #9bb;color:#0d2b45;background:#fff;font:inherit}.cp button{padding:4px 9px!important;font-size:12px!important}.cp-nw{display:none;gap:6px;margin-top:6px}.cp-nw input{flex:1;padding:5px 8px!important}.cp-ch{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.cp-c{background:#e8f5fd;border:1px solid #1aa7ec;color:#0d2b45;border-radius:12px;padding:1px 4px 1px 9px;font-size:12px;display:inline-flex;gap:4px;align-items:center}.cp-c b{cursor:pointer;color:#d6212b;padding:0 4px}.cp-e{font-size:12px;color:#789}';
+  document.head.appendChild(st);}
+ host.classList.add('cp');let sel=[];
+ host.innerHTML='<div class="cp-row"><select></select><button type="button" class="alt">➕ අලුත් වර්ගයක්</button></div><div class="cp-nw"><input type="text" placeholder="අලුත් වර්ගයේ නම"><button type="button">එක් කරන්න</button></div><div class="cp-ch"></div>';
+ const[row,nw,ch]=host.children,s=row.children[0],nb=row.children[1],ni=nw.children[0],nok=nw.children[1];
+ if(o.newBtn)nb.textContent=o.newBtn;if(o.newPh)ni.placeholder=o.newPh;
+ const fire=()=>o.onChange&&o.onChange(sel.slice());
+ function render(){
+  s.innerHTML='';s.add(new Option(o.ph||'— Dropdown එකෙන් වර්ගයක් තෝරන්න —',''));
+  o.list().filter(c=>!sel.includes(c)).forEach(c=>s.add(new Option(c,c)));
+  ch.innerHTML='';
+  if(!sel.length){const e=document.createElement('span');e.className='cp-e';e.textContent=o.empty||'වර්ගයක් තෝරා නැත (අවශ්‍ය නැතිනම් එලෙසම තබන්න)';ch.appendChild(e);}
+  sel.forEach(c=>{const x=document.createElement('span');x.className='cp-c';x.append(c);
+   const b=document.createElement('b');b.textContent='×';b.title='ඉවත් කරන්න';b.onclick=()=>{sel=sel.filter(v=>v!=c);render();fire();};x.appendChild(b);ch.appendChild(x);});
+ }
+ s.onchange=()=>{if(s.value&&!sel.includes(s.value)){sel.push(s.value);render();fire();}};
+ nb.onclick=()=>{const on=nw.style.display!='flex';nw.style.display=on?'flex':'none';if(on)ni.focus();};
+ const addNew=()=>{const n=ni.value.trim();if(!n)return;if(!o.list().includes(n)&&o.onNew)o.onNew(n);
+  if(!sel.includes(n))sel.push(n);ni.value='';nw.style.display='none';render();fire();};
+ nok.onclick=addNew;ni.onkeydown=e=>{e.stopPropagation();if(e.key=='Enter'){e.preventDefault();addNew();}};
+ render();
+ return{get:()=>sel.slice(),set:a=>{sel=[...a];render();},refresh:render};
+}
+
+
+/* ===================== RANDOM MAP =====================
+   openRandomMap(L, items, onDone) : popup එක විවෘත කරයි. onDone(set, info) → set = තෝරාගත් අයිතමවල index (Set)
+   addRandomButton(parent, getL, getItems, onDone) : "🎲 Random Map" බොත්තම සාදා parent එකට එක් කරයි
+   භාවිතය (index/editor හි):
+     let rndSet=null;   // null = සියල්ල පෙන්වන්න
+     render(...,{show:i=>(!rndSet||rndSet.has(i))&&(ඔබේ දැනට ඇති කොන්දේසිය)});
+     addRandomButton(toolbar,()=>L,()=>items,set=>{rndSet=set;redraw();});
+     සාමාන්‍ය සිතියමට ආපසු යාමට: rndSet=null; redraw(); */
+const gOf=it=>(it.g&&it.g.length)?it.g:guessCats(it);
+
+/* අයිතමයක නියෝජන ලක්ෂ්‍යය (0..1) - ලක්ෂ්‍ය: තිත, ප්‍රදේශ: කේන්ද්‍රය, රේඛා: දිගේ මැද */
+function repPoint(it){
  if(it.t=='p')return[it.x,it.y];
  if(it.t=='a')return centroid(it.pts);
- const m=it.pts[Math.floor((it.pts.length-1)/2)];
- return it.t=='r'?[m[0]+(it.ox||0),m[1]+(it.oy||0)]:m;
-};
-function buildGroups(){
- G=new Map();const arr=items();
- arr.forEach((it,i)=>{if(!it||!it.n)return;
-  let e=G.get(it.n);if(!e){e={n:it.n,idx:[],g:new Set()};G.set(it.n,e);}
-  e.idx.push(i);(it.g||[]).forEach(c=>e.g.add(c));});
- G.forEach(e=>{const its=e.idx.map(i=>arr[i]);
-  const p=its.find(x=>x.t=='p'&&!x.nd)||its.find(x=>x.t=='p')||its[0];
-  e.a=anchorOf(p);e.t=p.t;});
+ const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0,P=it.pts;
+ let tot=0;for(let i=1;i<P.length;i++)tot+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
+ let h=tot/2;
+ for(let i=1;i<P.length;i++){const l=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);
+  if(h<=l||i==P.length-1){const f=l?Math.min(1,h/l):0;return[P[i-1][0]+(P[i][0]-P[i-1][0])*f+ox,P[i-1][1]+(P[i][1]-P[i-1][1])*f+oy];}
+  h-=l;}
+ return[P[0][0]+ox,P[0][1]+oy];
 }
-const sorted=()=>{const c=coll();return[...G.values()].sort((a,b)=>c.compare(a.n,b.n));};
-const tagOf=e=>[...e.g].join(' · ');
-const rowHtml=e=>`<div class="row" data-n="${esc(e.n)}"><span>${IC[e.t]||'●'}</span><span>${esc(e.n)}${e.g.size?`<span class="gl">${esc(tagOf(e))}</span>`:''}</span></div>`;
 
-const NN=()=>Math.min(15,Math.max(0,+$('nN').value||0));
-/* N = ආසන්න ස්ථාන ගණන (ගංගා හැර). riv = true නම් ආසන්නතම ගංගා 5ක් ද එක් කරයි */
-/* ගංගාවක් ද? : (1) වක්‍ර අකුරු (t='r') හෝ (2) වර්ගය 'ගංගාව' / 'අතු ගංගාව' ලෙස සලකුණු කර ඇති ඕනෑම අයිතමයක්
-   හෝ (3) වර්ගයක් නැති, නම ගඟ/ඔය/ආරු වලින් අවසන් වන අයිතමයක් */
-const RIVCATS=['ගංගාව','අතු ගංගාව'];
-function isRiverG(e){
- const arr=items();
- return e.idx.some(i=>arr[i]&&arr[i].t=='r')||RIVCATS.some(c=>e.g.has(c))||
-  (!e.g.size&&/(ගඟ|ඔය|ආරු)$/.test(String(e.n).trim()));
-}
-function nearGroup(name,N=10,riv=false){
- const e0=G.get(name);if(!e0||!L)return e0?e0.idx:[];
- const arr=items(),isR=isRiverG,
-  d0=e=>Math.hypot((e.a[0]-e0.a[0])*L.iw,(e.a[1]-e0.a[1])*L.ih);
- const others=[...G.values()].filter(e=>e!==e0&&!isR(e)).map(e=>({e,d:d0(e)}))
-  .sort((a,b)=>a.d-b.d).slice(0,N).map(x=>x.e);
- let rv=[];
- if(riv){
-  /* ගංගාවේ ඕනෑම කොටසක සිට තෝරාගත් ස්ථානයට ඇති ආසන්නතම දුර (තිත්, රේඛා, අකුරු මාර්ග සියල්ලටම) */
-  const dr=e=>Math.min(...e.idx.flatMap(i=>{const it=arr[i];if(!it)return[];
-   const D=(x,y)=>Math.hypot((x-e0.a[0])*L.iw,(y-e0.a[1])*L.ih);
-   if(it.t=='p')return[D(it.x,it.y)];
-   if(!it.pts)return[];
-   const ox=it.t=='r'?(it.ox||0):0,oy=it.t=='r'?(it.oy||0):0;
-   return it.pts.map(p=>D(p[0]+ox,p[1]+oy));}));
-  rv=[...G.values()].filter(e=>e!==e0&&isR(e)).map(e=>({e,d:dr(e)})).filter(x=>isFinite(x.d))
-   .sort((a,b)=>a.d-b.d).slice(0,5).map(x=>x.e);
+/* තේරීමේ ඇල්ගොරිතමය */
+function randomPick(items,L,cats,n){
+ if(!cats.length)return{err:'අවම වශයෙන් වර්ගයක් තෝරන්න.'};
+ if(n<cats.length)return{err:`තෝරාගත් වර්ග ගණන ${cats.length} කි. ස්ථාන ගණන (${n}) වර්ග ගණනට වඩා අඩුය. සියලු වර්ග ආවරණය කිරීමට අවම වශයෙන් ස්ථාන ${cats.length} ක් අවශ්‍යයි.`};
+ const pool={};cats.forEach(c=>pool[c]=[]);
+ const meta=items.map((it,i)=>{
+  const p=repPoint(it),g=gOf(it).filter(c=>cats.includes(c));
+  g.forEach(c=>pool[c].push(i));
+  return{p,g,cc:Math.min(L.cols-1,Math.max(0,Math.floor(p[0]*L.cols))),rr:Math.min(L.rows-1,Math.max(0,Math.floor(p[1]*L.rows)))};});
+ const empty=cats.filter(c=>!pool[c].length);
+ if(empty.length)return{err:'මෙම වර්ග වල ස්ථාන නැත: '+empty.join(', ')};
+ const total=new Set(cats.flatMap(c=>pool[c])).size;
+ let capped=false;if(n>total){n=total;capped=true;}
+ const chosen=[],has=new Set();let relaxed=0;
+ const cnt=c=>chosen.filter(i=>meta[i].g.includes(c)).length;
+ /* එකම වර්ගයේ ස්ථාන එකම කොටුවේ හෝ ආසන්න (8 දිශාවේ) කොටුවල නොවිය යුතුය */
+ const ok=i=>chosen.every(j=>!meta[i].g.some(c=>meta[j].g.includes(c))||Math.max(Math.abs(meta[i].cc-meta[j].cc),Math.abs(meta[i].rr-meta[j].rr))>=2);
+ const spread=i=>chosen.length?Math.min(...chosen.map(j=>Math.hypot((meta[i].p[0]-meta[j].p[0])*L.iw,(meta[i].p[1]-meta[j].p[1])*L.ih))):1e9;
+ /* සිතියම පුරා විසිරීම: දැනට ඇති ස්ථාන වලින් වඩාත්ම ඈත අපේක්ෂකයා (random බරක් සහිතව) */
+ function pick(cands){
+  cands=cands.filter(i=>!has.has(i));if(!cands.length)return false;
+  let g=cands.filter(ok);if(!g.length){g=cands;relaxed++;}
+  let best=-1,bs=-1;
+  g.forEach(i=>{const s=Math.min(spread(i),L.iw)*(.65+.7*Math.random());if(s>bs){bs=s;best=i;}});
+  chosen.push(best);has.add(best);return true;
  }
- return[e0,...others,...rv].flatMap(e=>e.idx);
-}
-
-/* ---------- නම් එකිනෙක මත යෑම ස්වයංක්‍රීයව වැළැක්වීම ----------
-   පෙන්වීමේදී පමණක් නම් වල තැන ගණනය කරයි. සුරැකි දත්ත කිසිවිටෙක වෙනස් නොවේ. */
-function spreadLabels(g,fs){
- const arr=effItems(),X=x=>L.ix+x*L.iw,Y=y=>L.iy+y*L.ih,out=new Map();
- g.font=`${fs}px ${FONT}`;
- const h=fs*1.15,boxes=[];/* box = [x0,y0,x1,y1,හිමිකරු] */
- const hit=(a,b)=>a[0]<b[2]&&a[2]>b[0]&&a[1]<b[3]&&a[3]>b[1];
- const free=(b,o)=>!boxes.some(x=>x[4]!==o&&hit(b,x));
- const mk=(cx,cy,w,o)=>[cx-w/2-5,cy-h/2-3,cx+w/2+5,cy+h/2+3,o];
- const idxs=[...marked].filter(i=>arr[i]);
-
- /* බාධක: සියලු තිත් සහ ගංගා නම් */
- idxs.forEach(i=>{const it=arr[i];
-  if(it.t=='p'){const x=X(it.x),y=Y(it.y),r=(it.nd?0:fs*.14)+4;boxes.push([x-r,y-r,x+r,y+r,i]);}
-  else if(it.t=='r'&&it.pts.length){const m=it.pts[Math.floor(it.pts.length/2)],
-    cx=X(m[0]+(it.ox||0)),cy=Y(m[1]+(it.oy||0))-fs*.6;boxes.push(mk(cx,cy,g.measureText(it.n).width,-1));}
- });
-
- /* තෝරාගත් ස්ථානය මුලින්ම, ඉන්පසු ආසන්නතම ඒවා */
- const ref=hl?[X(hl[0]),Y(hl[1])]:null;
- const dist=i=>{const a=anchorOf(arr[i]);return ref?Math.hypot(X(a[0])-ref[0],Y(a[1])-ref[1]):0;};
- idxs.sort((a,b)=>(manual.has(b)-manual.has(a))||dist(a)-dist(b));/* අතින් Move කළ නම් මුලින්ම, ස්ථාවරව */
-
- idxs.forEach(i=>{
-  const it=arr[i];if(it.t=='r'||!it.n)return;
-  if(it.t=='d'&&it.lx==null)return;
-  const w=g.measureText(it.n).width;
-  const fixed=(manual.has(i)||!$('sOn').checked)&&it.t!='r';
-  let ax,ay,pc,arrowDefault;
-  if(it.t=='p'){
-   ax=X(it.x);ay=Y(it.y);const r=it.nd?0:fs*.14;
-   if(it.lx!=null){pc=[X(it.lx),Y(it.ly)];arrowDefault=true;}
-   else{pc=[ax+r+6+w/2,ay-fs*.45];arrowDefault=false;}
-  }else if(it.t=='a'){
-   const c=it.lx!=null?[it.lx,it.ly]:centroid(it.pts);pc=[X(c[0]),Y(c[1])];ax=pc[0];ay=pc[1];arrowDefault=false;
-  }else{pc=[X(it.lx),Y(it.ly)];const m=it.pts[Math.floor(it.pts.length/2)];ax=X(m[0]);ay=Y(m[1]);arrowDefault=false;}
-
-  /* අපේක්ෂක ස්ථාන: මුලින් දැනට ඇති තැන, ඉන්පසු වටේට විශාල වන වළලු */
-  const cands=[pc];
-  for(let k=1;!fixed&&k<=14;k++){const d=fs*(.9+k*.9);
-   for(let j=0;j<12;j++){const a=j*Math.PI/6+k*.26,co=Math.cos(a),si=Math.sin(a);
-    cands.push([ax+co*(d+w/2*Math.abs(co)),ay+si*(d*.8+h/2)]);}}
-
-  let best=null;
-  for(let n=0;n<cands.length;n++){
-   let [cx,cy]=cands[n];
-   cx=Math.min(L.W-w/2-8,Math.max(w/2+8,cx));cy=Math.min(L.H-h,Math.max(h,cy));
-   const b=mk(cx,cy,w,i),arrow=it.t=='p'&&(n>0||arrowDefault);
-   if(!fixed&&!free(b,i))continue;
-   let segs=[];
-   if(arrow)segs=[
-    [Math.min(cx,ax)-3,cy-3,Math.max(cx,ax)+3,cy+3,i],
-    [ax-3,Math.min(cy,ay)-3,ax+3,Math.max(cy,ay)+3,i]];
-   if(!fixed&&segs.some(s=>!free(s,i)))continue;
-   best={cx,cy,b,segs,n};break;
-  }
-  if(!best){const [cx,cy]=cands[0];best={cx,cy,b:mk(cx,cy,w,i),segs:[],n:0};}
-  boxes.push(best.b);best.segs.forEach(s=>boxes.push(s));
-  if(best.n>0||it.lx!=null){/* ගෙන ගිය හෝ ඊතල සහිත ඒවා */
-   out.set(i,Object.assign({},it,{lx:(best.cx-L.ix)/L.iw,ly:(best.cy-L.iy)/L.ih}));
-  }
- });
- return out;
-}
-
-/* ---------- සිතියම ඇඳීම (මෘදු ආවරණයත් සහිතව) ---------- */
-function draw(){if(!img||!L)return;lastS=paint(cv);}
-/* c = ඇඳිය යුතු canvas (තිරය හෝ export සඳහා වෙනම canvas එකක්) */
-function paint(c,o={}){
- const g=render(c,img,L,[],{grid:!!o.grid,title:o.title,footer:o.footer});/* පසුබිම පමණි */
- const arr=effItems(),fs=+$('fsz').value;
- const S=$('sOn').checked||manual.size?spreadLabels(g,fs):new Map();
- marked.forEach(i=>{if(!arr[i])return;
-  const main=mainName&&arr[i].n==mainName;
-  if(main){/* තෝරාගත් ස්ථානයේ නම රතු පැහැයෙන් */
-   const ft=g.fillText;
-   g.fillText=function(t,x,y,w){this.fillStyle='#d6212b';return ft.call(this,t,x,y,w);};
-   drawItem(g,L,S.get(i)||arr[i],fs,.15,.17,.14);
-   delete g.fillText;
-  }else drawItem(g,L,S.get(i)||arr[i],fs,.15,.17,.14);
- });
- return S;
-}
-
-/* ---------- JPG / PDF Export: තිරයේ පෙනෙන සිතියම A4 ප්‍රමාණයෙන් ---------- */
-function doExport(kind){
- if(!img||!L)return;
- const c=document.createElement('canvas');
- paint(c,{grid:$('exg').checked,title:mainName||(marked===customMarked&&custom.size?T[lang].cmres:''),footer:footerText()});
- const name='GeoSketch-'+cur.k;
- if(kind=='pdf')exportPDF(c,name,L.land);else exportJPG(c,name);
-}
-$('exj').onclick=()=>doExport('jpg');
-$('exp').onclick=()=>doExport('pdf');
-
-/* ---------- තෝරාගත් ස්ථාන තිරයට ගැළපෙන සේ zoom කිරීම ---------- */
-function focusOn(idxs,main){
- const arr=items();let x0=1,y0=1,x1=0,y1=0;
- const ext=(x,y)=>{x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x);y1=Math.max(y1,y);};
- idxs.forEach(i=>{const it=arr[i];
-  if(it.t=='p')ext(it.x,it.y);
-  else it.pts.forEach(p=>ext(p[0]+(it.t=='r'?it.ox||0:0),p[1]+(it.t=='r'?it.oy||0:0)));});
- const bx=[x0-.2,y0-.2,x1+.2,y1+.2];
- idxs.forEach(i=>{const it=arr[i];
-  if(it.lx!=null&&it.lx>=bx[0]&&it.lx<=bx[2]&&it.ly>=bx[1]&&it.ly<=bx[3])ext(it.lx,it.ly);});
- const pad=.04,mw=.35,mh=.25,cx=(x0+x1)/2,cy=(y0+y1)/2;
- x0-=pad;x1+=pad;y0-=pad;y1+=pad;
- if(x1-x0<mw){x0=cx-mw/2;x1=cx+mw/2;}
- if(y1-y0<mh){y0=cy-mh/2;y1=cy+mh/2;}
- marked=new Set(idxs);hl=main&&G.get(main)?G.get(main).a:null;mainName=main&&G.get(main)?main:null;
- draw();Z.focusRect(x0,y0,x1,y1);
-}
-function pick(name){
- closeAll();stopRipple();activeCat=null;$('q').value=name;
- focusOn(nearGroup(name,NN(),$('rOn').checked),name);
- $('st').textContent=`🎯 ${name}  ${T[lang].near} ${NN()}`;
-}
-/* සැකසුම් වෙනස් කළ විට දැනට තෝරාගත් ස්ථානය නැවත පෙන්වීම (පුවරුව වැසෙන්නේ නැත) */
-function refreshNear(){
- if(!mainName||!G.get(mainName))return;
- focusOn(nearGroup(mainName,NN(),$('rOn').checked),mainName);
- $('st').textContent=`🎯 ${mainName}  ${T[lang].near} ${NN()}`;
-}
-$('nN').oninput=()=>{$('nNv').textContent=$('nN').value;};
-$('nN').onchange=refreshNear;$('rOn').onchange=refreshNear;
-function pickCat(c){
- closeAll();stopRipple();activeCat=c;
- const idx=[];G.forEach(e=>{if(e.g.has(c))idx.push(...e.idx);});
- if(!idx.length)return;
- $('q').value='';focusOn(idx,null);
- $('st').textContent=`🗂 ${c}  (${idx.length})`;
-}
-
-/* ---------- Create a Random Map ----------
-   1) වර්ග තෝරයි  2) ස්ථාන ගණන තෝරයි.
-   නීති:
-   • ස්ථාන ගණන තෝරාගත් වර්ග ගණනට වඩා අඩු නම් දෝෂ පණිවිඩයක් පෙන්වයි.
-   • සෑම වර්ගයකින්ම අවම වශයෙන් එක් ස්ථානයක්.
-   • ඉතිරි ස්ථාන, DB එකේ ස්ථාන වැඩි වර්ගවලට වැඩියෙන් සහ අඩු වර්ගවලට අඩුවෙන් බෙදේ (D'Hondt).
-   • එකම වර්ගයේ ස්ථාන දෙකක් එකම කොටුවේ හෝ ආසන්න කොටුවල (8 දිශාවේ) නොවිය යුතුය.
-   • සිතියම පුරා විසිරීම: දැනට තෝරාගත් ස්ථානවලින් වඩාත්ම ඈත අපේක්ෂකයන් 3න් එකක් අහඹුව තෝරයි. */
-let rmSel=new Set(),rmN=20;
-function catCounts(){const m=new Map();G.forEach(e=>e.g.forEach(c=>m.set(c,(m.get(c)||0)+1)));return m;}
-function dbCounts(){/* සමස්ත DB (සියලු සිතියම්, වත්මන් භාෂාව) */
- const m=new Map(),D=DATA[lang]||{};
- Object.keys(D).forEach(k=>(D[k]||[]).forEach(it=>(it.g||[]).forEach(c=>m.set(c,(m.get(c)||0)+1))));
- return m;
-}
-function buildRM(){
- const cnt=catCounts(),c=coll();
- $('rmc').innerHTML=cnt.size?[...cnt.entries()].sort((a,b)=>c.compare(a[0],b[0])).map(([k,n])=>`<button type="button" class="chip${rmSel.has(k)?' on':''}" data-c="${esc(k)}">${esc(k)}<i>${n}</i></button>`).join(''):`<div class="none">${T[lang].nodata}</div>`;
- const mx=Math.max(3,Math.min(100,G.size));
- $('rmN').max=mx;if(rmN>mx)rmN=mx;$('rmN').value=rmN;$('rmNv').textContent=rmN;
-}
-const cellRC=a=>[Math.min(L.cols-1,Math.max(0,Math.floor(a[0]*L.cols))),Math.min(L.rows-1,Math.max(0,Math.floor(a[1]*L.rows)))];
-
-/* සෑම වර්ගයකටම 1 බැගින්; ඉතිරිය DB හි ගණනට සමානුපාතිකව (D'Hondt) */
-function rmAlloc(cats,N,cap){
- const db=dbCounts(),w=c=>Math.max(1,db.get(c)||1),q=new Map(cats.map(c=>[c,1]));
- for(let left=N-cats.length;left>0;left--){
-  let b=null,bv=-1;
-  cats.forEach(c=>{if(q.get(c)<cap.get(c)){const v=w(c)/(q.get(c)+1)+Math.random()*1e-6;if(v>bv){bv=v;b=c;}}});
-  if(!b)break;q.set(b,q.get(b)+1);
- }
- return q;
-}
-function rmGenerate(){
- const have=catCounts(),cats=[...rmSel].filter(c=>have.has(c));
- if(!cats.length){alert(T[lang].rmneed);return;}
- const N=+$('rmN').value;
- if(N<cats.length){alert('⚠ '+T[lang].rmerr(cats.length,N));return;}
- const cand=new Map(),cap=new Map();
- cats.forEach(c=>{const a=[];G.forEach(e=>{if(e.g.has(c))a.push({e,rc:cellRC(e.a)});});cand.set(c,a);cap.set(c,a.length);});
- const quota=rmAlloc(cats,N,cap),q0=new Map(quota),chosen=[],names=new Set(),tally=new Map(),sel=[];
- let relaxed=0;
- const minD=a=>chosen.length?Math.min(...chosen.map(p=>Math.hypot((a[0]-p.a[0])*L.iw,(a[1]-p.a[1])*L.ih))):Infinity;
- /* එකම වර්ගයේ ස්ථාන එකම කොටුවේ හෝ ආසන්න කොටු 8 තුළ නොවිය යුතුය */
- const near=(c,o)=>chosen.some(p=>p.c==c&&Math.max(Math.abs(p.rc[0]-o.rc[0]),Math.abs(p.rc[1]-o.rc[1]))<2);
- const choose=(c,pool)=>{
-  let g=pool.filter(o=>!near(c,o));if(!g.length){g=pool;relaxed++;}
-  if(!chosen.length)return g[Math.floor(Math.random()*g.length)];
-  const sc=g.map(o=>({o,d:minD(o.e.a)})).sort((a,b)=>b.d-a.d);
-  return sc[Math.floor(Math.random()*Math.min(3,sc.length))].o;/* විසිරීම: ඈතම 3න් එකක් */
- };
- const take=(c,o)=>{chosen.push({a:o.e.a,c,rc:o.rc});names.add(o.e.n);sel.push(o.e);tally.set(c,(tally.get(c)||0)+1);};
- const poolOf=c=>cand.get(c).filter(o=>!names.has(o.e.n));
  /* 1) සියලු වර්ග ආවරණය (අඩුම ස්ථාන ඇති වර්ග මුලින්) */
- [...cats].sort((a,b)=>cap.get(a)-cap.get(b)).forEach(c=>{const p=poolOf(c);if(p.length){take(c,choose(c,p));quota.set(c,quota.get(c)-1);}});
- /* 2) ඉතිරි කෝටා පිරවීම */
- let guard=0;
- while(sel.length<N&&guard++<N*6+60){
-  const act=cats.filter(c=>quota.get(c)>0&&poolOf(c).length);if(!act.length)break;
-  act.sort((a,b)=>quota.get(b)/q0.get(b)-quota.get(a)/q0.get(a)+(Math.random()-.5)*.01);
-  take(act[0],choose(act[0],poolOf(act[0])));quota.set(act[0],quota.get(act[0])-1);
- }
- if(!sel.length){alert(T[lang].rmnone);return;}
- closeAll();stopRipple();activeCat=null;mainName=null;hl=null;$('q').value='';manual.clear();
- marked=new Set(sel.flatMap(e=>e.idx));
- Z.reset();draw();
- $('st').textContent=`🎲 ${T[lang].rmres}: ${sel.length} — `+[...tally.entries()].map(([c,n])=>`${c} ${n}`).join(' · ')+(relaxed?` ⚠ ${relaxed}`:'');
-}
-$('rmb').onclick=e=>{e.stopPropagation();togglePop('rmp',$('rmb'),buildRM);};
-$('rmp').onclick=e=>{e.stopPropagation();
- const b=e.target.closest('[data-c]');
- if(b){const c=b.dataset.c;rmSel.has(c)?rmSel.delete(c):rmSel.add(c);b.classList.toggle('on',rmSel.has(c));}};
-$('rma').onclick=()=>{catCounts().forEach((_,c)=>rmSel.add(c));buildRM();};
-$('rmn').onclick=()=>{rmSel.clear();buildRM();};
-$('rmN').oninput=()=>{rmN=+$('rmN').value;$('rmNv').textContent=rmN;};
-$('rmgo').onclick=rmGenerate;
-
-/* ---------- පුවරු (panels) ---------- */
-const pops=['plp','typ','stp','rmp','bkp'];
-function closeAll(){pops.forEach(p=>$(p).style.display='none');$('sug').classList.remove('open');$('lbp').classList.remove('open');$('lbb').classList.remove('on');}
-function togglePop(id,btn,build){
- const el=$(id),was=el.style.display=='flex';closeAll();if(was)return;
- if(build)build();el.style.display='flex';
- const r=btn.getBoundingClientRect();
- el.style.left=Math.max(4,Math.min(r.left,innerWidth-el.offsetWidth-4))+'px';
- el.style.top=(r.bottom+6)+'px';
- el.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';
-}
-function buildPlaces(){
- const v=norm($('cmq').value),c=sorted().filter(e=>!v||norm(e.n).includes(v));
- $('plc').textContent=custom.size;
- $('pli').innerHTML=c.length?c.map(e=>`<label class="row"><input type="checkbox" data-a="${esc(e.n)}"${custom.has(e.n)?' checked':''}><span>${IC[e.t]||'●'}</span><span>${esc(e.n)}${e.g.size?`<span class="gl">${esc(tagOf(e))}</span>`:''}</span></label>`).join(''):`<div class="none">${T[lang].nodata}</div>`;
-}
-function buildTypes(){
- const cnt=new Map();G.forEach(e=>e.g.forEach(c=>cnt.set(c,(cnt.get(c)||0)+1)));
- const c=coll();
- $('tyc').innerHTML=cnt.size?[...cnt.entries()].sort((a,b)=>c.compare(a[0],b[0])).map(([k,n])=>`<button type="button" class="chip${k==activeCat?' on':''}" data-c="${esc(k)}">${esc(k)}<i>${n}</i></button>`).join(''):`<div class="none">${T[lang].nodata}</div>`;
-}
-$('plb').onclick=e=>{e.stopPropagation();togglePop('plp',$('plb'),()=>{$('cmq').value='';buildPlaces();});};
-$('tyb').onclick=e=>{e.stopPropagation();togglePop('typ',$('tyb'),buildTypes);};
-$('stb').onclick=e=>{e.stopPropagation();togglePop('stp',$('stb'));};
-$('pli').onchange=e=>{const a=e.target.dataset.a;if(!a)return;e.target.checked?custom.add(a):custom.delete(a);$('plc').textContent=custom.size;};
-$('tyc').onclick=e=>{const b=e.target.closest('[data-c]');if(b)pickCat(b.dataset.c);};
-document.addEventListener('click',e=>{if(!e.target.closest('.pop,.sw'))closeAll();});
-document.addEventListener('keydown',e=>{if(e.key=='Escape'){closeAll();stopRipple();if($('hw').classList.contains('open'))closeHow();}});
-$('plp').onclick=$('typ').onclick=$('stp').onclick=e=>e.stopPropagation();
-['sOn','fsz'].forEach(id=>$(id).oninput=$(id).onchange=draw);
-
-/* ---------- අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න ---------- */
-function showCustom(){
- const idx=[...custom].flatMap(n=>G.get(n)?G.get(n).idx:[]);
- if(!idx.length){alert(T[lang].cmempty);return false;}
- closeAll();activeCat=null;$('q').value='';
- focusOn(idx,null);customMarked=marked;
- $('st').textContent=`🧺 ${T[lang].cmres}: ${custom.size}`;
- return true;
-}
-$('cmq').oninput=buildPlaces;
-$('cmshow').onclick=showCustom;
-$('cmjpg').onclick=()=>{if(showCustom())doExport('jpg');};
-$('cmpdf').onclick=()=>{if(showCustom())doExport('pdf');};
-$('cmclr').onclick=()=>{custom.clear();buildPlaces();};
-
-/* ---------- Search bar ---------- */
-function renderSug(list){
- sugList=list;sugAct=-1;
- $('sug').innerHTML=list.length?list.map(rowHtml).join(''):`<div class="none">${T[lang].none}</div>`;
- $('lbp').classList.remove('open');$('lbb').classList.remove('on');$('sug').classList.add('open');
-}
-$('q').oninput=()=>{
- const v=norm($('q').value);
- if(!v){$('sug').classList.remove('open');return;}
- renderSug(sorted().filter(e=>norm(e.n).includes(v)).sort((a,b)=>(norm(b.n).startsWith(v)-norm(a.n).startsWith(v))).slice(0,12));
-};
-$('q').onfocus=()=>{if($('q').value.trim())$('q').oninput();};
-$('q').onkeydown=e=>{
- const rows=$('sug').querySelectorAll('.row'),open=$('sug').classList.contains('open');
- if(e.key=='ArrowDown'&&open&&rows.length){e.preventDefault();sugAct=(sugAct+1)%rows.length;}
- else if(e.key=='ArrowUp'&&open&&rows.length){e.preventDefault();sugAct=(sugAct-1+rows.length)%rows.length;}
- else if(e.key=='Enter'){e.preventDefault();const p=sugList[sugAct>=0?sugAct:0];if(p)pick(p.n);return;}
- else return;
- rows.forEach((r,i)=>r.classList.toggle('act',i==sugAct));
-};
-$('sug').onclick=e=>{const r=e.target.closest('[data-n]');if(r)pick(r.dataset.n);};
-
-/* ---------- Letter bar (තිරස් අකුරු පුවරුව) ---------- */
-function initials(){
- const m=new Map();
- G.forEach(e=>{const ch=Array.from(e.n.trim())[0]||'',k=lang=='en'?ch.toUpperCase():ch;
-  if(!k)return;if(!m.has(k))m.set(k,[]);m.get(k).push(e);});
- return m;
-}
-function renderLB(){
- const m=initials(),c=coll(),keys=[...m.keys()].sort((a,b)=>c.compare(a,b));
- let h=keys.length?`<div class="lbl">${keys.map(k=>`<button type="button" class="${k==lbLetter?'on':''}" data-k="${esc(k)}">${esc(k)}</button>`).join('')}</div>`:`<div class="none">${T[lang].nodata}</div>`;
- if(lbLetter&&m.has(lbLetter)){h+=`<div class="lbr">${m.get(lbLetter).sort((a,b)=>c.compare(a.n,b.n)).map(rowHtml).join('')}</div>`;}
- else if(keys.length)h+=`<div class="lbh">${T[lang].pickLetter}</div>`;
- $('lbp').innerHTML=h;
-}
-$('lbb').onclick=e=>{
- e.stopPropagation();const was=$('lbp').classList.contains('open');closeAll();if(was)return;
- lbLetter=null;renderLB();$('lbp').classList.add('open');$('lbb').classList.add('on');
-};
-$('lbp').onclick=e=>{
- e.stopPropagation();
- const b=e.target.closest('[data-k]');if(b){lbLetter=b.dataset.k;renderLB();return;}
- const r=e.target.closest('[data-n]');if(r)pick(r.dataset.n);
-};
-
-/* ---------- භාෂාව / සිතියම් මාරු කිරීම ---------- */
-function fillMapSelect(keep){
- const s=$('map');s.innerHTML='';MAPS.forEach(m=>s.add(new Option(MN[lang][m.k]||m.name,m.k)));if(keep)s.value=keep;
-}
-function applyUI(){
- const t=T[lang];
- document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t[e.dataset.t]);
- $('q').placeholder=t.ph;
- $('cmq').placeholder=t.ph;
- document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.classList.toggle('on',b.dataset.l==lang));
- document.documentElement.lang=lang;
- if($('hw').classList.contains('open'))buildHow();
- updateBk();
-}
-function setLang(l){
- lang=l;closeAll();stopRipple();applyUI();fillMapSelect(cur&&cur.k);
- buildGroups();marked=new Set();custom.clear();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
- $('st').textContent=G.size?T[lang].hint:T[lang].nodata;draw();
-}
-document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.onclick=()=>setLang(b.dataset.l));
-
-/* ---------- How to use කවුළුව ---------- */
-function buildHow(){
- $('hwb').innerHTML=HOW[lang].map((s,i)=>`<div class="st"><div class="n">${i+1}</div><div><h4>${s[0]}</h4><p>${s[1]}</p>${s[2]?`<div class="tip">💡 ${s[2]}</div>`:''}</div></div>`).join('');
-}
-function openHow(){closeAll();buildHow();$('hw').classList.add('open');$('hwb').scrollTop=0;}
-function closeHow(){
- $('hw').classList.remove('open');
- try{if($('hwn').checked)localStorage.setItem('gs_how_seen','1');else localStorage.removeItem('gs_how_seen');}catch(e){}
-}
-$('hwo').onclick=e=>{e.stopPropagation();openHow();};
-$('hwx').onclick=$('hwk').onclick=closeHow;
-$('hw').onclick=e=>{if(e.target===$('hw'))closeHow();};
-
-/* ---------- සිතියම් පොත (උපරිම සිතියම් 20 + පිටකවර 2 + ඇතුළු හිස් පිටු 2) ---------- */
-const BKMAX=20;let book=[],editIdx=null;
-HOW.si.splice(10,0,['සිතියම් පොතක් සාදන්න','<b>📖 සිතියම් පොත</b> බොත්තම ඔබන්න. පළමුව සිතියමට ස්ථාන තෝරන්න (සෙවුම, 📍 ලැයිස්තුව, Random Map ආදී ඕනෑම ක්‍රමයකින්). පසුව <b>＋ දැන් පෙන්වන සිතියම පොතට එක් කරන්න</b> ඔබන්න. ඊළඟ සිතියම සඳහා නැවත ස්ථාන තෝරා නැවත එක් කරන්න (එකම සිතියම හෝ වෙනත් සිතියමක් විය හැක). සිතියම් 20ක් දක්වා එක් කළ හැක. පොතේ නම හා කර්තෘ නම ලියා <b>⬇ පොත PDF ලෙස සුරකින්න</b> ඔබන්න.','පිටකවර 2 සහ ඒවායේ ඇතුළු හිස් පිටු 2 ස්වයංක්‍රීයව එකතු වේ. සිතියම් 10ක් = පිටු 14. සෑම පිටුවකම පහළ GeoSketch ලකුණ ඇත.']);
-HOW.ta.splice(10,0,['வரைபடப் புத்தகம் உருவாக்குங்கள்','<b>📖 வரைபடப் புத்தகம்</b> பொத்தானை அழுத்துங்கள். முதலில் வரைபடத்தில் இடங்களைத் தேர்ந்தெடுங்கள் (தேடல், 📍 பட்டியல், சீரற்ற வரைபடம் ஏதேனும்). பின்னர் <b>＋ தற்போதைய வரைபடத்தைப் புத்தகத்தில் சேர்</b> அழுத்துங்கள். அடுத்த வரைபடத்திற்கும் இதையே செய்யுங்கள். 20 வரை சேர்க்கலாம். புத்தகத்தின் பெயர், ஆசிரியர் பெயரை எழுதி <b>⬇ புத்தகத்தை PDF ஆகச் சேமி</b> அழுத்துங்கள்.','2 அட்டைகளும் அவற்றின் உள் வெற்றுப் பக்கங்கள் 2 உம் தானாகச் சேரும். 10 வரைபடங்கள் = 14 பக்கங்கள். ஒவ்வொரு பக்கத்தின் கீழும் GeoSketch இருக்கும்.']);
-HOW.en.splice(10,0,['Make a map book','Press <b>📖 Map Book</b>. First choose places on the map (search, the 📍 list, Random Map, any way). Then press <b>＋ Add the map now shown to the book</b>. Choose places again and add the next one (same map or a different map). You can add up to 20. Type the book title and author, then press <b>⬇ Save book as PDF</b>.','2 covers and their 2 blank inside pages are added automatically. 10 maps = 14 pages. Every page carries the GeoSketch mark at the bottom.']);
-
-function updateBk(){
- const t=T[lang],n=book.length;
- $('bkb').textContent=`${t.bkb} (${n}/${BKMAX})`;
- $('bkTi').placeholder=t.bkph1;$('bkPt').placeholder=t.bkph3;$('bkAu').placeholder=t.bkph2;
- $('bkn').textContent=`${n}/${BKMAX} · ${t.bkpages} ${n?n+4:0}`;
- $('bkadd').textContent=editIdx==null?t.bkadd:t.bknew;
- $('bkupd').textContent=t.bkupd;$('bkupd').style.display=editIdx==null?'none':'';
-}
-function buildBook(){
- updateBk();
- $('bkl').innerHTML=book.length?book.map((p,i)=>`<div class="bki${i==editIdx?' ed':''}"><img src="${p.thumb}" alt=""><div class="bkt"><b>${i+1}.</b> ${esc(p.mapName)}<input class="bkti" data-i="${i}" value="${esc(p.title||'')}" placeholder="${esc(T[lang].bkph3)}"></div><span class="bka"><button type="button" data-a="open" data-i="${i}">✎</button><button type="button" data-a="up" data-i="${i}">↑</button><button type="button" data-a="dn" data-i="${i}">↓</button><button type="button" data-a="del" data-i="${i}">✕</button></span></div>`).join(''):`<div class="none">${T[lang].bkno}</div>`;
-}
-function snapPage(){
- if(!L||!img||!marked.size){alert(T[lang].bkempty);return null;}
- const ttl=$('bkPt').value.trim()||mainName||(marked===customMarked&&custom.size?T[lang].cmres:'');
- const t=document.createElement('canvas');paint(t,{grid:false,title:ttl,footer:footerText()});
- const th=document.createElement('canvas');th.width=160;th.height=Math.max(1,Math.round(160*t.height/t.width));
- th.getContext('2d').drawImage(t,0,0,th.width,th.height);
- return{k:cur.k,lang,mapName:MN[lang][cur.k]||cur.name||cur.k,title:ttl,marked:[...marked],
-  manual:[...manual.entries()].map(([i,v])=>[i,Object.assign({},v)]),hl:hl?[...hl]:null,mainName,thumb:th.toDataURL('image/jpeg',.7)};
-}
-async function openPage(i){
- const p=book[i];if(!p)return;
- closeAll();
- if(p.lang!==lang)setLang(p.lang);
- if(cur.k!==p.k){$('map').value=p.k;await load(p.k);}else $('map').value=p.k;
- manual.clear();
- focusOn(p.marked,p.mainName);
- p.manual.forEach(([j,v])=>manual.set(j,Object.assign({},v)));
- draw();editIdx=i;$('bkPt').value=p.title||'';updateBk();
- $('st').textContent=`📖 ${i+1}/${book.length} — ${p.mapName}`;
-}
-$('bkb').onclick=e=>{e.stopPropagation();togglePop('bkp',$('bkb'),buildBook);};
-$('bkp').onclick=e=>{
- e.stopPropagation();
- const b=e.target.closest('[data-a]');if(!b)return;
- const i=+b.dataset.i,a=b.dataset.a;
- if(a=='open'){openPage(i);return;}
- if(a=='del'){book.splice(i,1);editIdx=null;}
- else if(a=='up'&&i>0){[book[i-1],book[i]]=[book[i],book[i-1]];editIdx=null;}
- else if(a=='dn'&&i<book.length-1){[book[i+1],book[i]]=[book[i],book[i+1]];editIdx=null;}
- buildBook();
-};
-$('bkp').oninput=e=>{const t=e.target;if(t.classList&&t.classList.contains('bkti')){const b=book[+t.dataset.i];if(b)b.title=t.value;}};
-$('bkadd').onclick=()=>{
- if(book.length>=BKMAX){alert(T[lang].bkfull);return;}
- const p=snapPage();if(!p)return;
- book.push(p);editIdx=null;$('bkPt').value='';buildBook();
-};
-$('bkupd').onclick=()=>{
- if(editIdx==null||!book[editIdx])return;
- const p=snapPage();if(!p)return;
- book[editIdx]=p;editIdx=null;$('bkPt').value='';buildBook();
-};
-$('bkclr').onclick=()=>{if(book.length&&confirm(T[lang].bkclrq)){book=[];editIdx=null;buildBook();}};
-$('cmbook').onclick=()=>{
- if(book.length>=BKMAX){alert(T[lang].bkfull);return;}
- if(!showCustom())return;
- const p=snapPage();if(!p)return;
- book.push(p);editIdx=null;$('bkPt').value='';updateBk();
- $('st').textContent=`📖 ${T[lang].bkb}: ${book.length}/${BKMAX}`;
-};
-
-/* පිටකවර ඇඳීම */
-function wrapText(g,text,maxW){
- const out=[];let line='';
- const words=String(text).split(/\s+/).filter(Boolean);
- const flush=()=>{if(line){out.push(line);line='';}};
- words.forEach(w=>{
-  if(g.measureText(w).width>maxW){
-   flush();let part='';
-   Array.from(w).forEach(ch=>{if(g.measureText(part+ch).width>maxW&&part){out.push(part);part=ch;}else part+=ch;});
-   line=part;return;}
-  const t=line?line+' '+w:w;
-  if(g.measureText(t).width>maxW){flush();line=w;}else line=t;
- });
- flush();return out;
-}
-function coverCanvas(W,H,title,author,back){
- const c=document.createElement('canvas');c.width=W;c.height=H;
- const g=c.getContext('2d'),u=Math.min(W,H);
- g.fillStyle='#0d2b45';g.fillRect(0,0,W,H);
- g.strokeStyle='rgba(26,167,236,.16)';g.lineWidth=Math.max(1,u/900);
- const st=u/12;
- for(let x=st;x<W;x+=st){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke();}
- for(let y=st;y<H;y+=st){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();}
- g.strokeStyle='#1aa7ec';g.lineWidth=u/220;const m=u*.04;g.strokeRect(m,m,W-2*m,H-2*m);
- g.textAlign='center';g.textBaseline='middle';
- if(!back){
-  const fs=u*.085;g.font=`bold ${fs}px ${FONT}`;g.fillStyle='#ffffff';
-  const lines=wrapText(g,title||'',W*.76),lh=fs*1.35,y0=H*.38-(lines.length-1)*lh/2;
-  lines.forEach((l,i)=>g.fillText(l,W/2,y0+i*lh));
-  const yb=y0+(lines.length-1)*lh+fs*1.1;
-  g.fillStyle='#1aa7ec';g.fillRect(W/2-u*.12,yb,u*.24,u/160);
-  if(author){const fa=u*.045;g.font=`${fa}px ${FONT}`;g.fillStyle='#bfe6fa';
-   wrapText(g,author,W*.7).forEach((l,i)=>g.fillText(l,W/2,yb+fa*1.9+i*fa*1.4));}
- }else if(title){
-  const fs=u*.04;g.font=`${fs}px ${FONT}`;g.fillStyle='#bfe6fa';
-  wrapText(g,title,W*.7).forEach((l,i)=>g.fillText(l,W/2,H*.45+i*fs*1.4));
- }
- /* පහළ GeoSketch ලකුණ */
- const lf=u*.06;g.font=`bold ${lf}px ${FONT}`;g.textAlign='left';
- const w1=g.measureText('Geo').width,w2=g.measureText('Sketch').width,x0=(W-w1-w2)/2,ly=H-m-lf*1.2;
- g.fillStyle='#ffffff';g.fillText('Geo',x0,ly);g.fillStyle='#1aa7ec';g.fillText('Sketch',x0+w1,ly);
- return c;
+ [...cats].sort((a,b)=>pool[a].length-pool[b].length).forEach(c=>{if(!cnt(c))pick(pool[c]);});
+ /* 2) කෝටා: වැඩි ස්ථාන ඇති වර්ගයට වැඩි ගණනක් (D'Hondt ක්‍රමය) */
+ const quota={};cats.forEach(c=>quota[c]=1);
+ for(let r=n-cats.length;r>0;r--){
+  let b=null,bv=-1;cats.forEach(c=>{if(quota[c]<pool[c].length){const v=pool[c].length/(quota[c]+1);if(v>bv){bv=v;b=c;}}});
+  if(!b)break;quota[b]++;}
+ /* 3) කෝටා පිරවීම (වර්ග මාරුවෙන් මාරුවට, එවිට විසිරීම හොඳයි) */
+ while(chosen.length<n){
+  let prog=false;
+  [...cats].sort(()=>Math.random()-.5).forEach(c=>{
+   if(chosen.length<n&&cnt(c)<quota[c]&&pick(pool[c]))prog=true;});
+  if(!prog)break;}
+ while(chosen.length<n&&pick([...new Set(cats.flatMap(c=>pool[c]))]));
+ return{idx:new Set(chosen),relaxed,capped,n:chosen.length};
 }
 
-/* PDF ගොනුව සෑදීම (JPEG පිටු) */
-const jpgBytes=c=>{const b=atob(c.toDataURL('image/jpeg',.92).split(',')[1]),a=new Uint8Array(b.length);for(let i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;};
-function buildPDF(pgs){
- const enc=new TextEncoder(),chunks=[],offs=[];let len=0;
- const push=b=>{chunks.push(b);len+=b.length;},str=s=>push(enc.encode(s));
- let next=3;
- pgs.forEach(p=>{p.pid=next++;p.cid=next++;p.iid=p.jpg?next++:0;});
- str('%PDF-1.4\n');
- offs[1]=len;str('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
- offs[2]=len;str(`2 0 obj\n<< /Type /Pages /Count ${pgs.length} /Kids [${pgs.map(p=>p.pid+' 0 R').join(' ')}] >>\nendobj\n`);
- pgs.forEach(p=>{
-  const f=n=>n.toFixed(2);
-  offs[p.pid]=len;
-  str(`${p.pid} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${f(p.pw)} ${f(p.ph)}] /Resources << ${p.iid?`/XObject << /Im0 ${p.iid} 0 R >>`:''} >> /Contents ${p.cid} 0 R >>\nendobj\n`);
-  let cs='';
-  if(p.jpg){const s=Math.min(p.pw/p.iw,p.ph/p.ih),dw=p.iw*s,dh=p.ih*s;cs=`q ${f(dw)} 0 0 ${f(dh)} ${f((p.pw-dw)/2)} ${f((p.ph-dh)/2)} cm /Im0 Do Q`;}
-  offs[p.cid]=len;
-  str(`${p.cid} 0 obj\n<< /Length ${cs.length} >>\nstream\n${cs}\nendstream\nendobj\n`);
-  if(p.iid){
-   offs[p.iid]=len;
-   str(`${p.iid} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${p.iw} /Height ${p.ih} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.jpg.length} >>\nstream\n`);
-   push(p.jpg);str('\nendstream\nendobj\n');
-  }
- });
- const xr=len,n=next;
- str(`xref\n0 ${n}\n0000000000 65535 f \n`);
- for(let i=1;i<n;i++)str(String(offs[i]).padStart(10,'0')+' 00000 n \n');
- str(`trailer\n<< /Size ${n} /Root 1 0 R >>\nstartxref\n${xr}\n%%EOF`);
- return new Blob(chunks,{type:'application/pdf'});
+/* Popup */
+function openRandomMap(L,items,onDone){
+ const cnt={};items.forEach(it=>gOf(it).forEach(c=>cnt[c]=(cnt[c]||0)+1));
+ const cl=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
+ if(!cl.length){alert('දත්ත ගබඩාවේ වර්ග සහිත ස්ථාන නැත.');return;}
+ const bg=document.createElement('div');
+ bg.style.cssText='position:fixed;inset:0;background:#0007;z-index:9999;display:flex;align-items:center;justify-content:center;padding:10px';
+ const bx=document.createElement('div');
+ bx.style.cssText='background:#fff;border-radius:12px;padding:16px;max-width:460px;width:100%;max-height:90vh;overflow:auto;color:#0d2b45;font-family:'+FONT+';box-shadow:0 4px 24px #0006';
+ bx.innerHTML='<h3 style="margin:0 0 10px">🎲 Random Map</h3>'
+ +'<label>ඇතුළත් කළ යුතු ස්ථාන ගණන: <input type="number" min="1" value="20" id="rm_n" style="width:80px;padding:4px"></label>'
+ +'<div style="margin:12px 0 4px"><b>ආවරණය විය යුතු වර්ග:</b> <button type="button" id="rm_all">සියල්ල</button> <button type="button" id="rm_none">කිසිවක් නැත</button></div>'
+ +'<div id="rm_l" style="display:flex;flex-direction:column;gap:3px;max-height:40vh;overflow:auto;border:1px solid #9bb;border-radius:6px;padding:6px"></div>'
+ +'<div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button type="button" id="rm_x">අවලංගු</button><button type="button" id="rm_ok">සිතියම සාදන්න</button></div>';
+ bg.appendChild(bx);document.body.appendChild(bg);
+ const lst=bx.querySelector('#rm_l');
+ cl.forEach(c=>{const l=document.createElement('label');l.innerHTML='<input type="checkbox" value="" checked> ';
+  l.firstChild.value=c;l.append(`${c} (${cnt[c]})`);lst.appendChild(l);});
+ const boxes=()=>[...lst.querySelectorAll('input')];
+ bx.querySelector('#rm_all').onclick=()=>boxes().forEach(b=>b.checked=true);
+ bx.querySelector('#rm_none').onclick=()=>boxes().forEach(b=>b.checked=false);
+ bx.querySelector('#rm_x').onclick=()=>bg.remove();
+ bx.querySelector('#rm_ok').onclick=()=>{
+  const n=parseInt(bx.querySelector('#rm_n').value,10),cats=boxes().filter(b=>b.checked).map(b=>b.value);
+  if(!(n>0)){alert('ස්ථාන ගණන නිවැරදිව ඇතුළත් කරන්න.');return;}
+  const r=randomPick(items,L,cats,n);
+  if(r.err){alert('⚠ '+r.err);return;}
+  bg.remove();
+  let msg='';
+  if(r.capped)msg+=`තෝරාගත් වර්ග වල ඇත්තේ ස්ථාන ${r.n} ක් පමණි, එබැවින් ඒ සියල්ල ගත්තෙමි. `;
+  if(r.relaxed)msg+=`සමහර ස්ථාන ආසන්න වීමට ඉඩ ඇත (${r.relaxed}) - ඉඩ මදි නිසා.`;
+  if(msg)alert(msg);
+  onDone(r.idx,r);
+ };
 }
-async function exportBook(){
- if(!book.length){alert(T[lang].bkno);return;}
- const btn=$('bkpdf'),old=btn.textContent;btn.disabled=true;btn.textContent=T[lang].bkbusy;$('st').textContent=T[lang].bkbusy;
- const saved={lang,cur,img,L,marked,hl,mainName,manual:[...manual.entries()]};
- try{
-  await fontReady();
-  const imgs=new Map();
-  for(const p of book)if(!imgs.has(p.k))imgs.set(p.k,await loadImg(MAPS.find(m=>m.k==p.k).url));
-  const mp=[];let size=null;
-  for(const p of book){
-   lang=p.lang;cur=MAPS.find(m=>m.k==p.k);img=imgs.get(p.k);L=layout(img);buildGroups();
-   marked=new Set(p.marked);hl=p.hl?[...p.hl]:null;mainName=p.mainName;
-   manual.clear();p.manual.forEach(([j,v])=>manual.set(j,Object.assign({},v)));
-   const c=document.createElement('canvas');
-   paint(c,{grid:$('exg').checked,title:p.title,footer:footerText()});
-   if(!size)size=[c.width,c.height];
-   const land=c.width>c.height;
-   mp.push({jpg:jpgBytes(c),iw:c.width,ih:c.height,pw:land?841.89:595.28,ph:land?595.28:841.89});
-   await new Promise(r=>setTimeout(r,0));
-  }
-  const land=size[0]>size[1],pw=land?841.89:595.28,ph=land?595.28:841.89;
-  const blank={jpg:null,pw,ph},ttl=$('bkTi').value.trim(),au=$('bkAu').value.trim();
-  const cover=b=>{const c=coverCanvas(size[0],size[1],ttl,au,b);return{jpg:jpgBytes(c),iw:c.width,ih:c.height,pw,ph};};
-  const pages=[cover(false),Object.assign({},blank),...mp,Object.assign({},blank),cover(true)];
-  const blob=buildPDF(pages),a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download='GeoSketch-Book.pdf';document.body.appendChild(a);a.click();a.remove();
-  setTimeout(()=>URL.revokeObjectURL(a.href),20000);
-  $('st').textContent=`📖 PDF: ${pages.length}`;
- }catch(err){console.error(err);alert('PDF error: '+(err&&err.message||err));}
- finally{
-  lang=saved.lang;cur=saved.cur;img=saved.img;L=saved.L;buildGroups();
-  marked=saved.marked;hl=saved.hl;mainName=saved.mainName;
-  manual.clear();saved.manual.forEach(([j,v])=>manual.set(j,v));
-  btn.disabled=false;btn.textContent=old;draw();
- }
+function addRandomButton(parent,getL,getItems,onDone){
+ const b=document.createElement('button');b.type='button';b.textContent='🎲 Random Map';
+ b.onclick=()=>{const L=getL();if(!L){alert('මුලින් සිතියමක් තෝරන්න.');return;}openRandomMap(L,getItems(),onDone);};
+ parent.appendChild(b);return b;
 }
-$('bkpdf').onclick=exportBook;
-
-async function load(k){
- cur=MAPS.find(m=>m.k==k);closeAll();stopRipple();$('st').textContent=T[lang].loading;
- img=null;
- try{await fontReady();img=await loadImg(cur.url);}catch(e){img=null;$('st').textContent='රූපය load වුණේ නැත / Image failed';return;}
- L=layout(img);buildGroups();marked=new Set();custom.clear();manual.clear();hl=null;activeCat=null;rmSel.clear();$('q').value='';
- Z.reset();draw();
- $('st').textContent=G.size?T[lang].hint:T[lang].nodata;
-}
-$('map').onchange=e=>load(e.target.value);
-
-applyUI();fillMapSelect();$('st').textContent=T[lang].loading;
-loadAll().then(()=>load(MAPS[0].k)).then(()=>{try{if(!localStorage.getItem('gs_how_seen'))openHow();}catch(e){}});/* පළමු වරට පැමිණෙන අයට ස්වයංක්‍රීයව පෙන්වයි */
-</script>
-</body>
-</html>
