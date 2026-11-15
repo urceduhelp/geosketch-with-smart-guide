@@ -96,6 +96,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
 .bkf input{height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
 .bkh{padding:6px 12px 8px;font-size:12px;color:#678}
 #bkb{background:#1b9a55}
+.bkti{width:100%;height:26px;margin-top:3px;padding:0 6px;border:1px solid #9bb;border-radius:6px;font-size:13px;color:var(--ink)}
 @media(max-width:760px){
  body{font-size:14px}
  header{padding:6px 8px}
@@ -157,6 +158,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <div class="pb"><div class="bkf"><input id="bkTi" maxlength="80" autocomplete="off"><input id="bkAu" maxlength="60" autocomplete="off"></div>
  <div class="bkh" data-t="bkhelp"></div><div id="bkl"></div></div>
  <div class="cmb2" style="padding-top:10px">
+  <input id="bkPt" maxlength="90" autocomplete="off" style="flex:1 1 100%;height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)">
   <button type="button" id="bkadd" style="flex:1 1 100%"></button>
   <button type="button" id="bkupd" style="flex:1 1 100%;background:#f5a623"></button>
   <button type="button" id="bkpdf" data-t="bkpdf" style="background:#d6212b"></button>
@@ -207,9 +209,9 @@ const T={
 Object.assign(T.si,{cmb:'🧺 මගේ සිතියම',cm2:'තෝරාගත් ස්ථාන',cmph:'ස්ථානයක් සොයා එක් කරන්න...',cmadd:'＋ දැන් පෙන්වන ස්ථානය එක් කරන්න',cmshow:'සිතියමේ පෙන්වන්න',cmclr:'හිස් කරන්න',cmpdf:'⬇ PDF',cmempty:'ස්ථාන තෝරා නැත',cmres:'තෝරාගත් ස්ථාන සිතියම'});
 Object.assign(T.ta,{cmb:'🧺 என் வரைபடம்',cm2:'தேர்ந்தெடுத்த இடங்கள்',cmph:'இடத்தைத் தேடிச் சேர்க்கவும்...',cmadd:'＋ தற்போதைய இடத்தைச் சேர்',cmshow:'வரைபடத்தில் காட்டு',cmclr:'அழி',cmpdf:'⬇ PDF',cmempty:'இடங்கள் தேர்ந்தெடுக்கப்படவில்லை',cmres:'தேர்ந்தெடுத்த இடங்களின் வரைபடம்'});
 Object.assign(T.en,{cmb:'🧺 My Map',cm2:'Chosen places',cmph:'Search a place to add...',cmadd:'＋ Add the place now shown',cmshow:'Show on map',cmclr:'Clear',cmpdf:'⬇ PDF',cmempty:'No places chosen',cmres:'Selected places map'});
-Object.assign(T.si,{bkb:'📖 සිතියම් පොත',bkt:'සිතියම් පොත සකසන්න',bkpages:'පිටු',bkph1:'පොතේ නම (පිටකවරයට)',bkph2:'කර්තෘ නම',bkadd:'＋ දැන් පෙන්වන සිතියම පොතට එක් කරන්න',bknew:'＋ අලුත් පිටුවක් ලෙස එක් කරන්න',bkupd:'✔ තෝරාගත් පිටුව මේ සිතියමෙන් යාවත්කාලීන කරන්න',bkpdf:'⬇ පොත PDF ලෙස සුරකින්න',bkclr:'පොත හිස් කරන්න',bkclrq:'පොතේ සියලු සිතියම් ඉවත් කරන්නද?',bkempty:'පළමුව සිතියමේ ස්ථාන තෝරන්න (සෙවුම හෝ 📍 මගින්)',bkfull:'සිතියම් 20ක් උපරිමයි',bkno:'පොතේ සිතියම් නැත',bkbusy:'පොත සාදමින්...',cmbook:'＋ පොතට',bkhelp:'සිතියම් 1 = පිටු 1. පිටකවර 2 ත්, ඒවායේ ඇතුළු හිස් පිටු 2 ත් ස්වයංක්‍රීයව එකතු වේ (සිතියම් 10 = පිටු 14). ✎ ඔබා පිටුවක් නැවත සකසන්න.'});
-Object.assign(T.ta,{bkb:'📖 வரைபடப் புத்தகம்',bkt:'வரைபடப் புத்தகம்',bkpages:'பக்கங்கள்',bkph1:'புத்தகத்தின் பெயர் (அட்டைக்கு)',bkph2:'ஆசிரியர் பெயர்',bkadd:'＋ தற்போதைய வரைபடத்தைப் புத்தகத்தில் சேர்',bknew:'＋ புதிய பக்கமாகச் சேர்',bkupd:'✔ தேர்ந்த பக்கத்தை இந்த வரைபடத்தால் புதுப்பி',bkpdf:'⬇ புத்தகத்தை PDF ஆகச் சேமி',bkclr:'புத்தகத்தை அழி',bkclrq:'புத்தகத்தின் எல்லா வரைபடங்களையும் நீக்கவா?',bkempty:'முதலில் வரைபடத்தில் இடங்களைத் தேர்ந்தெடுங்கள்',bkfull:'அதிகபட்சம் 20 வரைபடங்கள்',bkno:'புத்தகத்தில் வரைபடங்கள் இல்லை',bkbusy:'புத்தகம் உருவாகிறது...',cmbook:'＋ புத்தகத்தில்',bkhelp:'1 வரைபடம் = 1 பக்கம். 2 அட்டைகளும் அவற்றின் உள் வெற்றுப் பக்கங்கள் 2 உம் தானாகச் சேரும் (10 வரைபடங்கள் = 14 பக்கங்கள்). ✎ அழுத்தி ஒரு பக்கத்தை மீண்டும் திருத்தலாம்.'});
-Object.assign(T.en,{bkb:'📖 Map Book',bkt:'Make a map book',bkpages:'pages',bkph1:'Book title (for the cover)',bkph2:'Author name',bkadd:'＋ Add the map now shown to the book',bknew:'＋ Add as a new page',bkupd:'✔ Update the selected page with this map',bkpdf:'⬇ Save book as PDF',bkclr:'Clear book',bkclrq:'Remove all maps from the book?',bkempty:'Choose places on the map first (search or 📍)',bkfull:'Maximum 20 maps',bkno:'No maps in the book',bkbusy:'Building the book...',cmbook:'＋ To book',bkhelp:'1 map = 1 page. 2 covers and their 2 blank inside pages are added automatically (10 maps = 14 pages). Press ✎ to edit a page again.'});
+Object.assign(T.si,{bkph3:'මෙම සිතියමේ නම (උදා: ශ්‍රී ලංකාවේ ප්‍රධාන ගංගා)',bkb:'📖 සිතියම් පොත',bkt:'සිතියම් පොත සකසන්න',bkpages:'පිටු',bkph1:'පොතේ නම (පිටකවරයට)',bkph2:'කර්තෘ නම',bkadd:'＋ දැන් පෙන්වන සිතියම පොතට එක් කරන්න',bknew:'＋ අලුත් පිටුවක් ලෙස එක් කරන්න',bkupd:'✔ තෝරාගත් පිටුව මේ සිතියමෙන් යාවත්කාලීන කරන්න',bkpdf:'⬇ පොත PDF ලෙස සුරකින්න',bkclr:'පොත හිස් කරන්න',bkclrq:'පොතේ සියලු සිතියම් ඉවත් කරන්නද?',bkempty:'පළමුව සිතියමේ ස්ථාන තෝරන්න (සෙවුම හෝ 📍 මගින්)',bkfull:'සිතියම් 20ක් උපරිමයි',bkno:'පොතේ සිතියම් නැත',bkbusy:'පොත සාදමින්...',cmbook:'＋ පොතට',bkhelp:'සිතියම් 1 = පිටු 1. පිටකවර 2 ත්, ඒවායේ ඇතුළු හිස් පිටු 2 ත් ස්වයංක්‍රීයව එකතු වේ (සිතියම් 10 = පිටු 14). ✎ ඔබා පිටුවක් නැවත සකසන්න.'});
+Object.assign(T.ta,{bkph3:'இந்த வரைபடத்தின் பெயர் (எ.கா: இலங்கையின் முக்கிய ஆறுகள்)',bkb:'📖 வரைபடப் புத்தகம்',bkt:'வரைபடப் புத்தகம்',bkpages:'பக்கங்கள்',bkph1:'புத்தகத்தின் பெயர் (அட்டைக்கு)',bkph2:'ஆசிரியர் பெயர்',bkadd:'＋ தற்போதைய வரைபடத்தைப் புத்தகத்தில் சேர்',bknew:'＋ புதிய பக்கமாகச் சேர்',bkupd:'✔ தேர்ந்த பக்கத்தை இந்த வரைபடத்தால் புதுப்பி',bkpdf:'⬇ புத்தகத்தை PDF ஆகச் சேமி',bkclr:'புத்தகத்தை அழி',bkclrq:'புத்தகத்தின் எல்லா வரைபடங்களையும் நீக்கவா?',bkempty:'முதலில் வரைபடத்தில் இடங்களைத் தேர்ந்தெடுங்கள்',bkfull:'அதிகபட்சம் 20 வரைபடங்கள்',bkno:'புத்தகத்தில் வரைபடங்கள் இல்லை',bkbusy:'புத்தகம் உருவாகிறது...',cmbook:'＋ புத்தகத்தில்',bkhelp:'1 வரைபடம் = 1 பக்கம். 2 அட்டைகளும் அவற்றின் உள் வெற்றுப் பக்கங்கள் 2 உம் தானாகச் சேரும் (10 வரைபடங்கள் = 14 பக்கங்கள்). ✎ அழுத்தி ஒரு பக்கத்தை மீண்டும் திருத்தலாம்.'});
+Object.assign(T.en,{bkph3:'Name of this map (e.g. Main rivers of Sri Lanka)',bkb:'📖 Map Book',bkt:'Make a map book',bkpages:'pages',bkph1:'Book title (for the cover)',bkph2:'Author name',bkadd:'＋ Add the map now shown to the book',bknew:'＋ Add as a new page',bkupd:'✔ Update the selected page with this map',bkpdf:'⬇ Save book as PDF',bkclr:'Clear book',bkclrq:'Remove all maps from the book?',bkempty:'Choose places on the map first (search or 📍)',bkfull:'Maximum 20 maps',bkno:'No maps in the book',bkbusy:'Building the book...',cmbook:'＋ To book',bkhelp:'1 map = 1 page. 2 covers and their 2 blank inside pages are added automatically (10 maps = 14 pages). Press ✎ to edit a page again.'});
 const MN={
  si:{ol_lanka:'සාමාන්‍ය පෙළ ලංකා සිතියම',ol_eurasia:'සාමාන්‍ය පෙළ යුරේසියා සිතියම',ol_world:'සම්පූර්ණ ලෝක සිතියම',al_europe1:'උසස් පෙළ යුරෝපා සිතියම (කළු මුහුද දක්වා)',al_europe2:'උසස් පෙළ යුරෝපා සිතියම (කැස්පියන් මුහුද දක්වා)',al_lanka:'උසස් පෙළ ලංකා සිතියම',al_india:'උසස් පෙළ ඉන්දියා සිතියම'},
  ta:{ol_lanka:'சாதாரண தர இலங்கை வரைபடம்',ol_eurasia:'சாதாரண தர யூரேசியா வரைபடம்',ol_world:'முழு உலக வரைபடம்',al_europe1:'உயர்தர ஐரோப்பா வரைபடம் (கருங்கடல் வரை)',al_europe2:'உயர்தர ஐரோப்பா வரைபடம் (கஸ்பியன் கடல் வரை)',al_lanka:'உயர்தர இலங்கை வரைபடம்',al_india:'உயர்தர இந்தியா வரைபடம்'},
@@ -767,18 +769,18 @@ HOW.en.splice(10,0,['Make a map book','Press <b>📖 Map Book</b>. First choose 
 function updateBk(){
  const t=T[lang],n=book.length;
  $('bkb').textContent=`${t.bkb} (${n}/${BKMAX})`;
- $('bkTi').placeholder=t.bkph1;$('bkAu').placeholder=t.bkph2;
+ $('bkTi').placeholder=t.bkph1;$('bkPt').placeholder=t.bkph3;$('bkAu').placeholder=t.bkph2;
  $('bkn').textContent=`${n}/${BKMAX} · ${t.bkpages} ${n?n+4:0}`;
  $('bkadd').textContent=editIdx==null?t.bkadd:t.bknew;
  $('bkupd').textContent=t.bkupd;$('bkupd').style.display=editIdx==null?'none':'';
 }
 function buildBook(){
  updateBk();
- $('bkl').innerHTML=book.length?book.map((p,i)=>`<div class="bki${i==editIdx?' ed':''}"><img src="${p.thumb}" alt=""><div class="bkt"><b>${i+1}.</b> ${esc(p.mapName)}<small>${esc(p.title||'')}</small></div><span class="bka"><button type="button" data-a="open" data-i="${i}">✎</button><button type="button" data-a="up" data-i="${i}">↑</button><button type="button" data-a="dn" data-i="${i}">↓</button><button type="button" data-a="del" data-i="${i}">✕</button></span></div>`).join(''):`<div class="none">${T[lang].bkno}</div>`;
+ $('bkl').innerHTML=book.length?book.map((p,i)=>`<div class="bki${i==editIdx?' ed':''}"><img src="${p.thumb}" alt=""><div class="bkt"><b>${i+1}.</b> ${esc(p.mapName)}<input class="bkti" data-i="${i}" value="${esc(p.title||'')}" placeholder="${esc(T[lang].bkph3)}"></div><span class="bka"><button type="button" data-a="open" data-i="${i}">✎</button><button type="button" data-a="up" data-i="${i}">↑</button><button type="button" data-a="dn" data-i="${i}">↓</button><button type="button" data-a="del" data-i="${i}">✕</button></span></div>`).join(''):`<div class="none">${T[lang].bkno}</div>`;
 }
 function snapPage(){
  if(!L||!img||!marked.size){alert(T[lang].bkempty);return null;}
- const ttl=mainName||(marked===customMarked&&custom.size?T[lang].cmres:'');
+ const ttl=$('bkPt').value.trim()||mainName||(marked===customMarked&&custom.size?T[lang].cmres:'');
  const t=document.createElement('canvas');paint(t,{grid:false,title:ttl,footer:footerText()});
  const th=document.createElement('canvas');th.width=160;th.height=Math.max(1,Math.round(160*t.height/t.width));
  th.getContext('2d').drawImage(t,0,0,th.width,th.height);
@@ -793,7 +795,7 @@ async function openPage(i){
  manual.clear();
  focusOn(p.marked,p.mainName);
  p.manual.forEach(([j,v])=>manual.set(j,Object.assign({},v)));
- draw();editIdx=i;updateBk();
+ draw();editIdx=i;$('bkPt').value=p.title||'';updateBk();
  $('st').textContent=`📖 ${i+1}/${book.length} — ${p.mapName}`;
 }
 $('bkb').onclick=e=>{e.stopPropagation();togglePop('bkp',$('bkb'),buildBook);};
@@ -807,22 +809,23 @@ $('bkp').onclick=e=>{
  else if(a=='dn'&&i<book.length-1){[book[i+1],book[i]]=[book[i],book[i+1]];editIdx=null;}
  buildBook();
 };
+$('bkp').oninput=e=>{const t=e.target;if(t.classList&&t.classList.contains('bkti')){const b=book[+t.dataset.i];if(b)b.title=t.value;}};
 $('bkadd').onclick=()=>{
  if(book.length>=BKMAX){alert(T[lang].bkfull);return;}
  const p=snapPage();if(!p)return;
- book.push(p);editIdx=null;buildBook();
+ book.push(p);editIdx=null;$('bkPt').value='';buildBook();
 };
 $('bkupd').onclick=()=>{
  if(editIdx==null||!book[editIdx])return;
  const p=snapPage();if(!p)return;
- book[editIdx]=p;editIdx=null;buildBook();
+ book[editIdx]=p;editIdx=null;$('bkPt').value='';buildBook();
 };
 $('bkclr').onclick=()=>{if(book.length&&confirm(T[lang].bkclrq)){book=[];editIdx=null;buildBook();}};
 $('cmbook').onclick=()=>{
  if(book.length>=BKMAX){alert(T[lang].bkfull);return;}
  if(!showCustom())return;
  const p=snapPage();if(!p)return;
- book.push(p);editIdx=null;updateBk();
+ book.push(p);editIdx=null;$('bkPt').value='';updateBk();
  $('st').textContent=`📖 ${T[lang].bkb}: ${book.length}/${BKMAX}`;
 };
 
