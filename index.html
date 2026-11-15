@@ -62,8 +62,6 @@ main{flex:1;min-height:0;padding:8px}
 #vp{position:relative;height:100%}
 #box{height:100%;overflow:auto;display:flex;background:#dbe5ec;border:1px solid #c3d5e0;border-radius:6px}
 canvas{background:#fff;box-shadow:0 2px 14px #0003}
-/* තට්ටු කළ විට සිහින් නිල්-කොළ වළලු (සිතියම මත පාරදෘශ්‍ය තට්ටුවක්; mouse / touch වලට බාධා නොකරයි) */
-#vp canvas#rip{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:6;background:transparent;box-shadow:none}
 /* How to use */
 #hwo{background:#f5a623}
 .hw{position:fixed;inset:0;z-index:60;display:none;background:#0d2b45cc;align-items:flex-start;justify-content:center;padding:3vh 10px;overflow:auto}
@@ -83,8 +81,6 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
 .hwf{padding:10px 16px;border-top:1px solid #e3edf3;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px}
 .hwf label{display:flex;gap:6px;align-items:center;cursor:pointer}
 /* මගේ සිතියම */
-#cmb{background:#1b9a55}
-#cmp .chip.on i{color:#fff}
 #cmq{width:100%;height:36px;padding:0 10px;border:1px solid #9bb;border-radius:8px;color:var(--ink)}
 .cmb2{padding:0 12px 12px;display:flex;gap:6px;flex-wrap:wrap}
 .cmb2 button{flex:1;padding:9px}
@@ -117,7 +113,6 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <button id="plb" data-t="places"></button>
  <button id="tyb" data-t="types"></button>
  <button id="rmb" type="button" data-t="rmb"></button>
- <button id="cmb" type="button" data-t="cmb"></button>
  <button id="hwo" type="button" data-t="howb"></button>
  <button id="exj" type="button">⬇ JPG</button>
  <button id="exp" type="button">⬇ PDF</button>
@@ -125,20 +120,17 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <button id="stb">⚙</button>
  <span id="st"></span>
 </header>
-<main><div id="vp"><div id="box"><canvas id="cv"></canvas></div><canvas id="rip"></canvas></div></main>
+<main><div id="vp"><div id="box"><canvas id="cv"></canvas></div></div></main>
 
-<div class="pop" id="plp"><div class="ph"><span data-t="places"></span><span id="plc"></span></div><div class="pb" id="pli"></div></div>
-<div class="pop" id="typ"><div class="ph"><span data-t="types"></span></div><div class="pb"><div class="chips" id="tyc"></div></div></div>
-<div class="pop" id="cmp"><div class="ph"><span data-t="cmb"></span><span id="cmn">0</span></div><div class="pb">
- <div style="padding:10px 10px 0"><input id="cmq" autocomplete="off"><div id="cms" style="max-height:190px;overflow:auto"></div></div>
- <div class="chips" style="padding-bottom:0"><button type="button" class="chip" id="cmadd" data-t="cmadd"></button></div>
- <div class="rmh" data-t="cm2"></div>
- <div class="chips" id="cmc"></div>
- <div class="cmb2">
+<div class="pop" id="plp"><div class="ph"><span data-t="places"></span><span id="plc">0</span></div>
+ <div class="pb"><div style="padding:10px 10px 0"><input id="cmq" autocomplete="off"></div><div id="pli"></div></div>
+ <div class="cmb2" style="padding-top:10px">
   <button type="button" id="cmshow" data-t="cmshow"></button>
-  <button type="button" id="cmpdf" data-t="cmpdf" style="background:#d6212b"></button>
+  <button type="button" id="cmjpg" style="background:#1b9a55">⬇ JPG</button>
+  <button type="button" id="cmpdf" style="background:#d6212b">⬇ PDF</button>
   <button type="button" id="cmclr" data-t="cmclr" style="background:#7b4bd6"></button>
- </div></div></div>
+ </div></div>
+<div class="pop" id="typ"><div class="ph"><span data-t="types"></span></div><div class="pb"><div class="chips" id="tyc"></div></div></div>
 <div class="pop" id="rmp"><div class="ph"><span data-t="rmt"></span></div><div class="pb">
  <div class="rmh" data-t="rm1"></div>
  <div class="chips" style="padding-bottom:0"><button type="button" class="chip" id="rma" data-t="rma"></button><button type="button" class="chip" id="rmn" data-t="rmn"></button></div>
@@ -151,11 +143,7 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
  <div class="set">
   <label><span data-t="nnum"></span><span style="display:flex;gap:8px;align-items:center;flex:1;justify-content:flex-end"><input id="nN" type="range" min="0" max="15" step="1" value="3"><b id="nNv" style="min-width:20px;text-align:right">3</b></span></label>
   <label><span data-t="rivs"></span><input id="rOn" type="checkbox"></label>
-  <label><span data-t="ripl"></span><input id="ripOn" type="checkbox"></label>
   <label><span data-t="spread"></span><input id="sOn" type="checkbox" checked></label>
-  <label><span data-t="veil"></span><input id="vOn" type="checkbox" checked></label>
-  <label><span data-t="vstr"></span><input id="vA" type="range" min="0.1" max="0.8" step="0.05" value="0.3"></label>
-  <label><span data-t="vtone"></span><select id="vC"></select></label>
   <label><span data-t="fsz"></span><input id="fsz" type="range" min="18" max="44" value="26"></label>
   <label><span data-t="exg"></span><input id="exg" type="checkbox" checked></label>
   <label><button id="mrs" type="button" data-t="mvrs"></button></label>
@@ -173,19 +161,19 @@ canvas{background:#fff;box-shadow:0 2px 14px #0003}
 <script>
 /* ---------- භාෂා / Language texts ---------- */
 const T={
- si:{map:'සිතියම',letters:'අකුරු ▾',places:'📍 ස්ථාන නාමාවලිය',types:'🗂 සිතියම් වර්ග',settings:'සැකසුම්',spread:'නම් එකිනෙක මත යෑම වළක්වන්න',ripl:'තට්ටු කළ විට වළලු (නිල්-කොළ) පෙන්වන්න',howb:'❓ භාවිතය',howt:'GeoSketch භාවිතා කරන්නේ කෙසේද?',howok:'තේරුණා, වසන්න',hown:'නැවත පෙන්වන්න එපා',nnum:'ආසන්න ස්ථාන ගණන',rivs:'ආසන්න ගංගා ද පෙන්වන්න',mvon:'✋ Move සක්‍රියයි: නමක් ඇදගෙන යන්න (හිස් තැනක් අදිමින් සිතියම ගෙන යන්න)',mvrs:'Move කළ නම් යළි මුල් තැනට',veil:'මෘදු ආවරණය',vstr:'ආවරණ තීව්‍රතාව',vtone:'ආවරණ වර්ණය',fsz:'අකුරු ප්‍රමාණය',exg:'JPG / PDF වලට කොටු දැල ඇතුළත් කරන්න',
+ si:{map:'සිතියම',letters:'අකුරු ▾',places:'📍 අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න',types:'🗂 සිතියම් වර්ග',settings:'සැකසුම්',spread:'නම් එකිනෙක මත යෑම වළක්වන්න',ripl:'තට්ටු කළ විට වළලු (නිල්-කොළ) පෙන්වන්න',howb:'❓ භාවිතය',howt:'GeoSketch භාවිතා කරන්නේ කෙසේද?',howok:'තේරුණා, වසන්න',hown:'නැවත පෙන්වන්න එපා',nnum:'ආසන්න ස්ථාන ගණන',rivs:'ආසන්න ගංගා ද පෙන්වන්න',mvon:'✋ Move සක්‍රියයි: නමක් ඇදගෙන යන්න (හිස් තැනක් අදිමින් සිතියම ගෙන යන්න)',mvrs:'Move කළ නම් යළි මුල් තැනට',veil:'මෘදු ආවරණය',vstr:'ආවරණ තීව්‍රතාව',vtone:'ආවරණ වර්ණය',fsz:'අකුරු ප්‍රමාණය',exg:'JPG / PDF වලට කොටු දැල ඇතුළත් කරන්න',
   rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. ඇතුළත් කළ යුතු වර්ග තෝරන්න',rm2:'2. ස්ථාන ගණන තෝරන්න',rmgo:'🎲 සිතියම සාදන්න',rma:'සියල්ල තෝරන්න',rmn:'හිස් කරන්න',rmneed:'අවම වශයෙන් වර්ගයක් තෝරන්න',rmres:'Random සිතියම',
   rmerr:(k,n)=>`තෝරාගත් වර්ග ගණන ${k} කි. ස්ථාන ගණන (${n}) එයට වඩා අඩුය. සියලු වර්ග ආවරණය කිරීමට අවම වශයෙන් ස්ථාන ${k} ක් අවශ්‍යයි.`,
   rmnone:'තෝරාගත් වර්ගවලින් ස්ථාන හමු නොවීය',
   ph:'ස්ථානයක් සොයන්න...',none:'ස්ථානයක් හමු නොවීය',hint:'ස්ථානයක් සොයන්න, අකුරක් තෝරන්න, නැතිනම් නාමාවලියෙන් තෝරන්න. සිතියමේ ස්ථානයක් ක්ලික් කළ ද හැක',near:'+ ආසන්න ස්ථාන',nodata:'මෙම සිතියමට දත්ත නැත',pickLetter:'අකුරක් තෝරන්න',loading:'load වෙමින්...',
   tones:['සුදු','ළා කහ','ළා නිල්','ළා කොළ'],all:'වර්ගයේ සියල්ල'},
- ta:{map:'வரைபடம்',letters:'எழுத்துகள் ▾',places:'📍 இடப்பெயர் பட்டியல்',types:'🗂 வரைபட வகைகள்',settings:'அமைப்புகள்',spread:'பெயர்கள் ஒன்றின்மேல் ஒன்று வருவதைத் தவிர்',ripl:'தொட்டால் வளையங்களை (நீலப்பச்சை) காட்டு',howb:'❓ பயன்பாடு',howt:'GeoSketch ஐப் பயன்படுத்துவது எப்படி?',howok:'புரிந்தது, மூடு',hown:'மீண்டும் காட்ட வேண்டாம்',nnum:'அருகிலுள்ள இடங்களின் எண்ணிக்கை',rivs:'அருகிலுள்ள ஆறுகளையும் காட்டு',mvon:'✋ Move இயக்கத்தில்: பெயரை இழுத்துச் செல்லுங்கள் (வெற்றிடத்தை இழுத்து வரைபடத்தை நகர்த்துங்கள்)',mvrs:'நகர்த்திய பெயர்களை மீட்டமை',veil:'மென்மையான திரை',vstr:'திரையின் அடர்த்தி',vtone:'திரை நிறம்',fsz:'எழுத்து அளவு',exg:'JPG / PDF இல் கட்டங்களைச் சேர்',
+ ta:{map:'வரைபடம்',letters:'எழுத்துகள் ▾',places:'📍 தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்',types:'🗂 வரைபட வகைகள்',settings:'அமைப்புகள்',spread:'பெயர்கள் ஒன்றின்மேல் ஒன்று வருவதைத் தவிர்',ripl:'தொட்டால் வளையங்களை (நீலப்பச்சை) காட்டு',howb:'❓ பயன்பாடு',howt:'GeoSketch ஐப் பயன்படுத்துவது எப்படி?',howok:'புரிந்தது, மூடு',hown:'மீண்டும் காட்ட வேண்டாம்',nnum:'அருகிலுள்ள இடங்களின் எண்ணிக்கை',rivs:'அருகிலுள்ள ஆறுகளையும் காட்டு',mvon:'✋ Move இயக்கத்தில்: பெயரை இழுத்துச் செல்லுங்கள் (வெற்றிடத்தை இழுத்து வரைபடத்தை நகர்த்துங்கள்)',mvrs:'நகர்த்திய பெயர்களை மீட்டமை',veil:'மென்மையான திரை',vstr:'திரையின் அடர்த்தி',vtone:'திரை நிறம்',fsz:'எழுத்து அளவு',exg:'JPG / PDF இல் கட்டங்களைச் சேர்',
   rmb:'🎲 சீரற்ற வரைபடம்',rmt:'Create a Random Map',rm1:'1. சேர்க்க வேண்டிய வகைகளைத் தேர்ந்தெடுங்கள்',rm2:'2. இடங்களின் எண்ணிக்கையைத் தேர்ந்தெடுங்கள்',rmgo:'🎲 வரைபடத்தை உருவாக்கு',rma:'அனைத்தையும் தேர்ந்தெடு',rmn:'அழி',rmneed:'குறைந்தது ஒரு வகையைத் தேர்ந்தெடுங்கள்',rmres:'சீரற்ற வரைபடம்',
   rmerr:(k,n)=>`தேர்ந்தெடுத்த வகைகள் ${k}. இடங்களின் எண்ணிக்கை (${n}) அதைவிடக் குறைவு. அனைத்து வகைகளையும் உள்ளடக்க குறைந்தது ${k} இடங்கள் தேவை.`,
   rmnone:'தேர்ந்தெடுத்த வகைகளில் இடங்கள் இல்லை',
   ph:'இடத்தைத் தேடுங்கள்...',none:'இடம் கிடைக்கவில்லை',hint:'இடத்தைத் தேடுங்கள், எழுத்தைத் தேர்ந்தெடுங்கள் அல்லது பட்டியலில் தேர்ந்தெடுங்கள். வரைபடத்தில் ஓர் இடத்தைத் தொட்டும் பார்க்கலாம்',near:'+ அருகிலுள்ள இடங்கள்',nodata:'இந்த வரைபடத்திற்குத் தரவு இல்லை',pickLetter:'எழுத்தைத் தேர்ந்தெடுங்கள்',loading:'ஏற்றுகிறது...',
   tones:['வெள்ளை','இளமஞ்சள்','இளநீலம்','இளம்பச்சை'],all:'வகையில் அனைத்தும்'},
- en:{map:'Map',letters:'Letters ▾',places:'📍 Place list',types:'🗂 Map types',settings:'Settings',spread:'Avoid overlapping names',ripl:'Show teal ripples on tap',howb:'❓ How to use',howt:'How to use GeoSketch',howok:'Got it, close',hown:'Do not show again',nnum:'Number of nearby places',rivs:'Also show nearby rivers',mvon:'✋ Move on: drag a name (drag empty space to pan the map)',mvrs:'Reset moved names',veil:'Soft overlay',vstr:'Overlay strength',vtone:'Overlay tone',fsz:'Text size',exg:'Include grid in JPG / PDF',
+ en:{map:'Map',letters:'Letters ▾',places:'📍 Pick places, make a map',types:'🗂 Map types',settings:'Settings',spread:'Avoid overlapping names',ripl:'Show teal ripples on tap',howb:'❓ How to use',howt:'How to use GeoSketch',howok:'Got it, close',hown:'Do not show again',nnum:'Number of nearby places',rivs:'Also show nearby rivers',mvon:'✋ Move on: drag a name (drag empty space to pan the map)',mvrs:'Reset moved names',veil:'Soft overlay',vstr:'Overlay strength',vtone:'Overlay tone',fsz:'Text size',exg:'Include grid in JPG / PDF',
   rmb:'🎲 Random Map',rmt:'Create a Random Map',rm1:'1. Choose the types to include',rm2:'2. Choose the number of places',rmgo:'🎲 Create map',rma:'Select all',rmn:'Clear',rmneed:'Please choose at least one type',rmres:'Random map',
   rmerr:(k,n)=>`You chose ${k} types, but only ${n} places. At least ${k} places are needed to cover every type.`,
   rmnone:'No places found in the chosen types',
@@ -205,45 +193,42 @@ const MN={
 const HOW={
  si:[
   ['සිතියමක් තෝරන්න','ඉහළ තීරුවේ "සිතියම" ලැයිස්තුවෙන් ඔබට අවශ්‍ය සිතියම (ලංකා, ලෝක, යුරෝපා ආදිය) තෝරන්න. භාෂාව වෙනස් කිරීමට <b>සිංහල / தமிழ் / English</b> බොත්තම් භාවිතා කරන්න.'],
-  ['ස්ථානයක් සොයන්න','ඉහළ ඇති <b>සෙවුම් පෙට්ටියේ</b> ස්ථානයේ නමේ මුල් අකුරු කිහිපයක් ටයිප් කරන්න (උදා: <b>යාප</b>). පහළින් නම් ලැයිස්තුවක් පෙනේ. ඔබට අවශ්‍ය නම මත ක්ලික් කරන්න.','නම හරියට මතක නැද්ද? <b>අකුරු ▾</b> බොත්තම ඔබා මුල් අකුරක් තෝරන්න, නැතිනම් <b>📍 ස්ථාන නාමාවලිය</b> බොත්තමෙන් සම්පූර්ණ ලැයිස්තුව බලන්න.'],
+  ['ස්ථානයක් සොයන්න','ඉහළ ඇති <b>සෙවුම් පෙට්ටියේ</b> ස්ථානයේ නමේ මුල් අකුරු කිහිපයක් ටයිප් කරන්න (උදා: <b>යාප</b>). පහළින් නම් ලැයිස්තුවක් පෙනේ. ඔබට අවශ්‍ය නම මත ක්ලික් කරන්න.','නම හරියට මතක නැද්ද? <b>අකුරු ▾</b> බොත්තම ඔබා මුල් අකුරක් තෝරන්න, නැතිනම් <b>📍 අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න</b> ලැයිස්තුව බලන්න.'],
   ['ප්‍රතිඵලය බලන්න','සිතියම ස්වයංක්‍රීයව විශාල වී, ඔබ තෝරාගත් ස්ථානයේ <b style="color:#d6212b">නම රතු පැහැයෙන්</b> පෙනේ. ඒ සමගම අවට ඇති ස්ථාන කිහිපයක් (මුලින් 10ක්) කළු පැහැති නම් සහ ඊතල සහිතව පෙන්වයි. මෙයින් ස්ථාන එකිනෙකට සාපේක්ෂව පිහිටා ඇති ආකාරය පහසුවෙන් ඉගෙන ගත හැක. නම් එකිනෙක මත නොයන සේ ස්වයංක්‍රීයව සකසයි.'],
   ['සිතියම මත ක්ලික් / ස්පර්ශ කරන්න','සිතියමේ ඕනෑම ස්ථානයක් (තිතක්, ප්‍රදේශයක්, ගංගාවක්) මත <b>ක්ලික් කරන්න / ඇඟිල්ලෙන් තට්ටු කරන්න</b>. එවිට එම ස්ථානය රතු පැහැයෙන් ද, ඒ අවට ඇති ආසන්නතම ස්ථාන 3 කළු පැහැයෙන් ද පෙන්වයි.','සිතියම අදිමින් ගෙන යන විට මෙය ක්‍රියා නොකරයි.'],
-  ['තට්ටු කළ තැන වළලු (ගුරුවරුන්ට) - අවශ්‍ය නම් පමණක්','මෙය මුලදී <b>අක්‍රියයි</b>. <b>⚙</b> තුළ "තට්ටු කළ විට වළලු (නිල්-කොළ) පෙන්වන්න" ටික් කළ විට සක්‍රිය වේ. එවිට සිතියමේ ස්ථානයක් <b>එක් වරක් ක්ලික් කළ / තනි ඇඟිල්ලකින් තට්ටු කළ</b> විට, ඒ ස්ථානය වටා ඇසට සිසිල් නිල්-කොළ පැහැති සිහින් වළලු ක්‍රමයෙන් විහිදී මැකී යයි. සිතියමට බාධා නොවන සේ පාරදෘශ්‍යව ඇඳේ. දරුවන්ට ස්ථානය පෙන්වීමට මෙය පහසුය.','නවත්වන්න: එම ස්ථානයම නැවත තට්ටු කරන්න, නැතිනම් <b>Esc</b> ඔබන්න. සිතියම අදින විට හෝ ඇඟිලි දෙකකින් විශාල කරන විට මෙය ක්‍රියා නොකරයි.'],
   ['සිතියම ගෙනයාම සහ විශාල කිරීම','සිතියම <b>ඇඟිල්ලෙන් / mouse එකෙන් අදින්න</b>. ඉහළ දකුණේ ඇති <b>+</b> සහ <b>−</b> බොත්තමින් විශාල / කුඩා කරන්න. <b>ගැලපෙන</b> බොත්තම ඔබන විට සම්පූර්ණ සිතියම නැවත පෙනේ. පරිගණකයේ <b>Ctrl</b> ඔබාගෙන mouse wheel එක කරකවා ද විශාල කළ හැක.'],
   ['අවට ස්ථාන ගණන වෙනස් කරන්න','<b>⚙</b> බොත්තම ඔබා "ආසන්න ස්ථාන ගණන" ලිස්සුම් තීරුව (0 සිට 15 දක්වා) වෙනස් කරන්න. ආසන්න <b>ගංගා</b> ද බැලීමට "ආසන්න ගංගා ද පෙන්වන්න" ටික් කරන්න.'],
   ['වර්ගයක් අනුව බලන්න','<b>🗂 සිතියම් වර්ග</b> බොත්තම ඔබා (ගංගාව, වැව, වරාය ආදී) එක් වර්ගයක් තෝරන්න. එවිට එම වර්ගයේ සියලු ස්ථාන එකවර සිතියමේ පෙනේ.'],
   ['Random සිතියමක් සාදන්න','<b>🎲 Random Map</b> බොත්තම ඔබන්න. පළමුව ඇතුළත් කළ යුතු <b>වර්ග</b> (ගංගා, ඓතිහාසික ස්ථාන ආදී) තෝරන්න, ඉන්පසු <b>ස්ථාන ගණන</b> තෝරා "සිතියම සාදන්න" ඔබන්න. DB එකේ වැඩිපුර ඇති වර්ගවලින් වැඩි ස්ථාන ගණනක් ද, අඩුවෙන් ඇති වර්ගවලින් අඩු ගණනක් ද ස්වයංක්‍රීයව තෝරයි. සිතියම පුරා විහිදුණු ස්ථාන තෝරන අතර, එකම වර්ගයේ ස්ථාන දෙකක් එකම කොටුවක හෝ ආසන්න කොටුවක නොපෙනේ. ස්ථාන ගණන වර්ග ගණනට වඩා අඩු නම් දෝෂ පණිවිඩයක් පෙන්වයි.','නැවත ඔබන සෑම වාරයකම වෙනස් සිතියමක් සැදේ.'],
-  ['මගේ සිතියම (කැමති ස්ථාන තෝරා PDF ගන්න)','<b>🧺 මගේ සිතියම</b> බොත්තම ඔබන්න. එහි සෙවුම් පෙට්ටියෙන් ස්ථාන සොයා එකින් එක එක් කරන්න (නැතිනම් සිතියමේ ස්ථානයක් පෙන්වා "දැන් පෙන්වන ස්ථානය එක් කරන්න" ඔබන්න). ඉන්පසු <b>සිතියමේ පෙන්වන්න</b> ඔබන්න - තෝරාගත් සියලු ස්ථාන එකම සිතියමක පෙනේ. <b>⬇ PDF</b> ඔබන විට එය A4 PDF එකක් ලෙස බාගත වේ.','භාෂාව හෝ සිතියම මාරු කළ විට ලැයිස්තුව හිස් වේ.'],
+  ['අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න','<b>📍 අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න</b> බොත්තම ඔබන්න. ලැයිස්තුවේ අවශ්‍ය ස්ථාන ඉදිරියෙන් ඇති කොටුව <b>tick</b> කරන්න (නම ටයිප් කර ලැයිස්තුව පෙරා ගත හැක). ඉන්පසු <b>සිතියමේ පෙන්වන්න</b> ඔබන්න; තෝරාගත් සියලු ස්ථාන එකම සිතියමක පෙනේ. <b>⬇ JPG</b> හෝ <b>⬇ PDF</b> ඔබා බාගත කරන්න.','නම් ළං වී ඇත්නම් ✋ මගින් ඇදගෙන ගොස් සකසන්න. භාෂාව හෝ සිතියම මාරු කළ විට ලැයිස්තුව හිස් වේ.'],
   ['නමක් වෙනත් තැනකට ගෙනයන්න','නම් එකිනෙක ළං වී පැහැදිලි නැතිනම් <b>✋</b> බොත්තම ඔබන්න (රතු පැහැ වේ). දැන් ඕනෑම නමක් <b>ඇදගෙන ගොස්</b> අවශ්‍ය තැන දමන්න. ඊතලයේ හිස ස්ථානයේම රැඳෙන අතර, ඊතලය 90° නැවී නම සමග ගමන් කරයි. අවසන් වූ පසු නැවත ✋ ඔබන්න.','මුල් තැනට ගෙන ඒමට: ⚙ → "Move කළ නම් යළි මුල් තැනට".'],
-  ['ඉගෙනීම පහසු කරගන්න','<b>⚙</b> තුළ "අකුරු ප්‍රමාණය" වෙනස් කළ හැක. "මෘදු ආවරණය" මගින් සිතියමේ පසුබිම ළා පැහැයකින් මැකී, නම් වඩා පැහැදිලිව පෙනේ.']
+  ['ඉගෙනීම පහසු කරගන්න','<b>⚙</b> තුළ "අකුරු ප්‍රමාණය" වෙනස් කළ හැක.']
  ],
  ta:[
   ['வரைபடத்தைத் தேர்ந்தெடுங்கள்','மேலே உள்ள "வரைபடம்" பட்டியலில் இருந்து தேவையான வரைபடத்தை (இலங்கை, உலகம், ஐரோப்பா போன்றவை) தேர்ந்தெடுங்கள். மொழியை மாற்ற <b>සිංහල / தமிழ் / English</b> பொத்தான்களைப் பயன்படுத்துங்கள்.'],
-  ['இடத்தைத் தேடுங்கள்','மேலே உள்ள <b>தேடல் பெட்டியில்</b> இடத்தின் பெயரின் முதல் சில எழுத்துகளைத் தட்டச்சு செய்யுங்கள். கீழே தோன்றும் பட்டியலில் தேவையான பெயரைத் தேர்ந்தெடுங்கள்.','பெயர் சரியாக நினைவில் இல்லையா? <b>எழுத்துகள் ▾</b> பொத்தானை அழுத்தி முதல் எழுத்தைத் தேர்ந்தெடுங்கள், அல்லது <b>📍 இடப்பெயர் பட்டியல்</b> மூலம் முழுப் பட்டியலைப் பாருங்கள்.'],
+  ['இடத்தைத் தேடுங்கள்','மேலே உள்ள <b>தேடல் பெட்டியில்</b> இடத்தின் பெயரின் முதல் சில எழுத்துகளைத் தட்டச்சு செய்யுங்கள். கீழே தோன்றும் பட்டியலில் தேவையான பெயரைத் தேர்ந்தெடுங்கள்.','பெயர் சரியாக நினைவில் இல்லையா? <b>எழுத்துகள் ▾</b> பொத்தானை அழுத்தி முதல் எழுத்தைத் தேர்ந்தெடுங்கள், அல்லது <b>📍 தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்</b> மூலம் பட்டியலைப் பாருங்கள்.'],
   ['முடிவைப் பாருங்கள்','வரைபடம் தானாகப் பெரிதாகி, தேர்ந்தெடுத்த இடத்தின் <b style="color:#d6212b">பெயர் சிவப்பு நிறத்தில்</b> தெரியும். அதனுடன் அருகிலுள்ள சில இடங்களும் (முதலில் 10) கருப்புப் பெயர்களுடனும் அம்புகளுடனும் காட்டப்படும். இதனால் இடங்கள் ஒன்றுக்கொன்று எங்கே அமைந்துள்ளன என்பதை எளிதாகக் கற்கலாம். பெயர்கள் ஒன்றின்மேல் ஒன்று விழாதபடி தானாக அமைக்கப்படும்.'],
   ['வரைபடத்தில் கிளிக் / தொடுதல்','வரைபடத்தில் எந்த இடத்தையும் (புள்ளி, பகுதி, ஆறு) <b>கிளிக் செய்யுங்கள் / விரலால் தொடுங்கள்</b>. அந்த இடம் சிவப்பு நிறத்திலும், அதன் அருகிலுள்ள 3 இடங்கள் கருப்பு நிறத்திலும் காட்டப்படும்.','வரைபடத்தை இழுக்கும்போது இது செயல்படாது.'],
-  ['தொட்ட இடத்தில் வளையங்கள் (ஆசிரியர்களுக்கு) - தேவைப்பட்டால் மட்டும்','இது தொடக்கத்தில் <b>அணைக்கப்பட்டுள்ளது</b>. <b>⚙</b> இல் "தொட்டால் வளையங்களை (நீலப்பச்சை) காட்டு" என்பதைத் தேர்வு செய்தால் இயங்கும். பின்னர் வரைபடத்தில் ஓர் இடத்தை <b>ஒருமுறை கிளிக் செய்தால் / ஒரு விரலால் தொட்டால்</b>, அந்த இடத்தைச் சுற்றி கண்ணுக்கு இதமான நீலப்பச்சை நிற மெல்லிய வளையங்கள் படிப்படியாகப் பெரிதாகி மறையும். வரைபடத்தை மறைக்காதபடி ஒளி ஊடுருவும் வகையில் வரையப்படும்.','நிறுத்த: அதே இடத்தை மீண்டும் தொடுங்கள் அல்லது <b>Esc</b> அழுத்துங்கள். வரைபடத்தை இழுக்கும்போதோ இரு விரல்களால் பெரிதாக்கும்போதோ இது தோன்றாது.'],
   ['வரைபடத்தை நகர்த்தவும் பெரிதாக்கவும்','வரைபடத்தை <b>விரலால் / மவுசால் இழுத்து</b> நகர்த்துங்கள். மேல் வலதுபுறத்தில் உள்ள <b>+</b> மற்றும் <b>−</b> பொத்தான்களால் பெரிதாக்கவும் சிறிதாக்கவும் செய்யலாம். <b>ගැලපෙන</b> பொத்தானை அழுத்தினால் முழு வரைபடமும் மீண்டும் தெரியும். கணினியில் <b>Ctrl</b> அழுத்தியபடி மவுஸ் சக்கரத்தைச் சுழற்றியும் பெரிதாக்கலாம்.'],
   ['அருகிலுள்ள இடங்களின் எண்ணிக்கை','<b>⚙</b> பொத்தானை அழுத்தி "அருகிலுள்ள இடங்களின் எண்ணிக்கை" ஸ்லைடரை (0 முதல் 15 வரை) மாற்றுங்கள். அருகிலுள்ள <b>ஆறுகளையும்</b> காண "அருகிலுள்ள ஆறுகளையும் காட்டு" என்பதைத் தேர்வு செய்யுங்கள்.'],
   ['வகையின்படி பாருங்கள்','<b>🗂 வரைபட வகைகள்</b> பொத்தானை அழுத்தி (ஆறு, குளம், துறைமுகம் போன்ற) ஒரு வகையைத் தேர்ந்தெடுங்கள். அந்த வகையின் எல்லா இடங்களும் ஒரே நேரத்தில் வரைபடத்தில் தெரியும்.'],
   ['சீரற்ற வரைபடத்தை உருவாக்குங்கள்','<b>🎲 சீரற்ற வரைபடம்</b> பொத்தானை அழுத்துங்கள். முதலில் சேர்க்க வேண்டிய <b>வகைகளை</b> (ஆறுகள், வரலாற்றுத் தலங்கள் போன்றவை) தேர்ந்தெடுங்கள்; பின்னர் <b>இடங்களின் எண்ணிக்கையைத்</b> தேர்ந்தெடுத்து "வரைபடத்தை உருவாக்கு" என்பதை அழுத்துங்கள். தரவுத்தளத்தில் அதிகமாக உள்ள வகைகளிலிருந்து அதிக இடங்களும், குறைவாக உள்ள வகைகளிலிருந்து குறைந்த இடங்களும் தானாகத் தேர்ந்தெடுக்கப்படும். இடங்கள் வரைபடம் முழுவதும் பரவலாக இருக்கும்; ஒரே வகையின் இரண்டு இடங்கள் ஒரே கட்டத்திலோ அருகிலுள்ள கட்டத்திலோ வராது. இடங்களின் எண்ணிக்கை வகைகளின் எண்ணிக்கையைவிடக் குறைவாக இருந்தால் பிழைச் செய்தி காட்டப்படும்.','ஒவ்வொரு முறை அழுத்தும்போதும் வேறு வரைபடம் உருவாகும்.'],
-  ['என் வரைபடம் (விரும்பிய இடங்களுடன் PDF)','<b>🧺 என் வரைபடம்</b> பொத்தானை அழுத்துங்கள். அங்குள்ள தேடல் பெட்டியில் இடங்களைத் தேடி ஒவ்வொன்றாகச் சேருங்கள் (அல்லது வரைபடத்தில் ஓர் இடத்தைக் காட்டி "தற்போதைய இடத்தைச் சேர்" அழுத்துங்கள்). பின்னர் <b>வரைபடத்தில் காட்டு</b> அழுத்தினால் தேர்ந்தெடுத்த எல்லா இடங்களும் ஒரே வரைபடத்தில் தெரியும். <b>⬇ PDF</b> அழுத்தினால் A4 PDF ஆகப் பதிவிறக்கப்படும்.','மொழி அல்லது வரைபடத்தை மாற்றினால் பட்டியல் காலியாகும்.'],
+  ['தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்','<b>📍 தேவையான இடங்களைத் தேர்ந்து வரைபடம் அமையுங்கள்</b> பொத்தானை அழுத்துங்கள். பட்டியலில் தேவையான இடங்களுக்கு முன்னுள்ள பெட்டியில் <b>tick</b> செய்யுங்கள் (பெயரைத் தட்டச்சு செய்து பட்டியலை வடிகட்டலாம்). பின்னர் <b>வரைபடத்தில் காட்டு</b> அழுத்தினால் தேர்ந்தெடுத்த எல்லா இடங்களும் ஒரே வரைபடத்தில் தெரியும். <b>⬇ JPG</b> அல்லது <b>⬇ PDF</b> அழுத்திப் பதிவிறக்குங்கள்.','பெயர்கள் நெருக்கமாக இருந்தால் ✋ மூலம் இழுத்து அமையுங்கள். மொழி அல்லது வரைபடத்தை மாற்றினால் பட்டியல் காலியாகும்.'],
   ['பெயரை வேறு இடத்துக்கு நகர்த்துங்கள்','பெயர்கள் நெருக்கமாக இருந்து தெளிவாகத் தெரியவில்லை என்றால் <b>✋</b> பொத்தானை அழுத்துங்கள் (சிவப்பாக மாறும்). பின்னர் எந்தப் பெயரையும் <b>இழுத்துச் சென்று</b> விரும்பிய இடத்தில் விடுங்கள். அம்புக்குறியின் முனை இடத்திலேயே இருக்கும்; அம்பு 90° வளைந்து பெயருடன் நகரும். முடிந்ததும் மீண்டும் ✋ ஐ அழுத்துங்கள்.','முதல் இடத்துக்குத் திரும்ப: ⚙ → "நகர்த்திய பெயர்களை மீட்டமை".'],
-  ['கற்றலை எளிதாக்குங்கள்','<b>⚙</b> இல் "எழுத்து அளவை" மாற்றலாம். "மென்மையான திரை" வரைபடத்தின் பின்னணியை மங்கச் செய்து பெயர்களைத் தெளிவாகக் காட்டும்.']
+  ['கற்றலை எளிதாக்குங்கள்','<b>⚙</b> இல் "எழுத்து அளவை" மாற்றலாம்.']
  ],
  en:[
   ['Choose a map','Pick the map you need (Sri Lanka, World, Europe, etc.) from the "Map" list at the top. Use the <b>සිංහල / தமிழ் / English</b> buttons to change the language.'],
-  ['Search for a place','Type the first few letters of a place name in the <b>search box</b> at the top (for example <b>Jaff</b>). A list of names appears below. Click the one you want.','Do not remember the exact name? Press <b>Letters ▾</b> and pick the first letter, or open <b>📍 Place list</b> to see everything.'],
+  ['Search for a place','Type the first few letters of a place name in the <b>search box</b> at the top (for example <b>Jaff</b>). A list of names appears below. Click the one you want.','Do not remember the exact name? Press <b>Letters ▾</b> and pick the first letter, or open <b>📍 Pick places, make a map</b> to see the list.'],
   ['Read the result','The map zooms in automatically and shows the <b style="color:#d6212b">name of your place in red</b>. A few nearby places (10 at first) are shown too, with black names and arrows. This helps you learn how places are located relative to each other. Names are arranged automatically so they do not cover each other.'],
   ['Click or tap the map','<b>Click or tap</b> any place on the map (a dot, an area or a river). That place is shown in red together with the 3 nearest places in black.','This does not trigger while you are dragging the map.'],
-  ['Teal ripples where you tap (for teachers) - optional','This is <b>off by default</b>. Open <b>⚙</b> and tick "Show teal ripples on tap" to switch it on. Then <b>click once or tap with one finger</b> on the map and soft, thin blue-green rings spread out from that spot and fade away. They are drawn transparently on top so the map stays readable. A handy way to point out a place to students.','To stop: tap the same spot again, or press <b>Esc</b>. It does not appear while you drag the map or pinch to zoom.'],
   ['Move and zoom the map','<b>Drag the map</b> with your finger or mouse. Use <b>+</b> and <b>−</b> at the top right to zoom, and press the fit button (<b>ගැලපෙන</b>) to see the whole map again. On a computer you can also hold <b>Ctrl</b> and turn the mouse wheel.'],
   ['Change how many nearby places','Press <b>⚙</b> and move the "Number of nearby places" slider (0 to 15). Tick "Also show nearby rivers" to include rivers.'],
   ['Browse by type','Press <b>🗂 Map types</b> and choose a type (River, Tank, Port, etc.). All places of that type appear on the map together.'],
   ['Create a random map','Press <b>🎲 Random Map</b>. First choose the <b>types</b> to include (rivers, historical places, etc.), then choose the <b>number of places</b> and press "Create map". Types that are more common in the database get more places, and rarer types get fewer. Places are spread across the whole map, and two places of the same type never share a cell or sit in neighbouring cells. If you ask for fewer places than types, an error message is shown.','Press the button again for a different map each time.'],
-  ['My Map (pick places, get one PDF)','Press <b>🧺 My Map</b>. Use its search box to find places and add them one by one (or show a place on the map and press "Add the place now shown"). Then press <b>Show on map</b> and all chosen places appear on one map. Press <b>⬇ PDF</b> to download it as an A4 PDF.','The list is cleared when you change the language or the map.'],
+  ['Pick places, make a map','Press <b>📍 Pick places, make a map</b>. Tick the box beside each place you want (type to filter the list). Then press <b>Show on map</b> and all chosen places appear on one map. Press <b>⬇ JPG</b> or <b>⬇ PDF</b> to download it.','If names are too close, drag them with ✋. The list is cleared when you change the language or the map.'],
   ['Move a name somewhere else','If names are too close to read, press <b>✋</b> (it turns red). Now <b>drag any name</b> and drop it where you want. The arrow tip stays on the place, and the arrow bends at 90° and follows the name. Press ✋ again when you are done.','To put names back: ⚙ → "Reset moved names".'],
-  ['Make studying easier','In <b>⚙</b> you can change the "Text size". "Soft overlay" fades the map background so names stand out more.']
+  ['Make studying easier','In <b>⚙</b> you can change the "Text size".']
  ]
 };
 const TONES=['#ffffff','#fff1c2','#dcecff','#e2f2dc'];
@@ -319,63 +304,7 @@ $('mvb').onclick=e=>{e.stopPropagation();closeAll();stopRipple();moveMode=!moveM
  $('st').textContent=moveMode?T[lang].mvon:(G.size?T[lang].hint:T[lang].nodata);};
 $('mrs').onclick=()=>{manual.clear();draw();};
 
-/* ---------- තට්ටු කළ ස්ථානය වටා නිල්-කොළ වළලු (අවශ්‍ය නම් ⚙ තුළින් සක්‍රිය කරන්න; මුලින් අක්‍රියයි) ----------
-   • වෙනම පාරදෘශ්‍ය canvas එකක ඇඳේ; mouse / touch වලට බාධා නොකරයි, සිතියම ගෙනයන / විශාල කරන විටත් ස්ථානයත් සමග ගමන් කරයි.
-   • වළලු සිහින් හා ඉතා ලා පාටින්, සිතියමේ නම් / තිත් කියවීමට බාධා නොවන සේ ඇඳේ.
-   • ක්‍රියාත්මක වන්නේ තනි click / තනි ඇඟිල්ලේ තට්ටුවකට පමණි (ඇදීම, ඇඟිලි දෙකකින් විශාල කිරීම ඇතුළත් නොවේ). */
-const RIPRGB='0,150,170';/* සිසිල් නිල්-කොළ (teal) */
-const RP=$('rip'),RC=RP.getContext('2d'),RS={on:false,x:0,y:0,t0:0,raf:0,dpr:1};
-function ripSize(){const b=$('vp').getBoundingClientRect(),d=window.devicePixelRatio||1;RS.dpr=d;RP.width=Math.max(1,Math.round(b.width*d));RP.height=Math.max(1,Math.round(b.height*d));}
-new ResizeObserver(ripSize).observe($('vp'));ripSize();
-function ripFrame(now){
- RS.raf=0;if(!RS.on||!L)return;
- const vr=$('vp').getBoundingClientRect(),r=cv.getBoundingClientRect(),d=RS.dpr;
- RC.setTransform(1,0,0,1,0,0);RC.clearRect(0,0,RP.width,RP.height);RC.setTransform(d,0,0,d,0,0);
- const sx=r.left-vr.left+RS.x/L.W*r.width,sy=r.top-vr.top+RS.y/L.H*r.height;/* සිතියමේ ස්ථානය → තිරයේ ස්ථානය */
- const R=Math.max(60,Math.min(120,Math.min(vr.width,vr.height)*.18)),N=3,P=3200,ph=(now-RS.t0)/P;
- for(let k=0;k<N;k++){
-  const t=(ph+k/N)%1,rad=R*(.08+.92*Math.pow(t,.8)),a=Math.pow(1-t,1.6);
-  RC.beginPath();RC.arc(sx,sy,rad,0,Math.PI*2);
-  RC.lineWidth=1+1.6*(1-t);RC.strokeStyle='rgba('+RIPRGB+','+(a*.55).toFixed(3)+')';RC.stroke();
- }
- const pr=3.5+1*Math.sin(now/220);/* මැද කුඩා ස්පන්දන තිත */
- RC.beginPath();RC.arc(sx,sy,pr,0,Math.PI*2);RC.fillStyle='rgba('+RIPRGB+',.75)';RC.fill();RC.lineWidth=1.5;RC.strokeStyle='rgba(255,255,255,.9)';RC.stroke();
- RS.raf=requestAnimationFrame(ripFrame);
-}
-function startRipple(x,y){RS.x=x;RS.y=y;RS.t0=performance.now();RS.on=true;if(!RS.raf)RS.raf=requestAnimationFrame(ripFrame);}
-function stopRipple(){RS.on=false;if(RS.raf){cancelAnimationFrame(RS.raf);RS.raf=0;}RC.setTransform(1,0,0,1,0,0);RC.clearRect(0,0,RP.width,RP.height);}
-$('ripOn').onchange=()=>{if(!$('ripOn').checked)stopRipple();};
-/* තනි තට්ටුවක් හඳුනාගැනීම: ඇඟිලි / pointer එකක් පමණි, ඇදීමක් නැත (px 10ට අඩු), කෙටි කාලයක් */
-const taps=new Set();let tg=null;
-cv.addEventListener('pointerdown',e=>{
- if(e.pointerType=='mouse'&&e.button!==0)return;
- taps.add(e.pointerId);
- if(taps.size==1)tg={x:e.clientX,y:e.clientY,t:performance.now(),multi:false,moved:false};
- else if(tg)tg.multi=true;
-});
-addEventListener('pointermove',e=>{if(tg&&taps.has(e.pointerId)&&Math.hypot(e.clientX-tg.x,e.clientY-tg.y)>10)tg.moved=true;});
-function tapEnd(e,ok){
- if(!taps.has(e.pointerId))return;taps.delete(e.pointerId);
- if(taps.size==0&&tg){const g=tg;tg=null;
-  if(ok&&!g.multi&&!g.moved&&performance.now()-g.t<900)onTap(e);}
-}
-addEventListener('pointerup',e=>tapEnd(e,true));
-addEventListener('pointercancel',e=>tapEnd(e,false));
-function onTap(e){
- if(!L||moveMode||!$('ripOn').checked)return;
- const r=cv.getBoundingClientRect();
- let x=(e.clientX-r.left)/r.width*L.W,y=(e.clientY-r.top)/r.height*L.H;
- if(x<0||y<0||x>L.W||y>L.H)return;
- if(G.size){/* ස්ථානයක් මත නම්, එම ස්ථානයේ හරියටම මැදට */
-  const[nx,ny]=pointer(cv,L,e),g=groupAt(nx,ny,40*L.W/r.width);
-  if(g){x=L.ix+g.a[0]*L.iw;y=L.iy+g.a[1]*L.ih;}
- }
- if(RS.on){/* එම තැනම නැවත තට්ටු කළ විට නවතී */
-  const d=Math.hypot((x-RS.x)/L.W*r.width,(y-RS.y)/L.H*r.height);
-  if(d<24){stopRipple();return;}
- }
- startRipple(x,y);
-}
+function stopRipple(){}
 
 /* ---------- සිතියම මත click/touch: එම ස්ථානය + ආසන්න ස්ථාන 3 ---------- */
 const CLICK_N=3;/* ආසන්න ස්ථාන ගණන */
@@ -537,7 +466,6 @@ function draw(){if(!img||!L)return;lastS=paint(cv);}
 /* c = ඇඳිය යුතු canvas (තිරය හෝ export සඳහා වෙනම canvas එකක්) */
 function paint(c,o={}){
  const g=render(c,img,L,[],{grid:!!o.grid,title:o.title,footer:o.footer});/* පසුබිම පමණි */
- if($('vOn').checked){g.save();g.globalAlpha=+$('vA').value;g.fillStyle=TONES[+$('vC').value];g.fillRect(L.ix,L.iy,L.iw,L.ih);g.restore();}
  const arr=effItems(),fs=+$('fsz').value;
  const S=$('sOn').checked||manual.size?spreadLabels(g,fs):new Map();
  marked.forEach(i=>{if(!arr[i])return;
@@ -679,7 +607,7 @@ $('rmN').oninput=()=>{rmN=+$('rmN').value;$('rmNv').textContent=rmN;};
 $('rmgo').onclick=rmGenerate;
 
 /* ---------- පුවරු (panels) ---------- */
-const pops=['plp','typ','stp','rmp','cmp'];
+const pops=['plp','typ','stp','rmp'];
 function closeAll(){pops.forEach(p=>$(p).style.display='none');$('sug').classList.remove('open');$('lbp').classList.remove('open');$('lbb').classList.remove('on');}
 function togglePop(id,btn,build){
  const el=$(id),was=el.style.display=='flex';closeAll();if(was)return;
@@ -690,58 +618,39 @@ function togglePop(id,btn,build){
  el.style.maxHeight=Math.max(200,innerHeight-r.bottom-16)+'px';
 }
 function buildPlaces(){
- const list=sorted();$('plc').textContent=list.length;
- $('pli').innerHTML=list.length?list.map(rowHtml).join(''):`<div class="none">${T[lang].nodata}</div>`;
+ const v=norm($('cmq').value),c=sorted().filter(e=>!v||norm(e.n).includes(v));
+ $('plc').textContent=custom.size;
+ $('pli').innerHTML=c.length?c.map(e=>`<label class="row"><input type="checkbox" data-a="${esc(e.n)}"${custom.has(e.n)?' checked':''}><span>${IC[e.t]||'●'}</span><span>${esc(e.n)}${e.g.size?`<span class="gl">${esc(tagOf(e))}</span>`:''}</span></label>`).join(''):`<div class="none">${T[lang].nodata}</div>`;
 }
 function buildTypes(){
  const cnt=new Map();G.forEach(e=>e.g.forEach(c=>cnt.set(c,(cnt.get(c)||0)+1)));
  const c=coll();
  $('tyc').innerHTML=cnt.size?[...cnt.entries()].sort((a,b)=>c.compare(a[0],b[0])).map(([k,n])=>`<button type="button" class="chip${k==activeCat?' on':''}" data-c="${esc(k)}">${esc(k)}<i>${n}</i></button>`).join(''):`<div class="none">${T[lang].nodata}</div>`;
 }
-$('plb').onclick=e=>{e.stopPropagation();togglePop('plp',$('plb'),buildPlaces);};
+$('plb').onclick=e=>{e.stopPropagation();togglePop('plp',$('plb'),()=>{$('cmq').value='';buildPlaces();});};
 $('tyb').onclick=e=>{e.stopPropagation();togglePop('typ',$('tyb'),buildTypes);};
 $('stb').onclick=e=>{e.stopPropagation();togglePop('stp',$('stb'));};
-$('pli').onclick=e=>{const r=e.target.closest('[data-n]');if(r)pick(r.dataset.n);};
+$('pli').onchange=e=>{const a=e.target.dataset.a;if(!a)return;e.target.checked?custom.add(a):custom.delete(a);$('plc').textContent=custom.size;};
 $('tyc').onclick=e=>{const b=e.target.closest('[data-c]');if(b)pickCat(b.dataset.c);};
 document.addEventListener('click',e=>{if(!e.target.closest('.pop,.sw'))closeAll();});
 document.addEventListener('keydown',e=>{if(e.key=='Escape'){closeAll();stopRipple();if($('hw').classList.contains('open'))closeHow();}});
 $('plp').onclick=$('typ').onclick=$('stp').onclick=e=>e.stopPropagation();
-['sOn','vOn','vA','vC','fsz'].forEach(id=>$(id).oninput=$(id).onchange=draw);
+['sOn','fsz'].forEach(id=>$(id).oninput=$(id).onchange=draw);
 
-/* ---------- මගේ සිතියම: කැමති ස්ථාන තෝරා තනි සිතියමකට එක් කර PDF ගැනීම ---------- */
-function buildCM(){
- $('cmn').textContent=custom.size;
- $('cmc').innerHTML=custom.size
-  ?[...custom].map(n=>`<button type="button" class="chip on" data-x="${esc(n)}">${esc(n)}<i>✕</i></button>`).join('')
-  :`<div class="none">${T[lang].cmempty}</div>`;
-}
-function cmSug(){
- const v=norm($('cmq').value);
- $('cms').innerHTML=v?sorted().filter(e=>norm(e.n).includes(v)&&!custom.has(e.n)).slice(0,10)
-  .map(e=>`<div class="row" data-a="${esc(e.n)}"><span>＋</span><span>${esc(e.n)}${e.g.size?`<span class="gl">${esc(tagOf(e))}</span>`:''}</span></div>`).join(''):'';
-}
-function cmAdd(n){if(n&&G.has(n)){custom.add(n);$('cmq').value='';cmSug();buildCM();}}
+/* ---------- අවශ්‍ය ස්ථාන තෝරා සිතියමක් සකසන්න ---------- */
 function showCustom(){
  const idx=[...custom].flatMap(n=>G.get(n)?G.get(n).idx:[]);
  if(!idx.length){alert(T[lang].cmempty);return false;}
- closeAll();stopRipple();activeCat=null;$('q').value='';
+ closeAll();activeCat=null;$('q').value='';
  focusOn(idx,null);customMarked=marked;
  $('st').textContent=`🧺 ${T[lang].cmres}: ${custom.size}`;
  return true;
 }
-$('cmb').onclick=e=>{e.stopPropagation();togglePop('cmp',$('cmb'),()=>{buildCM();cmSug();});};
-$('cmp').onclick=e=>{e.stopPropagation();
- const a=e.target.closest('[data-a]'),x=e.target.closest('[data-x]');
- if(a)cmAdd(a.dataset.a);
- else if(x){custom.delete(x.dataset.x);buildCM();cmSug();}};
-$('cmq').oninput=cmSug;
-$('cmq').onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();const f=$('cms').querySelector('[data-a]');if(f)cmAdd(f.dataset.a);}};
-$('cmadd').onclick=()=>{
- if(mainName&&G.has(mainName))cmAdd(mainName);
- else alert(T[lang].hint);};
-$('cmclr').onclick=()=>{custom.clear();buildCM();cmSug();};
+$('cmq').oninput=buildPlaces;
 $('cmshow').onclick=showCustom;
+$('cmjpg').onclick=()=>{if(showCustom())doExport('jpg');};
 $('cmpdf').onclick=()=>{if(showCustom())doExport('pdf');};
+$('cmclr').onclick=()=>{custom.clear();buildPlaces();};
 
 /* ---------- Search bar ---------- */
 function renderSug(list){
@@ -797,8 +706,7 @@ function applyUI(){
  const t=T[lang];
  document.querySelectorAll('[data-t]').forEach(e=>e.textContent=t[e.dataset.t]);
  $('q').placeholder=t.ph;
- $('cmq').placeholder=t.cmph;
- const vc=$('vC'),v=vc.value||'0';vc.innerHTML='';t.tones.forEach((n,i)=>vc.add(new Option(n,i)));vc.value=v;
+ $('cmq').placeholder=t.ph;
  document.querySelectorAll('#lang button,.hwlb').forEach(b=>b.classList.toggle('on',b.dataset.l==lang));
  document.documentElement.lang=lang;
  if($('hw').classList.contains('open'))buildHow();
